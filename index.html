@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnHives – AI Learning for Little Ones</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --honey:   #F5A623;
+    --gold:    #FFD93D;
+    --amber:   #E8850A;
+    --comb:    #FFF3D0;
+    --dark:    #3B2A00;
+    --brown:   #7A4F00;
+    --white:   #FFFDF5;
+    --soft:    #FFF8E7;
+    --buzz:    #2D7D46;
+    --sky:     #6BCEFF;
+    --radius:  24px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--soft); color:var(--dark); overflow-x:hidden; }
+
+  /* HEX BACKGROUND PATTERN */
+  .hex-bg {
+    background-color: var(--soft);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66L0 50V18L28 2l28 16v32L28 66zm0-6l22-12.7V24.7L28 12 6 24.7v22.6L28 60z' fill='%23F5A623' fill-opacity='0.08'/%3E%3C/svg%3E");
+  }
+
+  /* NAV */
+  nav {
+    background: var(--white);
+    padding: 1rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    position: sticky; top:0; z-index:100;
+    border-bottom: 3px solid var(--gold);
+  }
+  .logo { font-family:'Fredoka One',cursive; font-size:1.8rem; color:var(--amber); display:flex; align-items:center; gap:8px; }
+  .logo span { color:var(--dark); }
+  nav ul { list-style:none; display:flex; gap:2rem; }
+  nav ul a { text-decoration:none; color:var(--dark); font-weight:700; font-size:1rem; transition:color 0.2s; }
+  nav ul a:hover { color:var(--amber); }
+  .nav-cta { background:var(--honey); color:white !important; padding:0.5rem 1.4rem; border-radius:50px; transition:transform 0.2s, background 0.2s !important; }
+  .nav-cta:hover { background:var(--amber) !important; transform:scale(1.05); }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #FFF3D0 0%, #FFE8A0 50%, #FFF9E0 100%);
+    padding: 5rem 2rem 0;
+    text-align:center; position:relative; overflow:hidden;
+    min-height:90vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  /* big decorative hexagons */
+  .hero::before {
+    content:''; position:absolute; top:-80px; right:-80px;
+    width:320px; height:320px; opacity:0.12;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115'%3E%3Cpolygon points='50,5 95,27.5 95,87.5 50,110 5,87.5 5,27.5' fill='%23F5A623'/%3E%3C/svg%3E") no-repeat center/contain;
+  }
+  .hero::after {
+    content:''; position:absolute; bottom:-60px; left:-60px;
+    width:260px; height:260px; opacity:0.1;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115'%3E%3Cpolygon points='50,5 95,27.5 95,87.5 50,110 5,87.5 5,27.5' fill='%23E8850A'/%3E%3C/svg%3E") no-repeat center/contain;
+  }
+  .hero-badge {
+    display:inline-block; background:var(--amber); color:white;
+    font-size:0.85rem; font-weight:700; letter-spacing:0.05em;
+    padding:0.4rem 1.2rem; border-radius:50px; margin-bottom:1.5rem;
+    animation:bounce 2s infinite;
+  }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .hero h1 {
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(2.8rem,6vw,5rem); line-height:1.1;
+    color:var(--dark); max-width:750px; margin:0 auto 1.5rem;
+  }
+  .hero h1 em {
+    font-style:normal; color:var(--amber); position:relative;
+  }
+  .hero h1 em::after {
+    content:''; position:absolute; bottom:-4px; left:0; right:0;
+    height:6px; background:var(--gold); border-radius:3px; opacity:0.9;
+  }
+  .hero p { font-size:1.2rem; color:var(--brown); max-width:560px; margin:0 auto 2.5rem; line-height:1.7; }
+  .hero-btns { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+  .btn-primary {
+    background:var(--honey); color:white; font-family:'Nunito',sans-serif;
+    font-weight:800; font-size:1.1rem; padding:0.9rem 2.2rem;
+    border:none; border-radius:50px; cursor:pointer;
+    box-shadow:0 6px 20px rgba(245,166,35,0.4);
+    transition:transform 0.2s, box-shadow 0.2s; text-decoration:none; display:inline-block;
+  }
+  .btn-primary:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(245,166,35,0.5); }
+  .btn-secondary {
+    background:white; color:var(--dark); font-family:'Nunito',sans-serif;
+    font-weight:700; font-size:1.1rem; padding:0.9rem 2.2rem;
+    border:2.5px solid var(--gold); border-radius:50px; cursor:pointer;
+    transition:border-color 0.2s, transform 0.2s; text-decoration:none; display:inline-block;
+  }
+  .btn-secondary:hover { border-color:var(--amber); transform:translateY(-3px); }
+  .hero-characters { display:flex; justify-content:center; gap:2rem; margin-top:4rem; flex-wrap:wrap; }
+  .character-card {
+    background:white; border-radius:30px; padding:1.5rem 1.2rem;
+    width:130px; text-align:center;
+    box-shadow:0 8px 30px rgba(0,0,0,0.1);
+    border: 2px solid var(--gold);
+    animation:float 3s ease-in-out infinite; cursor:pointer; transition:transform 0.2s;
+  }
+  .character-card:nth-child(2){animation-delay:0.5s}
+  .character-card:nth-child(3){animation-delay:1s}
+  .character-card:nth-child(4){animation-delay:1.5s}
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .character-card:hover { transform:scale(1.1) translateY(-5px); }
+  .character-emoji { font-size:3rem; display:block; margin-bottom:0.5rem; }
+  .character-name { font-weight:800; font-size:0.9rem; color:var(--dark); }
+  .character-subject { font-size:0.75rem; color:var(--brown); margin-top:2px; }
+
+  /* SECTIONS */
+  section { padding:5rem 2rem; }
+  .section-label {
+    font-size:0.85rem; font-weight:800; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--amber); margin-bottom:0.75rem; display:block;
+  }
+  .section-title {
+    font-family:'Fredoka One',cursive; font-size:clamp(2rem,4vw,2.8rem);
+    color:var(--dark); margin-bottom:1rem; line-height:1.2;
+  }
+  .section-sub { color:var(--brown); font-size:1.05rem; line-height:1.7; max-width:560px; margin-bottom:3rem; }
+  .center { text-align:center; }
+  .center .section-sub { margin:0 auto 3rem; }
+
+  /* HONEYCOMB DIVIDER */
+  .hive-divider {
+    text-align:center; padding:1rem 0; font-size:1.6rem; letter-spacing:8px; opacity:0.4; color:var(--honey);
+  }
+
+  /* SUBJECTS — hexagonal cards */
+  .subjects-grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:1.5rem; max-width:1100px; margin:0 auto;
+  }
+  .subject-card {
+    border-radius:var(--radius); padding:2rem 1.5rem; text-align:center;
+    cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;
+    box-shadow:0 4px 16px rgba(0,0,0,0.07); position:relative; overflow:hidden;
+  }
+  .subject-card::before {
+    content:'⬡'; position:absolute; top:-14px; right:-10px;
+    font-size:5rem; opacity:0.07; color:var(--dark); line-height:1;
+  }
+  .subject-card:hover { transform:translateY(-8px) rotate(-1deg); box-shadow:0 12px 30px rgba(0,0,0,0.12); }
+  .subject-card.s1{background:#FFF3D0} .subject-card.s2{background:#D9F0FF}
+  .subject-card.s3{background:#D9FFE7} .subject-card.s4{background:#FFE5CC}
+  .subject-card.s5{background:#EDD9FF} .subject-card.s6{background:#D9FFF5}
+  .subject-emoji { font-size:2.8rem; display:block; margin-bottom:0.75rem; }
+  .subject-name { font-weight:800; font-size:1rem; color:var(--dark); margin-bottom:0.25rem; }
+  .subject-count { font-size:0.8rem; color:var(--brown); }
+
+  /* HOW IT WORKS */
+  .how-bg { background:white; }
+  .steps-grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:2rem; max-width:1100px; margin:0 auto;
+  }
+  .step-card {
+    background:var(--soft); border-radius:var(--radius); padding:2rem 1.5rem;
+    position:relative; overflow:hidden; transition:transform 0.2s;
+    border-top: 4px solid var(--gold);
+  }
+  .step-card:hover { transform:translateY(-6px); }
+  .step-number {
+    font-family:'Fredoka One',cursive; font-size:4rem;
+    position:absolute; top:-10px; right:16px; opacity:0.08; color:var(--dark); line-height:1;
+  }
+  .step-icon { font-size:2.5rem; margin-bottom:1rem; display:block; }
+  .step-title { font-weight:800; font-size:1.1rem; margin-bottom:0.5rem; color:var(--dark); }
+  .step-desc { color:var(--brown); font-size:0.95rem; line-height:1.6; }
+
+  /* AI TUTOR DARK SECTION */
+  .ai-section {
+    background: linear-gradient(135deg, #3B2A00 0%, #5A3E00 100%);
+    color:white; border-radius:40px; max-width:1100px;
+    margin:0 auto; padding:4rem 3rem;
+    display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center;
+  }
+  @media(max-width:768px){
+    .ai-section{grid-template-columns:1fr;gap:2rem;padding:2.5rem 1.5rem;}
+    nav ul{display:none;}
+  }
+  .ai-section .section-label{color:var(--gold);}
+  .ai-section .section-title{color:white;}
+  .ai-section .section-sub{color:rgba(255,255,255,0.75);max-width:100%;}
+  .chat-demo {
+    background:rgba(255,255,255,0.07); border-radius:var(--radius); padding:1.5rem;
+    border:1px solid rgba(255,255,255,0.15);
+  }
+  .chat-header {
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:1.2rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1);
+  }
+  .chat-avatar {
+    width:40px;height:40px; background:var(--gold); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:1.3rem;
+  }
+  .chat-name{font-weight:700;font-size:0.95rem;}
+  .chat-status{font-size:0.75rem;color:#6BCB77;}
+  .bubble { border-radius:18px; padding:0.75rem 1rem; font-size:0.9rem; line-height:1.5; max-width:85%; margin-bottom:0.75rem; }
+  .bubble.ai{background:rgba(255,255,255,0.12);color:white;border-bottom-left-radius:4px;}
+  .bubble.user{background:var(--honey);color:white;margin-left:auto;border-bottom-right-radius:4px;}
+  .chat-input-bar {
+    display:flex; gap:8px; margin-top:1rem;
+    background:rgba(255,255,255,0.08); border-radius:50px;
+    padding:0.5rem 0.5rem 0.5rem 1rem; align-items:center;
+  }
+  .chat-input-bar span{font-size:0.85rem;color:rgba(255,255,255,0.4);flex:1;}
+  .send-btn {
+    background:var(--honey); border:none; border-radius:50%;
+    width:34px;height:34px; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:1rem; color:white; transition:transform 0.2s;
+  }
+  .send-btn:hover{transform:scale(1.1);}
+
+  /* LIVE DEMO */
+  .demo-container {
+    max-width:800px; margin:0 auto;
+    background:white; border-radius:32px; padding:2rem;
+    box-shadow:0 12px 40px rgba(0,0,0,0.1);
+    border: 3px solid var(--gold);
+  }
+  .demo-controls{display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem;}
+  .topic-btn {
+    background:var(--soft); border:2px solid var(--gold); border-radius:50px;
+    padding:0.5rem 1.2rem; font-family:'Nunito',sans-serif; font-size:0.9rem;
+    font-weight:700; cursor:pointer; transition:all 0.2s; color:var(--dark);
+  }
+  .topic-btn:hover,.topic-btn.active{background:var(--honey);color:white;border-color:var(--honey);}
+  .demo-output {
+    background:var(--soft); border-radius:20px; padding:1.5rem;
+    min-height:160px; font-size:1rem; line-height:1.7; color:var(--dark); position:relative;
+  }
+  .demo-output .ai-label {
+    font-size:0.75rem; font-weight:800; color:var(--amber);
+    text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; display:block;
+  }
+  .loader{display:none;text-align:center;padding:1rem;}
+  .loader.show{display:block;}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--honey);animation:dotbounce 1.2s infinite;margin:0 3px;}
+  .dot:nth-child(2){animation-delay:0.2s;background:var(--amber);}
+  .dot:nth-child(3){animation-delay:0.4s;background:var(--gold);}
+  @keyframes dotbounce{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
+  .ask-btn {
+    width:100%;margin-top:1rem;
+    background:linear-gradient(135deg,var(--honey),var(--amber));
+    color:white;border:none;border-radius:50px;padding:0.9rem;
+    font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;
+    cursor:pointer;transition:opacity 0.2s,transform 0.2s;
+  }
+  .ask-btn:hover{opacity:0.9;transform:translateY(-2px);}
+
+  /* FEATURES */
+  .features-grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1.5rem; max-width:1100px; margin:0 auto;
+  }
+  .feature-card {
+    background:white; border-radius:var(--radius); padding:2rem;
+    box-shadow:0 4px 20px rgba(0,0,0,0.06);
+    display:flex; gap:1.2rem; align-items:flex-start; transition:transform 0.2s;
+    border-left: 4px solid var(--gold);
+  }
+  .feature-card:hover{transform:translateY(-4px);}
+  .feature-icon {
+    font-size:2.2rem; flex-shrink:0; width:56px;height:56px;
+    background:var(--comb); border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .feature-title{font-weight:800;font-size:1rem;margin-bottom:0.4rem;color:var(--dark);}
+  .feature-desc{font-size:0.9rem;color:var(--brown);line-height:1.6;}
+
+  /* STATS */
+  .stats-section { background:var(--honey); padding:4rem 2rem; }
+  .stats-grid {
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:2rem;max-width:800px;margin:0 auto;text-align:center;
+  }
+  .stat-number{font-family:'Fredoka One',cursive;font-size:3rem;color:white;line-height:1;margin-bottom:0.4rem;}
+  .stat-label{color:rgba(255,255,255,0.9);font-weight:700;font-size:0.95rem;}
+
+  /* TESTIMONIALS */
+  .testimonials-grid {
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1.5rem;max-width:1100px;margin:0 auto;
+  }
+  .testimonial {
+    background:white;border-radius:var(--radius);padding:1.75rem;
+    box-shadow:0 4px 16px rgba(0,0,0,0.06); border-top:4px solid var(--gold);
+  }
+  .stars{color:var(--honey);font-size:1.1rem;margin-bottom:1rem;}
+  .testimonial-text{font-size:0.97rem;line-height:1.7;color:#555;margin-bottom:1.2rem;font-style:italic;}
+  .testimonial-author{display:flex;align-items:center;gap:10px;}
+  .author-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:white;font-family:'Fredoka One',cursive;}
+  .author-name{font-weight:800;font-size:0.9rem;color:var(--dark);}
+  .author-role{font-size:0.78rem;color:var(--brown);}
+
+  /* CTA */
+  .cta-section {
+    text-align:center;
+    background:linear-gradient(135deg,#FFF3D0 0%,#FFE8A0 100%);
+    padding:6rem 2rem;
+  }
+  .cta-section p{color:var(--brown);font-size:1.1rem;max-width:500px;margin:0 auto 2.5rem;}
+
+  /* FOOTER */
+  footer{background:var(--dark);color:rgba(255,255,255,0.7);padding:3rem 2rem 2rem;text-align:center;}
+  .footer-logo{font-family:'Fredoka One',cursive;font-size:1.5rem;color:var(--gold);margin-bottom:0.75rem;}
+  .footer-links{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin:1.5rem 0;}
+  .footer-links a{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.9rem;transition:color 0.2s;}
+  .footer-links a:hover{color:var(--gold);}
+  .footer-copy{font-size:0.8rem;opacity:0.5;margin-top:1.5rem;}
+
+  /* HONEYCOMB GRID BG */
+  .hive-section { background:var(--soft); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">🐝 Learn<span>Hives</span></div>
+  <ul>
+    <li><a href="#subjects">Subjects</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#demo">Try It</a></li>
+    <li><a href="#" class="nav-cta">Start Free 🍯</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero hex-bg">
+  <div class="hero-badge">🐝 AI-Powered Learning for Ages 2–6</div>
+  <h1>Where little minds <em>buzz</em> with knowledge</h1>
+  <p>LearnHives uses gentle AI to teach letters, numbers, colors and more — through playful bee adventures your child will adore.</p>
+  <div class="hero-btns">
+    <a href="#demo" class="btn-primary">🍯 Try the AI Tutor</a>
+    <a href="#subjects" class="btn-secondary">Explore the Hive</a>
+  </div>
+  <div class="hero-characters">
+    <div class="character-card">
+      <span class="character-emoji">🐝</span>
+      <div class="character-name">Buzz</div>
+      <div class="character-subject">Letters &amp; Words</div>
+    </div>
+    <div class="character-card">
+      <span class="character-emoji">🍯</span>
+      <div class="character-name">Honey</div>
+      <div class="character-subject">Numbers &amp; Math</div>
+    </div>
+    <div class="character-card">
+      <span class="character-emoji">🌸</span>
+      <div class="character-name">Flora</div>
+      <div class="character-subject">Colors &amp; Art</div>
+    </div>
+    <div class="character-card">
+      <span class="character-emoji">🌿</span>
+      <div class="character-name">Petal</div>
+      <div class="character-subject">Nature &amp; Science</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBJECTS -->
+<section id="subjects" class="hive-section">
+  <div class="center">
+    <span class="section-label">⬡ The Learning Hive</span>
+    <h2 class="section-title">Six Honeycombs of Knowledge</h2>
+    <p class="section-sub">Every hexagon in our hive holds a world of wonder — carefully crafted for early childhood development, made sweet with AI stories, songs, and games.</p>
+  </div>
+  <div class="subjects-grid">
+    <div class="subject-card s1"><span class="subject-emoji">🔤</span><div class="subject-name">Alphabet &amp; Reading</div><div class="subject-count">120+ activities</div></div>
+    <div class="subject-card s2"><span class="subject-emoji">🔢</span><div class="subject-name">Numbers &amp; Counting</div><div class="subject-count">95+ activities</div></div>
+    <div class="subject-card s3"><span class="subject-emoji">🎨</span><div class="subject-name">Colors &amp; Shapes</div><div class="subject-count">80+ activities</div></div>
+    <div class="subject-card s4"><span class="subject-emoji">🌿</span><div class="subject-name">Nature &amp; Animals</div><div class="subject-count">110+ activities</div></div>
+    <div class="subject-card s5"><span class="subject-emoji">🎵</span><div class="subject-name">Music &amp; Rhythm</div><div class="subject-count">60+ activities</div></div>
+    <div class="subject-card s6"><span class="subject-emoji">🤝</span><div class="subject-name">Social &amp; Emotions</div><div class="subject-count">75+ activities</div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-bg">
+  <div class="center">
+    <span class="section-label">⬡ How the Hive Works</span>
+    <h2 class="section-title">Learning in 4 Simple Steps</h2>
+    <p class="section-sub">No setup headaches. Just open LearnHives and your little bee starts buzzing with knowledge right away.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card"><span class="step-number">1</span><span class="step-icon">👤</span><div class="step-title">Create a Bee Profile</div><p class="step-desc">Tell us your child's name and age. Our AI personalises the whole hive just for them.</p></div>
+    <div class="step-card"><span class="step-number">2</span><span class="step-icon">🐝</span><div class="step-title">Meet Their Bee Buddy</div><p class="step-desc">Your child picks a bee tutor — Buzz, Honey, Flora, or Petal — who becomes their hive guide.</p></div>
+    <div class="step-card"><span class="step-number">3</span><span class="step-icon">🎮</span><div class="step-title">Play &amp; Explore</div><p class="step-desc">Voice conversations, honey-jar stories, hive games and puzzles — learning feels like play, not school.</p></div>
+    <div class="step-card"><span class="step-number">4</span><span class="step-icon">📊</span><div class="step-title">Parents Track the Hive</div><p class="step-desc">Get sweet weekly reports. See exactly what your little bee is learning and buzzing about.</p></div>
+  </div>
+</section>
+
+<!-- AI TUTOR -->
+<section style="background:var(--soft);">
+  <div class="ai-section">
+    <div>
+      <span class="section-label">🐝 AI Bee Tutor</span>
+      <h2 class="section-title" style="font-family:'Fredoka One',cursive;font-size:2.4rem;">Your child's patient, kind, always-buzzing teacher</h2>
+      <p class="section-sub">Our AI bee tutors are trained to use age-appropriate language, celebrate every answer, and never make a child feel bad for getting something wrong. They adapt in real time to each child's pace and mood.</p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
+        <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.85);font-size:0.95rem;"><span style="background:#6BCB77;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">✓</span>Speaks in simple, joyful language</div>
+        <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.85);font-size:0.95rem;"><span style="background:#6BCB77;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">✓</span>Adapts to each child's learning speed</div>
+        <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.85);font-size:0.95rem;"><span style="background:#6BCB77;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">✓</span>Safe, child-appropriate content always</div>
+        <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.85);font-size:0.95rem;"><span style="background:#6BCB77;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">✓</span>Available 24/7 — no human tutor fees</div>
+      </div>
+    </div>
+    <div>
+      <div class="chat-demo">
+        <div class="chat-header">
+          <div class="chat-avatar">🐝</div>
+          <div>
+            <div class="chat-name">Buzz the Bee</div>
+            <div class="chat-status">● Online and ready to buzz!</div>
+          </div>
+        </div>
+        <div class="bubble ai">🌟 Hiya! I'm Buzz! Today we're buzzing to the letter <strong>B</strong> — just like <em>Bee</em>! Can you think of something else that starts with B?</div>
+        <div class="bubble user">Butterfly! 🦋</div>
+        <div class="bubble ai">BUZZ-TASTIC! 🎉 B-B-BUTTERFLY! You're amazing! <strong>B</strong> makes the "buh" sound. And bees start with B too — that's ME! 🐝</div>
+        <div class="chat-input-bar">
+          <span>Type or speak your answer...</span>
+          <button class="send-btn">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo" style="background:white;">
+  <div class="center">
+    <span class="section-label">🍯 Try the Hive Live</span>
+    <h2 class="section-title">Ask Buzz Anything!</h2>
+    <p class="section-sub">Pick a topic and see how LearnHives' AI explains it in a way that's perfect for little bees.</p>
+  </div>
+  <div class="demo-container">
+    <div class="demo-controls">
+      <button class="topic-btn active" data-topic="What is the letter B? Explain it like I am a 4 year old bee lover.">🔤 Letter B</button>
+      <button class="topic-btn" data-topic="What is the number 5? Explain it like I am a 4 year old bee lover.">🔢 Number 5</button>
+      <button class="topic-btn" data-topic="What is the color yellow? Explain it like I am a 4 year old bee lover.">🟡 Yellow</button>
+      <button class="topic-btn" data-topic="Tell me about bees and how they make honey, for a 4 year old.">🐝 Bees &amp; Honey</button>
+      <button class="topic-btn" data-topic="What is a flower? Explain it for a 4 year old who loves bees.">🌸 Flowers</button>
+    </div>
+    <div class="demo-output" id="demoOutput">
+      <span class="ai-label">🐝 Buzz says...</span>
+      <div id="demoText" style="color:#888;font-style:italic;">Pick a topic above, then press the button to ask Buzz!</div>
+      <div class="loader" id="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    </div>
+    <button class="ask-btn" id="askBtn">🍯 Ask Buzz!</button>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="hive-section">
+  <div class="center">
+    <span class="section-label">⬡ Hive Features</span>
+    <h2 class="section-title">Built for little bees. Loved by parents.</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card"><div class="feature-icon">🔒</div><div><div class="feature-title">Safe &amp; Child-First</div><p class="feature-desc">No ads, no strangers, no scary content. Every response is filtered for age-appropriateness and safety.</p></div></div>
+    <div class="feature-card"><div class="feature-icon">🗣️</div><div><div class="feature-title">Voice Interaction</div><p class="feature-desc">Kids who can't type yet can simply speak! Our AI understands little voices and responds warmly.</p></div></div>
+    <div class="feature-card"><div class="feature-icon">🧠</div><div><div class="feature-title">Adaptive AI Engine</div><p class="feature-desc">The more your child uses LearnHives, the smarter it gets about what they love and what they need help with.</p></div></div>
+    <div class="feature-card"><div class="feature-icon">🌍</div><div><div class="feature-title">Multilingual Support</div><p class="feature-desc">Available in English, Arabic, Spanish, French and more — perfect for bilingual families.</p></div></div>
+    <div class="feature-card"><div class="feature-icon">📱</div><div><div class="feature-title">Works Everywhere</div><p class="feature-desc">Phone, tablet, desktop or smart TV — LearnHives works beautifully on any screen, anywhere.</p></div></div>
+    <div class="feature-card"><div class="feature-icon">📈</div><div><div class="feature-title">Parent Dashboard</div><p class="feature-desc">Weekly progress reports, milestone celebrations, and tips for reinforcing learning at home.</p></div></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-section">
+  <div class="stats-grid">
+    <div><div class="stat-number">2M+</div><div class="stat-label">Happy Little Bees</div></div>
+    <div><div class="stat-number">120+</div><div class="stat-label">Countries</div></div>
+    <div><div class="stat-number">500+</div><div class="stat-label">Learning Activities</div></div>
+    <div><div class="stat-number">4.9★</div><div class="stat-label">Parent Rating</div></div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section style="background:var(--soft);">
+  <div class="center">
+    <span class="section-label">💬 Parent Stories</span>
+    <h2 class="section-title">Families are buzzing about LearnHives</h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"My 3-year-old asks to 'talk to Buzz' every morning before breakfast. She's already recognising all her letters — in just 6 weeks!"</p>
+      <div class="testimonial-author"><div class="author-avatar" style="background:var(--honey);">S</div><div><div class="author-name">Sarah M.</div><div class="author-role">Mum to Zoe, 3 — Dubai</div></div></div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"As an educator, I'm impressed by how LearnHives paces the learning. It's not flashcards — it's real conversation. Brilliant concept."</p>
+      <div class="testimonial-author"><div class="author-avatar" style="background:var(--amber);">D</div><div><div class="author-name">Dr. Amira K.</div><div class="author-role">Early Childhood Educator</div></div></div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"My twins (4 years old) are fiercely independent — they love having 'their own bee teacher'. LearnHives gave them that!"</p>
+      <div class="testimonial-author"><div class="author-avatar" style="background:var(--buzz);">J</div><div><div class="author-name">James T.</div><div class="author-role">Dad to Luca &amp; Mia, 4 — London</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <span class="section-label">🐝 Join the Hive</span>
+  <h2 class="section-title" style="font-family:'Fredoka One',cursive;font-size:3rem;">Start your child's hive adventure today</h2>
+  <p>Free for the first 30 days. No credit card needed. Cancel anytime. Just pure, joyful learning.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+    <a href="#demo" class="btn-primary" style="font-size:1.15rem;">🍯 Try Free for 30 Days</a>
+    <a href="#" class="btn-secondary">📖 See the Curriculum</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🐝 LearnHives</div>
+  <p style="font-size:0.9rem;margin-top:0.25rem;">Building the sweetest minds, one lesson at a time 🍯</p>
+  <div class="footer-links">
+    <a href="#">About</a><a href="#">Curriculum</a><a href="#">Safety</a>
+    <a href="#">For Schools</a><a href="#">Privacy</a><a href="#">Contact</a>
+  </div>
+  <p style="font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:0.5rem;">learnhives.com</p>
+  <p class="footer-copy">© 2026 LearnHives. Made with 🍯 for curious little minds everywhere.</p>
+</footer>
+
+<script>
+  const topics = document.querySelectorAll('.topic-btn');
+  let selected = "What is the letter B? Explain it like I am a 4 year old bee lover.";
+
+  topics.forEach(btn => {
+    btn.addEventListener('click', () => {
+      topics.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selected = btn.dataset.topic;
+    });
+  });
+
+  document.getElementById('askBtn').addEventListener('click', async () => {
+    const out = document.getElementById('demoText');
+    const loader = document.getElementById('loader');
+    const btn = document.getElementById('askBtn');
+
+    out.style.display = 'none';
+    loader.classList.add('show');
+    btn.disabled = true;
+    btn.textContent = '⏳ Buzz is thinking...';
+
+    const systemPrompt = `You are Buzz the Bee, a warm, enthusiastic, and gentle AI tutor for preschool children aged 2-6, living in the LearnHives educational beehive.
+You explain things using very simple words, short sentences, lots of exclamation points, and child-friendly comparisons.
+You ALWAYS use bee and honey related metaphors where they fit naturally, and you use emojis (🐝🍯🌸⬡) to make it fun.
+You celebrate curiosity and make kids feel amazing. You never use words a 4-year-old wouldn't understand.
+Keep your answer to 3-5 sentences max. Be joyful and encouraging! Occasionally say "Buzz-tastic!" or "How honey-mazing!"`;
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: selected }]
+        })
+      });
+      const data = await res.json();
+      const reply = data.content?.map(c => c.text || '').join('') || "Oops! Buzz needs a honey break. Try again! 🍯";
+      loader.classList.remove('show');
+      out.style.display = 'block';
+      out.innerHTML = `<span class="ai-label">🐝 Buzz says...</span><div>${reply}</div>`;
+    } catch (e) {
+      loader.classList.remove('show');
+      out.style.display = 'block';
+      out.innerHTML = `<span class="ai-label">🐝 Buzz says...</span><div style="color:#c0392b;">Oops! The hive is busy. Please try again! 🙈</div>`;
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🍯 Ask Buzz!';
+  });
+</script>
+</body>
+</html>
