@@ -128,20 +128,7 @@
         }
       })
 
-      if (error) throw error
-
-      // 2 — Create profile record
-      const { error: profileError } = await db
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          full_name: fullName,
-          email: email,
-          plan: 'free'
-        })
-
-      if (profileError) throw profileError
-
+     
       // 3 — Success!
       successEl.textContent = '🎉 Account created! Check your email to verify then log in.'
       successEl.style.display = 'block'
