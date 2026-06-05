@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join LearnHives — Start Free</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --honey: #F5A623; --amber: #E8850A; --dark: #3B2A00;
+    --soft: #FFF8E7; --comb: #FFF3D0; --white: #FFFDF5;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--soft); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .card {
+    background:white; border-radius:32px; padding:2.5rem 2rem;
+    width:100%; max-width:420px; box-shadow:0 12px 40px rgba(0,0,0,0.1);
+    border-top:5px solid var(--honey);
+  }
+  .logo { font-family:'Fredoka One',cursive; font-size:1.8rem; color:var(--amber); text-align:center; margin-bottom:0.25rem; }
+  .subtitle { text-align:center; color:#888; font-size:0.95rem; margin-bottom:2rem; }
+  .form-group { margin-bottom:1.2rem; }
+  label { display:block; font-weight:700; font-size:0.9rem; color:var(--dark); margin-bottom:0.4rem; }
+  input {
+    width:100%; padding:0.8rem 1rem; border:2px solid #E5E5E5;
+    border-radius:12px; font-family:'Nunito',sans-serif; font-size:1rem;
+    transition:border-color 0.2s; outline:none;
+  }
+  input:focus { border-color:var(--honey); }
+  .btn {
+    width:100%; padding:0.9rem; background:var(--honey); color:white;
+    border:none; border-radius:50px; font-family:'Nunito',sans-serif;
+    font-weight:800; font-size:1.1rem; cursor:pointer;
+    transition:opacity 0.2s, transform 0.2s; margin-top:0.5rem;
+  }
+  .btn:hover { opacity:0.9; transform:translateY(-2px); }
+  .btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+  .divider { text-align:center; color:#aaa; font-size:0.9rem; margin:1.2rem 0; }
+  .login-link { text-align:center; font-size:0.95rem; color:#666; margin-top:1.2rem; }
+  .login-link a { color:var(--amber); font-weight:700; text-decoration:none; }
+  .error { background:#FFE5E5; color:#C0392B; padding:0.75rem 1rem; border-radius:12px; font-size:0.9rem; margin-bottom:1rem; display:none; }
+  .success { background:#E5FFE9; color:#1D6A3A; padding:0.75rem 1rem; border-radius:12px; font-size:0.9rem; margin-bottom:1rem; display:none; }
+  .trial-badge {
+    background:var(--comb); border-radius:12px; padding:0.75rem 1rem;
+    text-align:center; font-size:0.85rem; color:var(--dark);
+    margin-bottom:1.5rem; font-weight:600;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🐝 LearnHives</div>
+  <p class="subtitle">Create your free parent account</p>
+
+  <div class="trial-badge">
+    🍯 30-day free trial — no credit card needed
+  </div>
+
+  <div class="error" id="errorMsg"></div>
+  <div class="success" id="successMsg"></div>
+
+  <div class="form-group">
+    <label>Your Full Name</label>
+    <input type="text" id="fullName" placeholder="e.g. Abhishek Pandey" />
+  </div>
+
+  <div class="form-group">
+    <label>Email Address</label>
+    <input type="email" id="email" placeholder="you@example.com" />
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Min. 8 characters" />
+  </div>
+
+  <button class="btn" id="signupBtn" onclick="handleSignup()">
+    🚀 Start Free Trial
+  </button>
+
+  <p class="login-link">
+    Already have an account? <a href="/app/login.html">Log in</a>
+  </p>
+</div>
+
+<script>
+  // ── Supabase config ──────────────────────────────
+  const SUPABASE_URL = 'https://oyipfnllzdvauxmbcshx.supabase.co'
+  const SUPABASE_KEY = 'sb_publishable_NWbXbpid0odCmxHj2UTcrw_3jxtcQ2B'
+  const { createClient } = supabase
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  // ── Signup handler ───────────────────────────────
+  async function handleSignup() {
+    const fullName = document.getElementById('fullName').value.trim()
+    const email    = document.getElementById('email').value.trim()
+    const password = document.getElementById('password').value
+    const btn      = document.getElementById('signupBtn')
+    const errorEl  = document.getElementById('errorMsg')
+    const successEl = document.getElementById('successMsg')
+
+    // Reset messages
+    errorEl.style.display = 'none'
+    successEl.style.display = 'none'
+
+    // Validate
+    if (!fullName || !email || !password) {
+      showError('Please fill in all fields.')
+      return
+    }
+    if (password.length < 8) {
+      showError('Password must be at least 8 characters.')
+      return
+    }
+
+    // Loading state
+    btn.disabled = true
+    btn.textContent = '⏳ Creating your account...'
+
+    try {
+      // 1 — Sign up with Supabase Auth
+      const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName }
+        }
+      })
+
+      if (error) throw error
+
+      // 2 — Create profile record
+      const { error: profileError } = await db
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          full_name: fullName,
+          email: email,
+          plan: 'free'
+        })
+
+      if (profileError) throw profileError
+
+      // 3 — Success!
+      successEl.textContent = '🎉 Account created! Check your email to verify then log in.'
+      successEl.style.display = 'block'
+      btn.textContent = '✅ Check your email!'
+
+    } catch (err) {
+      showError(err.message || 'Something went wrong. Please try again.')
+      btn.disabled = false
+      btn.textContent = '🚀 Start Free Trial'
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg')
+    el.textContent = msg
+    el.style.display = 'block'
+  }
+</script>
+</body>
+</html>
