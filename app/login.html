@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log In — LearnHives</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --honey: #F5A623; --amber: #E8850A; --dark: #3B2A00;
+    --soft: #FFF8E7; --comb: #FFF3D0; --white: #FFFDF5;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--soft); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .card {
+    background:white; border-radius:32px; padding:2.5rem 2rem;
+    width:100%; max-width:420px; box-shadow:0 12px 40px rgba(0,0,0,0.1);
+    border-top:5px solid var(--honey);
+  }
+  .logo { font-family:'Fredoka One',cursive; font-size:1.8rem; color:var(--amber); text-align:center; margin-bottom:0.25rem; }
+  .subtitle { text-align:center; color:#888; font-size:0.95rem; margin-bottom:2rem; }
+  .form-group { margin-bottom:1.2rem; }
+  label { display:block; font-weight:700; font-size:0.9rem; color:var(--dark); margin-bottom:0.4rem; }
+  input {
+    width:100%; padding:0.8rem 1rem; border:2px solid #E5E5E5;
+    border-radius:12px; font-family:'Nunito',sans-serif; font-size:1rem;
+    transition:border-color 0.2s; outline:none;
+  }
+  input:focus { border-color:var(--honey); }
+  .btn {
+    width:100%; padding:0.9rem; background:var(--honey); color:white;
+    border:none; border-radius:50px; font-family:'Nunito',sans-serif;
+    font-weight:800; font-size:1.1rem; cursor:pointer;
+    transition:opacity 0.2s, transform 0.2s; margin-top:0.5rem;
+  }
+  .btn:hover { opacity:0.9; transform:translateY(-2px); }
+  .btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+  .signup-link { text-align:center; font-size:0.95rem; color:#666; margin-top:1.2rem; }
+  .signup-link a { color:var(--amber); font-weight:700; text-decoration:none; }
+  .forgot-link { text-align:right; margin-top:-0.75rem; margin-bottom:1rem; }
+  .forgot-link a { color:#aaa; font-size:0.85rem; text-decoration:none; }
+  .forgot-link a:hover { color:var(--amber); }
+  .error { background:#FFE5E5; color:#C0392B; padding:0.75rem 1rem; border-radius:12px; font-size:0.9rem; margin-bottom:1rem; display:none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🐝 LearnHives</div>
+  <p class="subtitle">Welcome back to the hive!</p>
+
+  <div class="error" id="errorMsg"></div>
+
+  <div class="form-group">
+    <label>Email Address</label>
+    <input type="email" id="email" placeholder="you@example.com" />
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Your password" />
+  </div>
+
+  <div class="forgot-link">
+    <a href="/app/reset.html">Forgot password?</a>
+  </div>
+
+  <button class="btn" id="loginBtn" onclick="handleLogin()">
+    🍯 Log In
+  </button>
+
+  <p class="signup-link">
+    Don't have an account? <a href="/app/signup.html">Start free trial</a>
+  </p>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://oyipfnllzdvauxmbcshx.supabase.co'
+  const SUPABASE_KEY = 'sb_publishable_NWbXbpid0odCmxHj2UTcrw_3jxtcQ2B'
+  const { createClient } = supabase
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  // If already logged in → go to dashboard
+  db.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = '/app/dashboard.html'
+  })
+
+  async function handleLogin() {
+    const email    = document.getElementById('email').value.trim()
+    const password = document.getElementById('password').value
+    const btn      = document.getElementById('loginBtn')
+    const errorEl  = document.getElementById('errorMsg')
+
+    errorEl.style.display = 'none'
+
+    if (!email || !password) {
+      showError('Please enter your email and password.')
+      return
+    }
+
+    btn.disabled = true
+    btn.textContent = '⏳ Logging in...'
+
+    const { error } = await db.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      showError(error.message)
+      btn.disabled = false
+      btn.textContent = '🍯 Log In'
+      return
+    }
+
+    window.location.href = '/app/dashboard.html'
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg')
+    el.textContent = msg
+    el.style.display = 'block'
+  }
+
+  // Allow Enter key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin()
+  })
+</script>
+</body>
+</html>
