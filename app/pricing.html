@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plans & Pricing — LearnHives</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --honey: #F5A623;
@@ -169,15 +170,45 @@
 </footer>
 
 <script>
-  function subscribe(plan) {
-    // Check if user is logged in
-    const session = localStorage.getItem('sb_session');
+  const SUPABASE_URL = 'https://oyipfnllzdvauxmbcshx.supabase.co'
+  const SUPABASE_KEY = 'sb_publishable_NWbXbpid0odCmxHj2UTcrw_3jxtcQ2B'
+  const { createClient } = supabase
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  const PRICE_IDS = {
+    family:      'price_1TfFyc0VmqypFEijoQfUW0PG',
+    family_plus: 'price_1TfG0U0VmqypFEijqZrBOuF8',
+  }
+
+  async function subscribe(plan) {
+    const { data: { session } } = await db.auth.getSession()
+
     if (!session) {
-      window.location.href = '/app/signup.html?plan=' + plan;
-      return;
+      window.location.href = '/app/signup.html?plan=' + plan
+      return
     }
-    // Will connect to Stripe checkout in next session
-    alert('Stripe checkout coming soon!');
+
+    const btn = document.querySelector(`[onclick="subscribe('${plan}')"]`)
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Loading...' }
+
+    try {
+      const res = await fetch('/api/stripe-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId: PRICE_IDS[plan],
+          userId:  session.user.id,
+          email:   session.user.email,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Checkout failed')
+      window.location.href = data.url
+    } catch (err) {
+      alert('Something went wrong: ' + err.message)
+      if (btn) { btn.disabled = false; btn.textContent = 'Start free trial' }
+    }
   }
 </script>
 
