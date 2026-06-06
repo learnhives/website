@@ -563,12 +563,10 @@ You celebrate curiosity and make kids feel amazing. You never use words a 4-year
 Keep your answer to 3-5 sentences max. Be joyful and encouraging! Occasionally say "Buzz-tastic!" or "How honey-mazing!"`;
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/api/claude-proxy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
           system: systemPrompt,
           messages: [{ role: "user", content: selected }]
         })
