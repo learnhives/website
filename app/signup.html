@@ -128,7 +128,15 @@
         }
       })
 
-     
+      if (error) throw error
+
+      // 2 — Send welcome email (fire-and-forget; don't block the success state on it)
+      fetch('/api/send-welcome-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: fullName }),
+      }).catch(() => {})
+
       // 3 — Success!
       successEl.textContent = '🎉 Account created! Check your email to verify then log in.'
       successEl.style.display = 'block'
