@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LearnHives — Alphabet A to Z</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --honey:#F5A623; --honey-deep:#E8901A; --honey-light:#FFC85A; --honey-pale:#FFF5E0;
+      --amber:#D4700A; --amber-dark:#A0500A; --cream:#FFFBF2; --wax:#FEF0C7; --comb:#F9D87E;
+      --pollen:#FFE066; --moss:#6B8F3E; --leaf:#88B04B; --sky:#5BB8E8; --sky-pale:#EDF7FD;
+      --buzz-bg:#FFF8E7; --text-dark:#3A2A0A; --text-mid:#7A5C1E; --text-soft:#B08848;
+      --shadow-warm:0 4px 24px rgba(200,120,20,0.13); --shadow-card:0 2px 16px rgba(180,100,10,0.10);
+      --radius-lg:20px; --radius-xl:32px; --radius-pill:100px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-dark);min-height:100vh;overflow-x:hidden;}
+    body::before{content:'';position:fixed;inset:0;background-image:
+      radial-gradient(ellipse 80% 60% at 20% 10%,rgba(245,166,35,0.08) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 80%,rgba(212,112,10,0.06) 0%,transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath fill='none' stroke='%23F5A62320' stroke-width='1' d='M28 66L0 50V18L28 2l28 16v32L28 66zm0 34L0 84V52l28-16 28 16v32L28 100zM0 50l28-16 28 16'/%3E%3C/svg%3E");
+      pointer-events:none;z-index:0;}
+    .page-wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 16px 60px;}
+
+    /* NAV */
+    .top-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0 12px;gap:12px;}
+    .nav-left{display:flex;align-items:center;gap:12px;}
+    .back-btn{display:flex;align-items:center;gap:6px;background:var(--wax);border:2px solid var(--honey-light);border-radius:var(--radius-pill);padding:8px 16px;font-family:'Fredoka',sans-serif;font-size:15px;font-weight:600;color:var(--amber);cursor:pointer;transition:all .18s;text-decoration:none;}
+    .back-btn:hover{background:var(--honey-light);color:var(--amber-dark);transform:translateX(-2px);}
+    .logo-mark{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:700;color:var(--honey-deep);display:flex;align-items:center;gap:6px;}
+    .logo-mark span{font-size:24px;}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .child-pill{display:flex;align-items:center;gap:8px;background:var(--wax);border:2px solid var(--comb);border-radius:var(--radius-pill);padding:6px 14px 6px 8px;font-size:14px;font-weight:700;color:var(--text-mid);}
+    .child-avatar{width:28px;height:28px;background:var(--honey-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .print-btn{display:flex;align-items:center;gap:6px;background:white;border:2px solid var(--comb);border-radius:var(--radius-pill);padding:8px 14px;font-family:'Fredoka',sans-serif;font-size:14px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all .18s;}
+    .print-btn:hover{border-color:var(--honey);color:var(--amber);background:var(--honey-pale);}
+
+    /* HEADER */
+    .lesson-header{background:linear-gradient(135deg,var(--honey) 0%,var(--honey-deep) 60%,var(--amber) 100%);border-radius:var(--radius-xl);padding:28px 32px 24px;margin:4px 0 16px;display:flex;align-items:center;gap:24px;position:relative;overflow:hidden;box-shadow:0 6px 32px rgba(200,120,20,0.22);}
+    .lesson-header::after{content:'🍯';position:absolute;right:-10px;top:-16px;font-size:100px;opacity:.13;transform:rotate(15deg);pointer-events:none;}
+    .subject-icon-wrap{width:80px;height:80px;background:rgba(255,255,255,0.22);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:46px;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,0.12);backdrop-filter:blur(4px);transition:all .3s;}
+    .lesson-meta{flex:1;}
+    .lesson-breadcrumb{font-size:13px;color:rgba(255,255,255,0.75);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;}
+    .lesson-title{font-family:'Fredoka',sans-serif;font-size:32px;font-weight:700;color:white;line-height:1.1;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,0.15);}
+    .lesson-badges{display:flex;flex-wrap:wrap;gap:8px;}
+    .badge{background:rgba(255,255,255,0.22);backdrop-filter:blur(4px);border:1.5px solid rgba(255,255,255,0.35);border-radius:var(--radius-pill);padding:4px 12px;font-size:13px;font-weight:700;color:white;}
+    .stage-selector{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+    .stage-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.6px;}
+    .stage-tabs{display:flex;gap:6px;}
+    .stage-tab{background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius-pill);padding:6px 14px;font-family:'Fredoka',sans-serif;font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);cursor:pointer;transition:all .18s;}
+    .stage-tab:hover,.stage-tab.active{background:white;color:var(--amber);border-color:white;transform:translateY(-1px);}
+
+    /* LETTER STRIP */
+    .letter-strip-wrap{background:white;border:2px solid var(--comb);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:16px;box-shadow:var(--shadow-card);}
+    .letter-strip-label{font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+    .letter-strip{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;}
+    @media(max-width:680px){.letter-strip{grid-template-columns:repeat(7,1fr);}}
+    .letter-key{aspect-ratio:1;background:var(--honey-pale);border:2px solid var(--comb);border-radius:10px;font-family:'Fredoka',sans-serif;font-size:18px;font-weight:700;color:var(--amber);cursor:pointer;transition:all .14s;display:flex;align-items:center;justify-content:center;position:relative;}
+    .letter-key:hover{background:var(--wax);border-color:var(--honey);transform:translateY(-2px);}
+    .letter-key.active{background:var(--honey);color:white;border-color:var(--honey-deep);transform:translateY(-2px);box-shadow:0 4px 12px rgba(200,120,20,0.3);}
+    .letter-key.done::after{content:'⭐';position:absolute;top:-6px;right:-4px;font-size:12px;}
+
+    /* PROGRESS */
+    .progress-section{background:white;border:2px solid var(--comb);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-card);}
+    .progress-stars{display:flex;gap:4px;flex-shrink:0;}
+    .star{font-size:22px;filter:grayscale(1) opacity(.3);transition:all .3s;}
+    .star.earned{filter:none;animation:starPop .4s ease;}
+    @keyframes starPop{0%{transform:scale(.5)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+    .progress-track-wrap{flex:1;}
+    .progress-label{font-size:12px;font-weight:700;color:var(--text-soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+    .progress-track{height:12px;background:var(--wax);border-radius:var(--radius-pill);overflow:hidden;border:1.5px solid var(--comb);}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--honey-light),var(--honey));border-radius:var(--radius-pill);transition:width .6s cubic-bezier(.34,1.56,.64,1);width:0%;}
+    .xp-badge{background:var(--pollen);border:2px solid var(--honey);border-radius:var(--radius-pill);padding:6px 14px;font-family:'Fredoka',sans-serif;font-size:15px;font-weight:700;color:var(--amber-dark);white-space:nowrap;flex-shrink:0;}
+
+    /* GRID */
+    .main-grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;}
+    @media(max-width:820px){.main-grid{grid-template-columns:1fr;}.lesson-header{flex-direction:column;align-items:flex-start;}.stage-selector{flex-direction:row;align-items:center;}}
+    .activity-panel{display:flex;flex-direction:column;gap:16px;}
+    .panel-card{background:white;border:2px solid var(--comb);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-card);}
+
+    /* ACTIVITY TABS */
+    .activity-tabs{display:flex;gap:0;border-bottom:2px solid var(--comb);background:var(--honey-pale);}
+    .activity-tab{flex:1;padding:12px 8px;text-align:center;font-family:'Fredoka',sans-serif;font-size:15px;font-weight:600;color:var(--text-soft);cursor:pointer;border:none;background:transparent;transition:all .18s;border-bottom:3px solid transparent;position:relative;top:2px;}
+    .activity-tab:hover{color:var(--amber);}
+    .activity-tab.active{color:var(--amber);border-bottom-color:var(--honey);background:white;}
+    .activity-content{display:none;padding:20px;}
+    .activity-content.active{display:block;}
+
+    /* STORY */
+    .story-text{font-size:18px;line-height:1.7;color:var(--text-dark);font-weight:600;}
+    .story-text strong{color:var(--amber);}
+    .story-text em{color:var(--moss);font-style:normal;font-weight:700;}
+    .story-illustration{background:var(--honey-pale);border:2px dashed var(--honey-light);border-radius:var(--radius-lg);padding:24px;text-align:center;margin:16px 0;font-size:72px;line-height:1;}
+    .next-q-btn{display:block;margin:14px auto 0;background:var(--honey);border:none;border-radius:var(--radius-pill);padding:10px 28px;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:700;color:white;cursor:pointer;transition:all .18s;box-shadow:0 4px 16px rgba(200,120,20,0.2);}
+    .next-q-btn:hover{background:var(--honey-deep);transform:translateY(-2px);}
+    .next-q-btn:disabled{opacity:.5;cursor:default;transform:none;}
+
+    /* FLASHCARDS */
+    .flashcard-area{display:flex;flex-direction:column;align-items:center;gap:16px;}
+    .flashcard{width:100%;max-width:320px;aspect-ratio:4/3;position:relative;cursor:pointer;perspective:800px;}
+    .flashcard-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
+    .flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+    .flashcard-front,.flashcard-back{position:absolute;inset:0;border-radius:var(--radius-xl);backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;border:3px solid;}
+    .flashcard-front{background:linear-gradient(135deg,var(--wax),white);border-color:var(--honey-light);}
+    .flashcard-back{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border-color:var(--leaf);transform:rotateY(180deg);}
+    .card-emoji{font-size:64px;margin-bottom:10px;}
+    .card-word{font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;color:var(--amber);}
+    .card-hint{font-size:14px;font-weight:700;color:var(--text-soft);margin-top:4px;}
+    .card-back-word{font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;color:var(--moss);text-align:center;line-height:1.5;}
+    .flashcard-nav{display:flex;gap:10px;align-items:center;}
+    .card-btn{background:var(--wax);border:2px solid var(--honey-light);border-radius:var(--radius-pill);padding:8px 20px;font-family:'Fredoka',sans-serif;font-size:16px;font-weight:700;color:var(--amber);cursor:pointer;transition:all .18s;}
+    .card-btn:hover{background:var(--honey-light);transform:scale(1.05);}
+    .card-counter{font-weight:800;color:var(--text-soft);font-size:15px;}
+
+    /* QUIZ */
+    .quiz-question{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:700;color:var(--text-dark);margin-bottom:16px;line-height:1.3;text-align:center;}
+    .quiz-image{font-size:80px;text-align:center;margin-bottom:12px;}
+    .quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .quiz-option{background:var(--honey-pale);border:2.5px solid var(--comb);border-radius:var(--radius-lg);padding:14px 10px;text-align:center;cursor:pointer;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:600;color:var(--text-dark);transition:all .18s;}
+    .quiz-option:hover{border-color:var(--honey);background:var(--wax);transform:translateY(-2px);}
+    .quiz-option.correct{background:#E8F5E9;border-color:var(--leaf);color:var(--moss);}
+    .quiz-option.wrong{background:#FFEBEE;border-color:#EF9A9A;color:#C62828;}
+    .quiz-option .opt-emoji{font-size:28px;display:block;margin-bottom:4px;}
+    .quiz-feedback{text-align:center;margin-top:14px;font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;min-height:32px;}
+    .feedback-correct{color:var(--moss);}
+    .feedback-wrong{color:#C62828;}
+
+    /* BUZZ */
+    .buzz-panel{position:sticky;top:16px;display:flex;flex-direction:column;gap:16px;}
+    .buzz-card{background:white;border:2px solid var(--comb);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-warm);}
+    .buzz-header{background:linear-gradient(135deg,var(--honey-light),var(--honey));padding:16px 20px;display:flex;align-items:center;gap:12px;}
+    .buzz-avatar{width:56px;height:56px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 3px 12px rgba(180,100,10,0.2);flex-shrink:0;animation:buzzFloat 3s ease-in-out infinite;}
+    @keyframes buzzFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+    .buzz-info{flex:1;}
+    .buzz-name{font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;color:var(--amber-dark);}
+    .buzz-status{font-size:13px;font-weight:700;color:var(--amber);display:flex;align-items:center;gap:5px;}
+    .status-dot{width:8px;height:8px;background:var(--moss);border-radius:50%;animation:blink 1.8s ease infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .chat-messages{height:300px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--buzz-bg);scrollbar-width:thin;scrollbar-color:var(--comb) transparent;}
+    .msg{display:flex;gap:8px;max-width:90%;animation:msgSlide .3s ease;}
+    @keyframes msgSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .msg.user{flex-direction:row-reverse;align-self:flex-end;}
+    .msg.buzz{align-self:flex-start;}
+    .msg-avatar{width:30px;height:30px;border-radius:50%;background:var(--honey-light);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+    .msg.user .msg-avatar{background:var(--sky);}
+    .msg-bubble{padding:10px 14px;border-radius:18px;font-size:15px;font-weight:600;line-height:1.5;max-width:calc(100% - 42px);}
+    .msg.buzz .msg-bubble{background:white;border:1.5px solid var(--comb);border-bottom-left-radius:4px;color:var(--text-dark);}
+    .msg.user .msg-bubble{background:var(--honey-light);border-bottom-right-radius:4px;color:var(--amber-dark);}
+    .typing-indicator{display:flex;gap:5px;padding:12px 14px;background:white;border:1.5px solid var(--comb);border-radius:18px;border-bottom-left-radius:4px;width:fit-content;align-items:center;}
+    .typing-dot{width:8px;height:8px;background:var(--honey);border-radius:50%;animation:typingBounce 1.2s ease infinite;}
+    .typing-dot:nth-child(2){animation-delay:.2s;}
+    .typing-dot:nth-child(3){animation-delay:.4s;}
+    @keyframes typingBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+    .chat-input-area{padding:12px 16px;border-top:2px solid var(--comb);display:flex;gap:8px;align-items:flex-end;background:white;}
+    .chat-textarea{flex:1;border:2px solid var(--comb);border-radius:16px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:600;color:var(--text-dark);resize:none;outline:none;min-height:44px;max-height:100px;transition:border-color .18s;background:var(--honey-pale);}
+    .chat-textarea:focus{border-color:var(--honey);background:white;}
+    .chat-textarea::placeholder{color:var(--text-soft);}
+    .send-btn{width:44px;height:44px;background:var(--honey);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .18s;flex-shrink:0;box-shadow:0 3px 12px rgba(200,120,20,0.25);}
+    .send-btn:hover{background:var(--honey-deep);transform:scale(1.08);}
+    .send-btn:disabled{opacity:.5;cursor:default;transform:none;}
+    .voice-btn{width:44px;height:44px;background:var(--sky-pale);border:2px solid var(--sky);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .18s;flex-shrink:0;}
+    .voice-btn:hover{background:var(--sky);}
+    .voice-btn.listening{background:#FFEBEE;border-color:#EF9A9A;animation:voicePulse .8s ease infinite;}
+    @keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(239,154,154,0.5)}50%{box-shadow:0 0 0 8px rgba(239,154,154,0)}}
+    .quick-prompts{padding:10px 16px 0;display:flex;flex-wrap:wrap;gap:6px;background:white;}
+    .quick-chip{background:var(--honey-pale);border:1.5px solid var(--honey-light);border-radius:var(--radius-pill);padding:5px 12px;font-size:13px;font-weight:700;color:var(--amber);cursor:pointer;transition:all .16s;}
+    .quick-chip:hover{background:var(--honey-light);color:var(--amber-dark);}
+
+    /* WORKSHEET */
+    .worksheet-preview{background:white;border:2.5px dashed var(--honey-light);border-radius:var(--radius-xl);padding:24px;text-align:center;}
+    .worksheet-title{font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;color:var(--amber);margin-bottom:8px;}
+    .worksheet-desc{font-size:14px;font-weight:600;color:var(--text-soft);margin-bottom:16px;line-height:1.5;}
+    .worksheet-pages{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap;}
+    .ws-page{background:var(--honey-pale);border:1.5px solid var(--comb);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text-mid);}
+    .ws-print-btn{background:var(--amber);border:none;border-radius:var(--radius-pill);padding:12px 28px;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:700;color:white;cursor:pointer;transition:all .18s;box-shadow:0 4px 16px rgba(160,80,10,0.22);display:inline-flex;align-items:center;gap:8px;}
+    .ws-print-btn:hover{background:var(--amber-dark);transform:translateY(-2px);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(58,42,10,0.5);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+    .modal-overlay.visible{opacity:1;pointer-events:all;}
+    .completion-modal{background:white;border-radius:var(--radius-xl);padding:40px 36px;text-align:center;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(58,42,10,0.25);transform:scale(.85);transition:transform .4s cubic-bezier(.34,1.56,.64,1);}
+    .modal-overlay.visible .completion-modal{transform:scale(1);}
+    .modal-bees{font-size:64px;margin-bottom:8px;animation:modalBounce .6s ease;}
+    @keyframes modalBounce{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+    .modal-title{font-family:'Fredoka',sans-serif;font-size:32px;font-weight:700;color:var(--amber);margin-bottom:8px;}
+    .modal-subtitle{font-size:16px;font-weight:600;color:var(--text-mid);margin-bottom:24px;line-height:1.5;}
+    .modal-xp{background:var(--pollen);border:2px solid var(--honey);border-radius:var(--radius-pill);padding:10px 24px;font-family:'Fredoka',sans-serif;font-size:22px;font-weight:700;color:var(--amber-dark);display:inline-block;margin-bottom:20px;}
+    .modal-stars{font-size:36px;margin-bottom:24px;letter-spacing:4px;}
+    .modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    .modal-btn{border-radius:var(--radius-pill);padding:12px 24px;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:700;cursor:pointer;transition:all .18s;border:2px solid transparent;}
+    .modal-btn.primary{background:var(--honey);color:white;border-color:var(--honey);box-shadow:0 4px 16px rgba(200,120,20,0.2);}
+    .modal-btn.primary:hover{background:var(--honey-deep);transform:translateY(-2px);}
+    .modal-btn.secondary{background:var(--wax);color:var(--amber);border-color:var(--comb);}
+    .modal-btn.secondary:hover{background:var(--honey-light);}
+
+    /* PRINT */
+    @media print{body>*:not(#print-worksheet){display:none!important;}#print-worksheet{display:block!important;}}
+    #print-worksheet{display:none;font-family:'Fredoka',sans-serif;padding:32px;color:#222;}
+    .ws-print-header{display:flex;align-items:center;gap:16px;border-bottom:3px solid #F5A623;padding-bottom:16px;margin-bottom:24px;}
+    .ws-print-logo{font-size:40px;}
+    .ws-print-title{font-size:28px;font-weight:700;color:#D4700A;}
+    .ws-print-sub{font-size:16px;color:#7A5C1E;}
+    .ws-section{margin-bottom:24px;}
+    .ws-section-title{font-size:20px;font-weight:700;color:#D4700A;margin-bottom:12px;border-left:4px solid #F5A623;padding-left:10px;}
+    .ws-trace-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+    .ws-trace-box{width:80px;height:80px;border:2px dashed #F5A623;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:36px;}
+    .ws-circle-answer{display:flex;gap:24px;flex-wrap:wrap;}
+    .ws-answer-item{text-align:center;font-size:32px;}
+    .ws-answer-label{font-size:13px;color:#7A5C1E;margin-top:4px;}
+    .ws-name-line{display:flex;gap:20px;margin-bottom:16px;}
+    .ws-name-field{flex:1;border-bottom:2px solid #E8C070;padding-bottom:6px;font-size:14px;color:#7A5C1E;}
+  </style>
+</head>
+<body>
+
+<!-- PRINTABLE WORKSHEET (populated by JS) -->
+<div id="print-worksheet"></div>
+
+<!-- COMPLETION MODAL -->
+<div class="modal-overlay" id="completionModal">
+  <div class="completion-modal">
+    <div class="modal-bees">🐝🌟🍯</div>
+    <div class="modal-title">Amazing Work!</div>
+    <div class="modal-subtitle" id="modalSubtitle">You finished the letter!<br>Buzz the Bee is so proud of you!</div>
+    <div class="modal-xp">+50 Honey Points! 🍯</div>
+    <div class="modal-stars">⭐⭐⭐</div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeModal()">Stay Here</button>
+      <button class="modal-btn primary" onclick="closeModal(); nextLetter()">Next Letter →</button>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- NAV -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <a href="/app/dashboard.html" class="back-btn">← Dashboard</a>
+      <div class="logo-mark"><span>🐝</span> LearnHives</div>
+    </div>
+    <div class="nav-right">
+      <div class="child-pill">
+        <div class="child-avatar" id="childAvatarNav">🌱</div>
+        <span id="childNameNav">Lily</span>
+      </div>
+      <button class="print-btn" onclick="buildWorksheet(); window.print()">🖨️ Print Worksheet</button>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <div class="lesson-header">
+    <div class="subject-icon-wrap" id="subjectIcon">🍎</div>
+    <div class="lesson-meta">
+      <div class="lesson-breadcrumb">Alphabet · A to Z</div>
+      <div class="lesson-title" id="lessonTitle">The Letter A</div>
+      <div class="lesson-badges">
+        <span class="badge" id="stageBadge">🌱 Seedling</span>
+        <span class="badge" id="ageBadge">Age 2–3</span>
+        <span class="badge" id="letterBadge">Letter 1 of 26</span>
+      </div>
+    </div>
+    <div class="stage-selector">
+      <div class="stage-label">Age Stage</div>
+      <div class="stage-tabs">
+        <button class="stage-tab active" data-stage="seedling" onclick="setStage('seedling',this)">🌱</button>
+        <button class="stage-tab" data-stage="sprout"  onclick="setStage('sprout',this)">🌿</button>
+        <button class="stage-tab" data-stage="blossom" onclick="setStage('blossom',this)">🌸</button>
+        <button class="stage-tab" data-stage="bloom"   onclick="setStage('bloom',this)">🌻</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LETTER STRIP -->
+  <div class="letter-strip-wrap">
+    <div class="letter-strip-label">🔤 Pick a letter to learn</div>
+    <div class="letter-strip" id="letterStrip"></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-section">
+    <div class="progress-stars">
+      <span class="star" id="s1">⭐</span>
+      <span class="star" id="s2">⭐</span>
+      <span class="star" id="s3">⭐</span>
+    </div>
+    <div class="progress-track-wrap">
+      <div class="progress-label" id="progressLabel">Letter A Progress</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="xp-badge" id="xpBadge">0 🍯</div>
+  </div>
+
+  <!-- GRID -->
+  <div class="main-grid">
+    <div class="activity-panel">
+      <div class="panel-card">
+        <div class="activity-tabs">
+          <button class="activity-tab active" onclick="switchTab('story',this)">📖 Story</button>
+          <button class="activity-tab" onclick="switchTab('cards',this)">🃏 Cards</button>
+          <button class="activity-tab" onclick="switchTab('quiz',this)">🎯 Quiz</button>
+        </div>
+
+        <div class="activity-content active" id="tab-story">
+          <div class="story-illustration" id="storyIllustration">🍎</div>
+          <div class="story-text" id="storyText"></div>
+          <button class="next-q-btn" style="margin-top:20px" onclick="awardXP(10);awardStar(1)">I read it! ✅</button>
+        </div>
+
+        <div class="activity-content" id="tab-cards">
+          <div class="flashcard-area">
+            <div class="flashcard" id="flashcard" onclick="flipCard()">
+              <div class="flashcard-inner">
+                <div class="flashcard-front">
+                  <div class="card-emoji" id="cardEmoji">🍎</div>
+                  <div class="card-word" id="cardWord">APPLE</div>
+                  <div class="card-hint">Tap to flip!</div>
+                </div>
+                <div class="flashcard-back">
+                  <div style="font-size:36px;margin-bottom:8px;">🔊</div>
+                  <div class="card-back-word" id="cardBackText"></div>
+                </div>
+              </div>
+            </div>
+            <div class="flashcard-nav">
+              <button class="card-btn" onclick="prevCard()">← Prev</button>
+              <span class="card-counter" id="cardCounter">1 / 4</span>
+              <button class="card-btn" onclick="nextCard()">Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="activity-content" id="tab-quiz">
+          <div class="quiz-image" id="quizImage">🍎</div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeedback"></div>
+          <button class="next-q-btn" id="nextQBtn" disabled onclick="nextQuestion()">Next Question →</button>
+        </div>
+      </div>
+
+      <div class="worksheet-preview">
+        <div style="font-size:48px;margin-bottom:8px;">📄</div>
+        <div class="worksheet-title" id="wsTitle">Letter A Worksheet</div>
+        <div class="worksheet-desc">Printable take-home activity for the <strong id="wsStage">Seedling</strong> stage — tracing, drawing, circling, and matching.</div>
+        <div class="worksheet-pages">
+          <span class="ws-page">📝 Trace</span>
+          <span class="ws-page">🎨 Draw</span>
+          <span class="ws-page">🔵 Circle</span>
+          <span class="ws-page">🔗 Match</span>
+        </div>
+        <button class="ws-print-btn" onclick="buildWorksheet(); window.print()">🖨️ Print Worksheet</button>
+      </div>
+    </div>
+
+    <!-- BUZZ -->
+    <div class="buzz-panel">
+      <div class="buzz-card">
+        <div class="buzz-header">
+          <div class="buzz-avatar">🐝</div>
+          <div class="buzz-info">
+            <div class="buzz-name">Buzz the Bee</div>
+            <div class="buzz-status"><div class="status-dot"></div>Ready to help!</div>
+          </div>
+        </div>
+        <div class="quick-prompts" id="quickPrompts"></div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+          <textarea class="chat-textarea" id="chatInput" placeholder="Ask Buzz anything…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Speak to Buzz">🎤</button>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════════════════
+  // LESSON CONFIG — Alphabet A–Z
+  // Each letter is ONE compact entry. Story / flashcards / quiz /
+  // Buzz prompts are GENERATED from this data per age stage.
+  // To edit a letter: change its words[] or fact. That's it.
+  // ═══════════════════════════════════════════════════════════
+  const LESSON_CONFIG = {
+    subject:   'Alphabet',
+    lessonKey: 'alphabet',
+    icon:      '🔤',
+
+    // Per-stage generators: build story text + Buzz system prompt
+    stages: {
+      seedling: { label:'🌱 Seedling', age:'Age 2–3', avatar:'🌱',
+        story: (L,d) => `This is the letter <strong>${L}</strong>! ${d.emoji}<br><br>${L} says <em>"${d.sound}"</em>!<br><br>Like in <strong>${d.words[0].w}</strong> ${d.words[0].e}!<br><br>Can you say <strong>${L}</strong>? Buzz can! Bzzz! 🐝`,
+        prompt: (L,d) => `You are Buzz the Bee, a warm cheerful tutor for a 2-3 year old in the LearnHives app. The lesson is the letter ${L}, which sounds like "${d.sound}". Use VERY simple words, very short sentences, lots of emojis, say "bzzz" sometimes. Celebrate everything. Under 50 words. Never anything scary.`
+      },
+      sprout: { label:'🌿 Sprout', age:'Age 3–4', avatar:'🌿',
+        story: (L,d) => `The letter <strong>${L}</strong> makes the <em>"${d.sound}"</em> sound! 🔊<br><br>Words that start with ${L}:<br>${d.words.slice(0,3).map(x=>`${x.e} <strong>${x.w}</strong>`).join(' · ')}<br><br>${d.fact}<br><br>Can you find the ${L} sound around your house? 🐝`,
+        prompt: (L,d) => `You are Buzz the Bee, an enthusiastic tutor for a 3-4 year old in LearnHives. Lesson: letter ${L} ("${d.sound}" sound). Use simple language, fun ${L}-words, emojis. Under 70 words. Encouraging.`
+      },
+      blossom: { label:'🌸 Blossom', age:'Age 4–5', avatar:'🌸',
+        story: (L,d) => `Let's explore the letter <strong>${L}</strong>! ${d.isVowel?'It is a special <em>vowel</em>! 🌟':''}<br><br>It makes the <em>"${d.sound}"</em> sound.<br><br>${L}-words: ${d.words.map(x=>`${x.e} ${x.w}`).join(', ')}<br><br>${d.fact}<br><br>Can you think of one more word that starts with <strong>${L}</strong>? ✏️`,
+        prompt: (L,d) => `You are Buzz the Bee, a fun knowledgeable tutor for a 4-5 year old in LearnHives. Lesson: letter ${L} ("${d.sound}"${d.isVowel?', a vowel':''}). Use light phonics, clear ${L}-word examples, ask follow-ups. Under 90 words.`
+      },
+      bloom: { label:'🌻 Bloom', age:'Age 5–6', avatar:'🌻',
+        story: (L,d) => `The letter <strong>${L}</strong> ${d.isVowel?'is a <em>vowel</em> — one of the 5 most important letters! 🏆':'is a consonant.'}<br><br>Sound: <em>"${d.sound}"</em><br>Words: ${d.words.map(x=>`${x.e} <strong>${x.w}</strong>`).join(', ')}<br><br>${d.fact}<br><br>Challenge: write a short sentence using a word that starts with <strong>${L}</strong>! 📚`,
+        prompt: (L,d) => `You are Buzz the Bee, a smart encouraging tutor for a 5-6 year old in LearnHives. Lesson: letter ${L} ("${d.sound}"${d.isVowel?', a vowel':''}). Use age-appropriate phonics, vocabulary, encourage writing sentences, ask thoughtful questions. Under 110 words.`
+      }
+    },
+
+    // ── THE 26 LETTERS ── (emoji = main illustration, words = flashcards, sound, fact)
+    letters: {
+      A:{emoji:'🍎',sound:'Ah',isVowel:true, words:[{e:'🍎',w:'Apple'},{e:'🐜',w:'Ant'},{e:'🥑',w:'Avocado'},{e:'🐊',w:'Alligator'}],fact:'A is the very first letter of the alphabet!'},
+      B:{emoji:'🐝',sound:'Buh',isVowel:false,words:[{e:'🐝',w:'Bee'},{e:'🍌',w:'Banana'},{e:'🐻',w:'Bear'},{e:'⚽',w:'Ball'}],fact:'Buzz the Bee starts with B!'},
+      C:{emoji:'🐱',sound:'Kuh',isVowel:false,words:[{e:'🐱',w:'Cat'},{e:'🚗',w:'Car'},{e:'🥕',w:'Carrot'},{e:'🎂',w:'Cake'}],fact:'C can sound like K (cat) or S (city)!'},
+      D:{emoji:'🐕',sound:'Duh',isVowel:false,words:[{e:'🐕',w:'Dog'},{e:'🦆',w:'Duck'},{e:'🍩',w:'Donut'},{e:'🥁',w:'Drum'}],fact:'D is for the drum that goes boom!'},
+      E:{emoji:'🥚',sound:'Eh',isVowel:true, words:[{e:'🥚',w:'Egg'},{e:'🐘',w:'Elephant'},{e:'🦅',w:'Eagle'},{e:'👂',w:'Ear'}],fact:'E is the most common letter in English!'},
+      F:{emoji:'🐸',sound:'Fff',isVowel:false,words:[{e:'🐸',w:'Frog'},{e:'🐟',w:'Fish'},{e:'🌸',w:'Flower'},{e:'🦊',w:'Fox'}],fact:'F makes a soft "fff" like a whisper!'},
+      G:{emoji:'🍇',sound:'Guh',isVowel:false,words:[{e:'🍇',w:'Grapes'},{e:'🦒',w:'Giraffe'},{e:'🎁',w:'Gift'},{e:'🐐',w:'Goat'}],fact:'G can be hard (goat) or soft (giraffe)!'},
+      H:{emoji:'🏠',sound:'Huh',isVowel:false,words:[{e:'🏠',w:'House'},{e:'🎩',w:'Hat'},{e:'🐴',w:'Horse'},{e:'🍯',w:'Honey'}],fact:'H is for Honey — Buzz loves it!'},
+      I:{emoji:'🍦',sound:'Ih',isVowel:true, words:[{e:'🍦',w:'Ice cream'},{e:'🧊',w:'Ice'},{e:'🦎',w:'Iguana'},{e:'🏝️',w:'Island'}],fact:'I is a vowel — and the shortest word too!'},
+      J:{emoji:'🧃',sound:'Juh',isVowel:false,words:[{e:'🧃',w:'Juice'},{e:'🐆',w:'Jaguar'},{e:'🫙',w:'Jar'},{e:'👖',w:'Jeans'}],fact:'J is for a jug of juice!'},
+      K:{emoji:'🪁',sound:'Kuh',isVowel:false,words:[{e:'🪁',w:'Kite'},{e:'🔑',w:'Key'},{e:'🦘',w:'Kangaroo'},{e:'👑',w:'King'}],fact:'K and C can sound the same!'},
+      L:{emoji:'🦁',sound:'Lll',isVowel:false,words:[{e:'🦁',w:'Lion'},{e:'🍋',w:'Lemon'},{e:'🍃',w:'Leaf'},{e:'💡',w:'Lamp'}],fact:'L is for the lion that roars!'},
+      M:{emoji:'🌙',sound:'Mmm',isVowel:false,words:[{e:'🌙',w:'Moon'},{e:'🐵',w:'Monkey'},{e:'🍄',w:'Mushroom'},{e:'🥛',w:'Milk'}],fact:'M is the sound you make for yummy — mmm!'},
+      N:{emoji:'👃',sound:'Nnn',isVowel:false,words:[{e:'👃',w:'Nose'},{e:'🥜',w:'Nut'},{e:'🪺',w:'Nest'},{e:'🔢',w:'Number'}],fact:'N is for your nose on your face!'},
+      O:{emoji:'🐙',sound:'Oh',isVowel:true, words:[{e:'🐙',w:'Octopus'},{e:'🍊',w:'Orange'},{e:'🦉',w:'Owl'},{e:'🧅',w:'Onion'}],fact:'O is a vowel shaped like a circle!'},
+      P:{emoji:'🐧',sound:'Puh',isVowel:false,words:[{e:'🐧',w:'Penguin'},{e:'🍕',w:'Pizza'},{e:'🐷',w:'Pig'},{e:'🍐',w:'Pear'}],fact:'P pops your lips — puh puh puh!'},
+      Q:{emoji:'👑',sound:'Kwuh',isVowel:false,words:[{e:'👑',w:'Queen'},{e:'🪶',w:'Quill'},{e:'🤫',w:'Quiet'},{e:'🛌',w:'Quilt'}],fact:'Q almost always brings its friend U!'},
+      R:{emoji:'🌈',sound:'Rrr',isVowel:false,words:[{e:'🌈',w:'Rainbow'},{e:'🐰',w:'Rabbit'},{e:'🚀',w:'Rocket'},{e:'🌹',w:'Rose'}],fact:'R is the sound a tiger makes — rrr!'},
+      S:{emoji:'☀️',sound:'Sss',isVowel:false,words:[{e:'☀️',w:'Sun'},{e:'🐍',w:'Snake'},{e:'⭐',w:'Star'},{e:'🍓',w:'Strawberry'}],fact:'S hisses like a snake — sssss!'},
+      T:{emoji:'🐯',sound:'Tuh',isVowel:false,words:[{e:'🐯',w:'Tiger'},{e:'🌳',w:'Tree'},{e:'🚂',w:'Train'},{e:'🐢',w:'Turtle'}],fact:'T is for the tall tree!'},
+      U:{emoji:'☂️',sound:'Uh',isVowel:true, words:[{e:'☂️',w:'Umbrella'},{e:'🦄',w:'Unicorn'},{e:'🛸',w:'UFO'},{e:'🆙',w:'Up'}],fact:'U is a vowel shaped like a cup!'},
+      V:{emoji:'🎻',sound:'Vvv',isVowel:false,words:[{e:'🎻',w:'Violin'},{e:'🌋',w:'Volcano'},{e:'🚐',w:'Van'},{e:'🌿',w:'Vine'}],fact:'V makes your lips buzz — vvv!'},
+      W:{emoji:'🐋',sound:'Wuh',isVowel:false,words:[{e:'🐋',w:'Whale'},{e:'🍉',w:'Watermelon'},{e:'⌚',w:'Watch'},{e:'🌊',w:'Wave'}],fact:'W is called "double-U"!'},
+      X:{emoji:'🎵',sound:'Ks',isVowel:false,words:[{e:'🎵',w:'Xylophone'},{e:'🩻',w:'X-ray'},{e:'❌',w:'X mark'},{e:'📦',w:'Box (ends in x)'}],fact:'X usually sounds like "ks" at the end!'},
+      Y:{emoji:'🪀',sound:'Yuh',isVowel:false,words:[{e:'🪀',w:'Yo-yo'},{e:'💛',w:'Yellow'},{e:'🧶',w:'Yarn'},{e:'🥱',w:'Yawn'}],fact:'Y can be a sound AND sometimes a vowel!'},
+      Z:{emoji:'🦓',sound:'Zzz',isVowel:false,words:[{e:'🦓',w:'Zebra'},{e:'0️⃣',w:'Zero'},{e:'⚡',w:'Zigzag'},{e:'🤐',w:'Zip'}],fact:'Z is the very LAST letter — and it buzzes like Buzz!'}
+    }
+  };
+
+  const ALPHABET = Object.keys(LESSON_CONFIG.letters); // A..Z
+
+  // ── STATE ──
+  let currentStage='seedling', currentLetter='A';
+  let xp=0, starsEarned=0, currentCard=0, currentQuestion=0, answered=false;
+  let isTyping=false, isListening=false, recognition=null, quizSet=[];
+  let chatHistory=[];
+  const MAX_XP=100;
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    buildLetterStrip();
+    loadLetter('A');
+  });
+
+  // ── LETTER STRIP ──
+  function buildLetterStrip(){
+    const strip=document.getElementById('letterStrip');
+    strip.innerHTML='';
+    ALPHABET.forEach(L=>{
+      const b=document.createElement('button');
+      b.className='letter-key'+(L===currentLetter?' active':'');
+      b.id='key-'+L;
+      b.textContent=L;
+      b.onclick=()=>loadLetter(L);
+      if(isLetterDone(L)) b.classList.add('done');
+      strip.appendChild(b);
+    });
+  }
+
+  function loadLetter(L){
+    currentLetter=L;
+    document.querySelectorAll('.letter-key').forEach(k=>k.classList.remove('active'));
+    document.getElementById('key-'+L)?.classList.add('active');
+    // reset per-letter state
+    xp=0; starsEarned=0; currentCard=0; currentQuestion=0; answered=false;
+    document.querySelectorAll('.star').forEach(s=>s.classList.remove('earned'));
+    applyStage(currentStage);
+    buildQuiz();
+    renderQuiz();
+    updateCard();
+    loadProgress();
+  }
+
+  function nextLetter(){
+    const i=ALPHABET.indexOf(currentLetter);
+    if(i<ALPHABET.length-1) loadLetter(ALPHABET[i+1]);
+  }
+
+  // ── STAGE ──
+  function setStage(stage,btn){
+    document.querySelectorAll('.stage-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    currentStage=stage;
+    applyStage(stage);
+    buildQuiz(); renderQuiz(); updateCard(); loadProgress();
+  }
+
+  function applyStage(stage){
+    const s=LESSON_CONFIG.stages[stage];
+    const d=LESSON_CONFIG.letters[currentLetter];
+    const idx=ALPHABET.indexOf(currentLetter)+1;
+    document.getElementById('stageBadge').textContent=s.label;
+    document.getElementById('ageBadge').textContent=s.age;
+    document.getElementById('letterBadge').textContent='Letter '+idx+' of 26';
+    document.getElementById('childAvatarNav').textContent=s.avatar;
+    document.getElementById('lessonTitle').textContent='The Letter '+currentLetter;
+    document.getElementById('subjectIcon').textContent=d.emoji;
+    document.getElementById('storyIllustration').textContent=d.emoji;
+    document.getElementById('storyText').innerHTML=s.story(currentLetter,d);
+    document.getElementById('wsTitle').textContent='Letter '+currentLetter+' Worksheet';
+    document.getElementById('wsStage').textContent=s.label.replace(/^[^\s]+\s/,'');
+    document.getElementById('progressLabel').textContent='Letter '+currentLetter+' Progress';
+    // Buzz reset + quick prompts
+    buildQuickPrompts();
+    chatHistory=[];
+    const chat=document.getElementById('chatMessages'); chat.innerHTML='';
+    const greet=stage==='seedling'
+      ? `Bzzz! 🐝 Hi! Let's learn the letter <strong>${currentLetter}</strong>! ${d.emoji} It says "${d.sound}"! Tap a chip or talk to me!`
+      : `Hi explorer! 🐝 Today we're learning the letter <strong>${currentLetter}</strong> — it makes the "${d.sound}" sound. Ask me anything about ${currentLetter}!`;
+    addMessage('buzz',greet);
+  }
+
+  function buildQuickPrompts(){
+    const d=LESSON_CONFIG.letters[currentLetter];
+    const el=document.getElementById('quickPrompts');
+    el.innerHTML='';
+    const chips=[
+      {t:`🔊 ${currentLetter} sound`, m:`Say the ${currentLetter} sound for me!`},
+      {t:`💬 ${currentLetter} word`,  m:`Give me a fun word that starts with ${currentLetter}!`},
+      {t:'🌟 Fun fact',               m:`Tell me a fun fact about the letter ${currentLetter}`},
+      {t:'🟢 Easier',                 m:'Can you explain that in an easier way?'},
+      {t:'🔴 Harder',                 m:'Can you make it a bit harder for me?'}
+    ];
+    chips.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='quick-chip'; b.textContent=c.t;
+      b.onclick=()=>sendQuick(c.m);
+      el.appendChild(b);
+    });
+  }
+
+  // ── XP + STARS ──
+  function awardXP(a){
+    xp=Math.min(xp+a,MAX_XP);
+    document.getElementById('xpBadge').textContent=xp+' 🍯';
+    document.getElementById('progressFill').style.width=xp+'%';
+    saveProgress();
+    if(xp>=MAX_XP) showCompletion();
+  }
+  function awardStar(n){
+    if(starsEarned<n){
+      starsEarned=n;
+      for(let i=1;i<=n;i++) document.getElementById('s'+i)?.classList.add('earned');
+      saveProgress();
+    }
+  }
+
+  // ── TABS ──
+  function switchTab(tab,btn){
+    document.querySelectorAll('.activity-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.activity-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+tab).classList.add('active');
+  }
+
+  // ── FLASHCARDS ──
+  function updateCard(){
+    const cards=LESSON_CONFIG.letters[currentLetter].words;
+    currentCard=Math.min(currentCard,cards.length-1);
+    const c=cards[currentCard];
+    document.getElementById('cardEmoji').textContent=c.e;
+    document.getElementById('cardWord').textContent=c.w.toUpperCase();
+    document.getElementById('cardBackText').innerHTML=
+      `<strong style="color:var(--amber)">${currentLetter}</strong> is for<br><em style="color:var(--moss)">${c.w}</em> ${c.e}<br>${currentLetter}–${currentLetter}–${c.w}!`;
+    document.getElementById('cardCounter').textContent=(currentCard+1)+' / '+cards.length;
+    document.getElementById('flashcard').classList.remove('flipped');
+  }
+  function flipCard(){document.getElementById('flashcard').classList.toggle('flipped');awardXP(3);}
+  function nextCard(){
+    const cards=LESSON_CONFIG.letters[currentLetter].words;
+    currentCard=(currentCard+1)%cards.length;
+    if(currentCard===0) awardStar(2);
+    awardXP(5); updateCard();
+  }
+  function prevCard(){
+    const cards=LESSON_CONFIG.letters[currentLetter].words;
+    currentCard=(currentCard-1+cards.length)%cards.length;
+    updateCard();
+  }
+
+  // ── QUIZ (generated per letter) ──
+  function buildQuiz(){
+    const L=currentLetter, d=LESSON_CONFIG.letters[L];
+    // distractor words from OTHER letters
+    const others=ALPHABET.filter(x=>x!==L).flatMap(x=>LESSON_CONFIG.letters[x].words.map(w=>({...w,from:x})));
+    const pick=n=>{const a=[...others].sort(()=>Math.random()-0.5);return a.slice(0,n);}
+    const shuffle=arr=>arr.sort(()=>Math.random()-0.5);
+
+    const q1d=pick(3);
+    const q1={question:`Which picture starts with ${L}?`,image:'🤔',
+      options:shuffle([{e:d.words[0].e,l:d.words[0].w,c:true},...q1d.map(x=>({e:x.e,l:x.w,c:false}))])};
+
+    const q2d=pick(3);
+    const q2={question:`Which word starts with the letter ${L}?`,image:d.emoji,
+      options:shuffle([{e:d.words[1]?d.words[1].e:d.words[0].e,l:d.words[1]?d.words[1].w:d.words[0].w,c:true},...q2d.map(x=>({e:x.e,l:x.w,c:false}))])};
+
+    const wrongLetters=shuffle(ALPHABET.filter(x=>x!==L)).slice(0,3);
+    const q3={question:`Find the letter ${L}!`,image:'🔤',
+      options:shuffle([{e:L,l:'Letter '+L,c:true},...wrongLetters.map(x=>({e:x,l:'Letter '+x,c:false}))])};
+
+    quizSet=[q1,q2,q3];
+  }
+
+  function renderQuiz(){
+    if(currentQuestion>=quizSet.length){
+      document.getElementById('quizQuestion').textContent='🎉 Quiz complete! Great job!';
+      document.getElementById('quizOptions').innerHTML='';
+      document.getElementById('quizImage').textContent='🏆';
+      document.getElementById('nextQBtn').disabled=true;
+      awardStar(3); awardXP(30);
+      return;
+    }
+    const q=quizSet[currentQuestion];
+    document.getElementById('quizQuestion').textContent=q.question;
+    document.getElementById('quizImage').textContent=q.image;
+    document.getElementById('quizFeedback').textContent='';
+    document.getElementById('nextQBtn').disabled=true;
+    answered=false;
+    const optEl=document.getElementById('quizOptions'); optEl.innerHTML='';
+    q.options.forEach(opt=>{
+      const b=document.createElement('button');
+      b.className='quiz-option';
+      b.innerHTML=`<span class="opt-emoji">${opt.e}</span>${opt.l}`;
+      b.onclick=()=>answerQuiz(b,opt.c);
+      optEl.appendChild(b);
+    });
+  }
+  function answerQuiz(btn,correct){
+    if(answered) return; answered=true;
+    const fb=document.getElementById('quizFeedback');
+    if(correct){
+      btn.classList.add('correct');
+      fb.className='quiz-feedback feedback-correct';
+      fb.textContent='⭐ Correct! Buzz is buzzing with joy! 🐝';
+      awardXP(15);
+    }else{
+      btn.classList.add('wrong');
+      fb.className='quiz-feedback feedback-wrong';
+      fb.textContent='Not quite — keep trying, you\'ve got this! 💛';
+      document.querySelectorAll('.quiz-option').forEach((b,i)=>{if(quizSet[currentQuestion].options[i]?.c)b.classList.add('correct');});
+    }
+    document.getElementById('nextQBtn').disabled=false;
+  }
+  function nextQuestion(){currentQuestion++;renderQuiz();}
+
+  // ── BUZZ CHAT ──
+  function addMessage(role,html){
+    const chat=document.getElementById('chatMessages');
+    const div=document.createElement('div');
+    div.className='msg '+role;
+    div.innerHTML=`<div class="msg-avatar">${role==='buzz'?'🐝':'👤'}</div><div class="msg-bubble">${html}</div>`;
+    chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
+    if(role==='user') chatHistory.push({role:'user',content:html.replace(/<[^>]+>/g,'')});
+  }
+  function showTyping(){
+    const chat=document.getElementById('chatMessages');
+    const div=document.createElement('div'); div.className='msg buzz'; div.id='typingIndicator';
+    div.innerHTML=`<div class="msg-avatar">🐝</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+    chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
+  }
+  function removeTyping(){document.getElementById('typingIndicator')?.remove();}
+
+  async function sendMessage(){
+    const input=document.getElementById('chatInput');
+    const text=input.value.trim();
+    if(!text||isTyping) return;
+    input.value=''; input.style.height='auto';
+    addMessage('user',text);
+    isTyping=true; document.getElementById('sendBtn').disabled=true;
+    showTyping();
+    const s=LESSON_CONFIG.stages[currentStage];
+    const d=LESSON_CONFIG.letters[currentLetter];
+    const messages=[...chatHistory.slice(-8),{role:'user',content:text}];
+    try{
+      // NOTE: points at your secured Vercel proxy (api/claude-proxy.js)
+      const res=await fetch('/api/claude-proxy',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({system:s.prompt(currentLetter,d),messages,max_tokens:200})
+      });
+      const data=await res.json();
+      const reply=data?.content?.[0]?.text || data?.reply || "Bzzz! 🐝 Let me think about that...";
+      removeTyping(); addMessage('buzz',reply);
+      chatHistory.push({role:'assistant',content:reply});
+      awardXP(5);
+    }catch(err){
+      removeTyping();
+      addMessage('buzz',"Bzzz! 🐝 My wings are a little tired — try again in a moment!");
+      console.error(err);
+    }
+    isTyping=false; document.getElementById('sendBtn').disabled=false;
+  }
+  function sendQuick(t){document.getElementById('chatInput').value=t;sendMessage();}
+  function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+  function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+  // ── VOICE ──
+  function toggleVoice(){
+    if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
+      addMessage('buzz',"🐝 Your browser doesn't support voice yet — try Chrome or Safari!");return;
+    }
+    const btn=document.getElementById('voiceBtn');
+    if(isListening){recognition?.stop();isListening=false;btn.classList.remove('listening');btn.textContent='🎤';return;}
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR(); recognition.lang='en-US'; recognition.interimResults=false; recognition.maxAlternatives=1;
+    recognition.onstart=()=>{isListening=true;btn.classList.add('listening');btn.textContent='🔴';};
+    recognition.onresult=e=>{document.getElementById('chatInput').value=e.results[0][0].transcript;isListening=false;btn.classList.remove('listening');btn.textContent='🎤';sendMessage();};
+    recognition.onerror=()=>{isListening=false;btn.classList.remove('listening');btn.textContent='🎤';};
+    recognition.onend=()=>{isListening=false;btn.classList.remove('listening');btn.textContent='🎤';};
+    recognition.start();
+  }
+
+  // ── COMPLETION ──
+  function showCompletion(){
+    document.getElementById('modalSubtitle').innerHTML=`You finished the letter <strong>${currentLetter}</strong>!<br>Buzz the Bee is so proud of you!`;
+    document.getElementById('completionModal').classList.add('visible');
+    document.getElementById('key-'+currentLetter)?.classList.add('done');
+    saveProgress(true);
+  }
+  function closeModal(){document.getElementById('completionModal').classList.remove('visible');}
+
+  // ── PROGRESS (localStorage; swap for Supabase on Day 18) ──
+  function progressKey(L=currentLetter,stage=currentStage){return `lh_progress_alphabet_${L}_${stage}`;}
+  function saveProgress(completed=false){
+    try{localStorage.setItem(progressKey(),JSON.stringify({xp,starsEarned,completed,ts:Date.now()}));}catch(e){}
+  }
+  function loadProgress(){
+    document.getElementById('xpBadge').textContent='0 🍯';
+    document.getElementById('progressFill').style.width='0%';
+    document.querySelectorAll('.star').forEach(s=>s.classList.remove('earned'));
+    xp=0; starsEarned=0;
+    try{
+      const raw=localStorage.getItem(progressKey()); if(!raw) return;
+      const data=JSON.parse(raw);
+      xp=data.xp||0; starsEarned=data.starsEarned||0;
+      document.getElementById('xpBadge').textContent=xp+' 🍯';
+      document.getElementById('progressFill').style.width=xp+'%';
+      for(let i=1;i<=starsEarned;i++) document.getElementById('s'+i)?.classList.add('earned');
+    }catch(e){}
+  }
+  function isLetterDone(L){
+    return ['seedling','sprout','blossom','bloom'].some(st=>{
+      try{const r=localStorage.getItem(progressKey(L,st));return r&&JSON.parse(r).completed;}catch(e){return false;}
+    });
+  }
+
+  // ── PRINTABLE WORKSHEET (built dynamically per letter) ──
+  function buildWorksheet(){
+    const L=currentLetter, d=LESSON_CONFIG.letters[L], s=LESSON_CONFIG.stages[currentStage];
+    const circleSet=[L,'B',L,'C',L].map(x=>x===L?L:x); // mix of target + distractors
+    const matchItems=d.words.slice(0,4);
+    document.getElementById('print-worksheet').innerHTML=`
+      <div class="ws-print-header">
+        <div class="ws-print-logo">🐝</div>
+        <div>
+          <div class="ws-print-title">LearnHives — Letter ${L} Worksheet</div>
+          <div class="ws-print-sub">${s.label} · ${s.age} · sound "${d.sound}"</div>
+        </div>
+      </div>
+      <div class="ws-name-line">
+        <div class="ws-name-field">Name: _______________</div>
+        <div class="ws-name-field">Date: _______________</div>
+        <div class="ws-name-field">🌟 Stars: _______________</div>
+      </div>
+      <div class="ws-section">
+        <div class="ws-section-title">1. Trace the letter ${L}</div>
+        <div class="ws-trace-row">
+          <div class="ws-trace-box" style="color:#E8C070;border-style:dotted;">${L}</div>
+          <div class="ws-trace-box"></div><div class="ws-trace-box"></div>
+          <div class="ws-trace-box"></div><div class="ws-trace-box"></div>
+        </div>
+      </div>
+      <div class="ws-section">
+        <div class="ws-section-title">2. Circle every letter ${L}</div>
+        <div class="ws-circle-answer">
+          ${[L,'B',L,'D',L,'A',L].map(x=>`<div class="ws-answer-item">${x}<div class="ws-answer-label">&nbsp;</div></div>`).join('')}
+        </div>
+      </div>
+      <div class="ws-section">
+        <div class="ws-section-title">3. Draw something that starts with ${L}</div>
+        <div style="border:2px dashed #F5A623;border-radius:16px;height:120px;display:flex;align-items:center;justify-content:center;color:#B08848;font-size:15px;">
+          Draw a picture of <strong style="color:#D4700A;margin:0 4px">${d.words[0].w}</strong> ${d.words[0].e} here! 🎨
+        </div>
+      </div>
+      <div class="ws-section">
+        <div class="ws-section-title">4. ${L} words — say each one out loud!</div>
+        <div class="ws-circle-answer">
+          ${matchItems.map(w=>`<div class="ws-answer-item">${w.e}<div class="ws-answer-label">${w.w}</div></div>`).join('')}
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px;color:#B08848;font-size:13px;border-top:1px solid #E8C070;padding-top:12px;">
+        🐝 LearnHives · learnhives.com · Great work, little learner! 🌟
+      </div>`;
+  }
+</script>
+</body>
+</html>
