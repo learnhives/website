@@ -166,6 +166,10 @@
     .voice-btn:hover{background:var(--sky);}
     .voice-btn.listening{background:#FFEBEE;border-color:#EF9A9A;animation:voicePulse .8s ease infinite;}
     @keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(239,154,154,0.5)}50%{box-shadow:0 0 0 8px rgba(239,154,154,0)}}
+    .listen-btn{display:inline-flex;align-items:center;gap:6px;background:var(--sky-pale);border:2px solid var(--sky);border-radius:var(--radius-pill);padding:10px 24px;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:700;color:#1E6EA6;cursor:pointer;transition:all .18s;}
+    .listen-btn:hover{background:var(--sky);color:white;transform:translateY(-2px);}
+    .listen-btn.speaking{background:#EDF7FD;animation:voicePulse .8s ease infinite;}
+    .story-actions{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;align-items:center;}
     .quick-prompts{padding:10px 16px 0;display:flex;flex-wrap:wrap;gap:6px;background:white;}
     .quick-chip{background:var(--honey-pale);border:1.5px solid var(--honey-light);border-radius:var(--radius-pill);padding:5px 12px;font-size:13px;font-weight:700;color:var(--amber);cursor:pointer;transition:all .16s;}
     .quick-chip:hover{background:var(--honey-light);color:var(--amber-dark);}
@@ -300,18 +304,12 @@
     <div class="activity-panel">
       <div class="panel-card">
         <div class="activity-tabs">
-          <button class="activity-tab active" onclick="switchTab('story',this)">📖 Story</button>
-          <button class="activity-tab" onclick="switchTab('cards',this)">🃏 Cards</button>
+          <button class="activity-tab active" onclick="switchTab('cards',this)">🃏 Cards</button>
           <button class="activity-tab" onclick="switchTab('quiz',this)">🎯 Quiz</button>
+          <button class="activity-tab" onclick="switchTab('story',this)">📖 Story</button>
         </div>
 
-        <div class="activity-content active" id="tab-story">
-          <div class="story-illustration" id="storyIllustration">🍎</div>
-          <div class="story-text" id="storyText"></div>
-          <button class="next-q-btn" style="margin-top:20px" onclick="awardXP(10);awardStar(1)">I read it! ✅</button>
-        </div>
-
-        <div class="activity-content" id="tab-cards">
+        <div class="activity-content active" id="tab-cards">
           <div class="flashcard-area">
             <div class="flashcard" id="flashcard" onclick="flipCard()">
               <div class="flashcard-inner">
@@ -340,6 +338,15 @@
           <div class="quiz-options" id="quizOptions"></div>
           <div class="quiz-feedback" id="quizFeedback"></div>
           <button class="next-q-btn" id="nextQBtn" disabled onclick="nextQuestion()">Next Question →</button>
+        </div>
+
+        <div class="activity-content" id="tab-story">
+          <div class="story-illustration" id="storyIllustration">🍎</div>
+          <div class="story-text" id="storyText"></div>
+          <div class="story-actions">
+            <button class="listen-btn" id="listenBtn" onclick="listenStory()">🔊 Listen</button>
+            <button class="next-q-btn" style="margin:0" onclick="finishStory()">I read it! ✅</button>
+          </div>
         </div>
       </div>
 
@@ -446,14 +453,15 @@
 
   // ── STATE ──
   let currentStage='seedling', currentLetter='A';
-  let xp=0, starsEarned=0, currentCard=0, currentQuestion=0, answered=false;
+  let currentCard=0, currentQuestion=0, answered=false;
   let isTyping=false, isListening=false, recognition=null, quizSet=[];
   let chatHistory=[];
-  const MAX_XP=100;
+  let seenCards=new Set(), answeredQuestions=new Set(), storyDone=false, completionShown=false;
 
   document.addEventListener('DOMContentLoaded',()=>{
     buildLetterStrip();
     loadLetter('A');
+    window.onbeforeprint = buildWorksheet;
   });
 
   // ── LETTER STRIP ──
@@ -475,13 +483,13 @@
     currentLetter=L;
     document.querySelectorAll('.letter-key').forEach(k=>k.classList.remove('active'));
     document.getElementById('key-'+L)?.classList.add('active');
-    // reset per-letter state
-    xp=0; starsEarned=0; currentCard=0; currentQuestion=0; answered=false;
+    currentCard=0; currentQuestion=0; answered=false; completionShown=false;
     document.querySelectorAll('.star').forEach(s=>s.classList.remove('earned'));
     applyStage(currentStage);
     buildQuiz();
     renderQuiz();
     updateCard();
+    buildWorksheet();
     loadProgress();
   }
 
@@ -495,8 +503,9 @@
     document.querySelectorAll('.stage-tab').forEach(t=>t.classList.remove('active'));
     btn.classList.add('active');
     currentStage=stage;
+    completionShown=false;
     applyStage(stage);
-    buildQuiz(); renderQuiz(); updateCard(); loadProgress();
+    buildQuiz(); renderQuiz(); updateCard(); buildWorksheet(); loadProgress();
   }
 
   function applyStage(stage){
@@ -543,20 +552,22 @@
     });
   }
 
-  // ── XP + STARS ──
-  function awardXP(a){
-    xp=Math.min(xp+a,MAX_XP);
+  // ── PROGRESS (state-based) ──
+  function recomputeProgress(){
+    const totalCards=LESSON_CONFIG.letters[currentLetter].words.length;
+    const totalQuestions=quizSet.length||1;
+    const xp=Math.round(
+      (seenCards.size/totalCards)*40+
+      (answeredQuestions.size/totalQuestions)*40+
+      (storyDone?1:0)*20
+    );
     document.getElementById('xpBadge').textContent=xp+' 🍯';
     document.getElementById('progressFill').style.width=xp+'%';
+    document.getElementById('s1')?.classList.toggle('earned',storyDone);
+    document.getElementById('s2')?.classList.toggle('earned',seenCards.size>=totalCards);
+    document.getElementById('s3')?.classList.toggle('earned',answeredQuestions.size>=totalQuestions);
     saveProgress();
-    if(xp>=MAX_XP) showCompletion();
-  }
-  function awardStar(n){
-    if(starsEarned<n){
-      starsEarned=n;
-      for(let i=1;i<=n;i++) document.getElementById('s'+i)?.classList.add('earned');
-      saveProgress();
-    }
+    if(xp>=100&&!completionShown){completionShown=true;showCompletion();}
   }
 
   // ── TABS ──
@@ -579,17 +590,20 @@
     document.getElementById('cardCounter').textContent=(currentCard+1)+' / '+cards.length;
     document.getElementById('flashcard').classList.remove('flipped');
   }
-  function flipCard(){document.getElementById('flashcard').classList.toggle('flipped');awardXP(3);}
+  function flipCard(){document.getElementById('flashcard').classList.toggle('flipped');}
   function nextCard(){
     const cards=LESSON_CONFIG.letters[currentLetter].words;
     currentCard=(currentCard+1)%cards.length;
-    if(currentCard===0) awardStar(2);
-    awardXP(5); updateCard();
+    updateCard();
+    seenCards.add(currentCard);
+    recomputeProgress();
   }
   function prevCard(){
     const cards=LESSON_CONFIG.letters[currentLetter].words;
     currentCard=(currentCard-1+cards.length)%cards.length;
     updateCard();
+    seenCards.add(currentCard);
+    recomputeProgress();
   }
 
   // ── QUIZ (generated per letter) ──
@@ -621,7 +635,6 @@
       document.getElementById('quizOptions').innerHTML='';
       document.getElementById('quizImage').textContent='🏆';
       document.getElementById('nextQBtn').disabled=true;
-      awardStar(3); awardXP(30);
       return;
     }
     const q=quizSet[currentQuestion];
@@ -646,7 +659,6 @@
       btn.classList.add('correct');
       fb.className='quiz-feedback feedback-correct';
       fb.textContent='⭐ Correct! Buzz is buzzing with joy! 🐝';
-      awardXP(15);
     }else{
       btn.classList.add('wrong');
       fb.className='quiz-feedback feedback-wrong';
@@ -654,8 +666,25 @@
       document.querySelectorAll('.quiz-option').forEach((b,i)=>{if(quizSet[currentQuestion].options[i]?.c)b.classList.add('correct');});
     }
     document.getElementById('nextQBtn').disabled=false;
+    answeredQuestions.add(currentQuestion);
+    recomputeProgress();
   }
   function nextQuestion(){currentQuestion++;renderQuiz();}
+
+  // ── STORY ──
+  function listenStory(){
+    const text=(document.getElementById('storyText').innerText||'').trim();
+    window.speechSynthesis.cancel();
+    const utter=new SpeechSynthesisUtterance(text);
+    utter.lang='en-US'; utter.rate=0.9;
+    const btn=document.getElementById('listenBtn');
+    if(btn){btn.classList.add('speaking');btn.textContent='🔊 Speaking...';}
+    utter.onend=utter.onerror=()=>{if(btn){btn.classList.remove('speaking');btn.textContent='🔊 Listen';}};
+    window.speechSynthesis.speak(utter);
+    storyDone=true;
+    recomputeProgress();
+  }
+  function finishStory(){storyDone=true;recomputeProgress();}
 
   // ── BUZZ CHAT ──
   function addMessage(role,html){
@@ -696,7 +725,6 @@
       const reply=data?.content?.[0]?.text || data?.reply || "Bzzz! 🐝 Let me think about that...";
       removeTyping(); addMessage('buzz',reply);
       chatHistory.push({role:'assistant',content:reply});
-      awardXP(5);
     }catch(err){
       removeTyping();
       addMessage('buzz',"Bzzz! 🐝 My wings are a little tired — try again in a moment!");
@@ -736,21 +764,23 @@
   // ── PROGRESS (localStorage; swap for Supabase on Day 18) ──
   function progressKey(L=currentLetter,stage=currentStage){return `lh_progress_alphabet_${L}_${stage}`;}
   function saveProgress(completed=false){
-    try{localStorage.setItem(progressKey(),JSON.stringify({xp,starsEarned,completed,ts:Date.now()}));}catch(e){}
+    try{localStorage.setItem(progressKey(),JSON.stringify({
+      seenCards:[...seenCards],answeredQuestions:[...answeredQuestions],storyDone,completed,ts:Date.now()
+    }));}catch(e){}
   }
   function loadProgress(){
-    document.getElementById('xpBadge').textContent='0 🍯';
-    document.getElementById('progressFill').style.width='0%';
-    document.querySelectorAll('.star').forEach(s=>s.classList.remove('earned'));
-    xp=0; starsEarned=0;
+    seenCards=new Set(); answeredQuestions=new Set(); storyDone=false;
     try{
-      const raw=localStorage.getItem(progressKey()); if(!raw) return;
-      const data=JSON.parse(raw);
-      xp=data.xp||0; starsEarned=data.starsEarned||0;
-      document.getElementById('xpBadge').textContent=xp+' 🍯';
-      document.getElementById('progressFill').style.width=xp+'%';
-      for(let i=1;i<=starsEarned;i++) document.getElementById('s'+i)?.classList.add('earned');
+      const raw=localStorage.getItem(progressKey());
+      if(raw){
+        const d=JSON.parse(raw);
+        seenCards=new Set(d.seenCards||[]);
+        answeredQuestions=new Set(d.answeredQuestions||[]);
+        storyDone=d.storyDone||false;
+        if(d.completed) completionShown=true;
+      }
     }catch(e){}
+    recomputeProgress();
   }
   function isLetterDone(L){
     return ['seedling','sprout','blossom','bloom'].some(st=>{
