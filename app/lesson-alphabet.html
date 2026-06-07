@@ -125,9 +125,12 @@
     .quiz-option.correct{background:#E8F5E9;border-color:var(--leaf);color:var(--moss);}
     .quiz-option.wrong{background:#FFEBEE;border-color:#EF9A9A;color:#C62828;}
     .quiz-option .opt-emoji{font-size:28px;display:block;margin-bottom:4px;}
-    .quiz-feedback{text-align:center;margin-top:14px;font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;min-height:32px;}
+    .quiz-feedback{text-align:center;margin-top:14px;font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;min-height:72px;}
     .feedback-correct{color:var(--moss);}
     .feedback-wrong{color:#C62828;}
+    .qfb-emoji{font-size:46px;display:block;line-height:1.1;margin-bottom:2px;}
+    .quiz-option[disabled]{cursor:default;}
+    .quiz-option.correct[disabled],.quiz-option.wrong[disabled]{opacity:1;}
 
     /* BUZZ */
     .buzz-panel{position:sticky;top:16px;display:flex;flex-direction:column;gap:16px;}
@@ -213,6 +216,19 @@
         width: 100%;
       }
     }
+    /* Worksheet page-fit: tighten spacing so one letter = one page */
+    @media print {
+      #print-worksheet { padding: 14px 20px !important; }
+      .ws-letter-section .ws-print-header { margin-bottom: 10px !important; padding-bottom: 10px !important; }
+      .ws-letter-section .ws-print-title { font-size: 22px !important; }
+      .ws-letter-section .ws-name-line { margin-bottom: 8px !important; }
+      .ws-letter-section .ws-section { margin-bottom: 8px !important; }
+      .ws-letter-section .ws-section-title { font-size: 15px !important; margin-bottom: 8px !important; }
+      .ws-letter-section .ws-trace-box { width: 52px !important; height: 52px !important; font-size: 24px !important; }
+      .ws-letter-section .ws-trace-row { gap: 8px !important; }
+      .ws-letter-section .ws-answer-item { font-size: 20px !important; }
+      .ws-letter-section .ws-circle-answer { gap: 10px !important; }
+    }
     #print-worksheet{display:none;font-family:'Fredoka',sans-serif;padding:32px;color:#222;}
     .ws-print-header{display:flex;align-items:center;gap:16px;border-bottom:3px solid #F5A623;padding-bottom:16px;margin-bottom:24px;}
     .ws-print-logo{font-size:40px;}
@@ -262,7 +278,7 @@
         <div class="child-avatar" id="childAvatarNav">🌱</div>
         <span id="childNameNav">Lily</span>
       </div>
-      <button class="print-btn" onclick="buildWorksheet(); window.print()">🖨️ Print Worksheet</button>
+      <button class="print-btn" onclick="printAllLetters()">🖨️ Print A–Z Pack</button>
     </div>
   </nav>
 
@@ -370,7 +386,7 @@
           <span class="ws-page">🔵 Circle</span>
           <span class="ws-page">🔗 Match</span>
         </div>
-        <button class="ws-print-btn" onclick="buildWorksheet(); window.print()">🖨️ Print Worksheet</button>
+        <button class="ws-print-btn" onclick="printCurrentLetter()">🖨️ Print Worksheet</button>
       </div>
     </div>
 
@@ -463,7 +479,7 @@
 
   // ── STATE ──
   let currentStage='seedling', currentLetter='A';
-  let currentCard=0, currentQuestion=0, answered=false;
+  let currentCard=0, currentQuestion=0, answered=false, wrongAttempts=0;
   let isTyping=false, isListening=false, recognition=null, quizSet=[];
   let chatHistory=[];
   let seenCards=new Set(), answeredQuestions=new Set(), storyDone=false, completionShown=false;
@@ -652,7 +668,7 @@
     document.getElementById('quizImage').textContent=q.image;
     document.getElementById('quizFeedback').textContent='';
     document.getElementById('nextQBtn').disabled=true;
-    answered=false;
+    answered=false; wrongAttempts=0;
     const optEl=document.getElementById('quizOptions'); optEl.innerHTML='';
     q.options.forEach(opt=>{
       const b=document.createElement('button');
@@ -662,22 +678,49 @@
       optEl.appendChild(b);
     });
   }
+  function speakQuiz(text){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='en-US'; u.rate=0.9;
+    window.speechSynthesis.speak(u);
+  }
   function answerQuiz(btn,correct){
-    if(answered) return; answered=true;
+    if(btn.disabled) return;
     const fb=document.getElementById('quizFeedback');
     if(correct){
+      // Lock all options and mark answer
+      document.querySelectorAll('.quiz-option').forEach(b=>b.disabled=true);
       btn.classList.add('correct');
       fb.className='quiz-feedback feedback-correct';
-      fb.textContent='⭐ Correct! Buzz is buzzing with joy! 🐝';
+      fb.innerHTML='<span class="qfb-emoji">⭐</span>Yes! That\'s right!';
+      speakQuiz("Yes! That's right!");
+      answered=true;
+      document.getElementById('nextQBtn').disabled=false;
+      answeredQuestions.add(currentQuestion);
+      recomputeProgress();
     }else{
+      // Disable only this wrong option; leave others clickable
+      btn.disabled=true;
       btn.classList.add('wrong');
-      fb.className='quiz-feedback feedback-wrong';
-      fb.textContent='Not quite — keep trying, you\'ve got this! 💛';
-      document.querySelectorAll('.quiz-option').forEach((b,i)=>{if(quizSet[currentQuestion].options[i]?.c)b.classList.add('correct');});
+      wrongAttempts++;
+      if(wrongAttempts>=2){
+        // Reveal: lock all, highlight correct
+        document.querySelectorAll('.quiz-option').forEach((b,i)=>{
+          b.disabled=true;
+          if(quizSet[currentQuestion].options[i]?.c) b.classList.add('correct');
+        });
+        const correctLabel=quizSet[currentQuestion].options.find(o=>o.c)?.l||'';
+        fb.className='quiz-feedback feedback-correct';
+        fb.innerHTML=`<span class="qfb-emoji">✅</span>The answer is ${correctLabel}!`;
+        speakQuiz('The answer is '+correctLabel);
+        answered=true;
+        document.getElementById('nextQBtn').disabled=false;
+      }else{
+        fb.className='quiz-feedback feedback-wrong';
+        fb.innerHTML='<span class="qfb-emoji">🤔</span>Try again!';
+        speakQuiz('Try again!');
+      }
     }
-    document.getElementById('nextQBtn').disabled=false;
-    answeredQuestions.add(currentQuestion);
-    recomputeProgress();
   }
   function nextQuestion(){currentQuestion++;renderQuiz();}
 
@@ -799,11 +842,9 @@
   }
 
   // ── PRINTABLE WORKSHEET (built dynamically per letter) ──
-  function buildWorksheet(){
-    const L=currentLetter, d=LESSON_CONFIG.letters[L], s=LESSON_CONFIG.stages[currentStage];
-    const circleSet=[L,'B',L,'C',L].map(x=>x===L?L:x); // mix of target + distractors
+  function buildLetterHTML(L,d,s,isLast){
     const matchItems=d.words.slice(0,4);
-    document.getElementById('print-worksheet').innerHTML=`
+    return `<div class="ws-letter-section"${isLast?'':' style="page-break-after:always"'}>
       <div class="ws-print-header">
         <div class="ws-print-logo">🐝</div>
         <div>
@@ -832,7 +873,7 @@
       </div>
       <div class="ws-section">
         <div class="ws-section-title">3. Draw something that starts with ${L}</div>
-        <div style="border:2px dashed #F5A623;border-radius:16px;height:120px;display:flex;align-items:center;justify-content:center;color:#B08848;font-size:15px;">
+        <div style="border:2px dashed #F5A623;border-radius:12px;height:90px;display:flex;align-items:center;justify-content:center;color:#B08848;font-size:14px;">
           Draw a picture of <strong style="color:#D4700A;margin:0 4px">${d.words[0].w}</strong> ${d.words[0].e} here! 🎨
         </div>
       </div>
@@ -842,9 +883,29 @@
           ${matchItems.map(w=>`<div class="ws-answer-item">${w.e}<div class="ws-answer-label">${w.w}</div></div>`).join('')}
         </div>
       </div>
-      <div style="text-align:center;margin-top:24px;color:#B08848;font-size:13px;border-top:1px solid #E8C070;padding-top:12px;">
+      <div style="text-align:center;margin-top:12px;color:#B08848;font-size:12px;border-top:1px solid #E8C070;padding-top:8px;">
         🐝 LearnHives · learnhives.com · Great work, little learner! 🌟
-      </div>`;
+      </div>
+    </div>`;
+  }
+  function buildWorksheet(){
+    const L=currentLetter, d=LESSON_CONFIG.letters[L], s=LESSON_CONFIG.stages[currentStage];
+    document.getElementById('print-worksheet').innerHTML=buildLetterHTML(L,d,s,true);
+  }
+  function buildFullWorksheet(){
+    const s=LESSON_CONFIG.stages[currentStage];
+    document.getElementById('print-worksheet').innerHTML=
+      ALPHABET.map((L,i)=>buildLetterHTML(L,LESSON_CONFIG.letters[L],s,i===ALPHABET.length-1)).join('');
+  }
+  function printCurrentLetter(){
+    buildWorksheet();
+    window.onbeforeprint=buildWorksheet;
+    window.print();
+  }
+  function printAllLetters(){
+    buildFullWorksheet();
+    window.onbeforeprint=buildFullWorksheet;
+    window.print();
   }
 </script>
 </body>
