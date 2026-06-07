@@ -556,18 +556,11 @@
     btn.disabled = true;
     btn.textContent = '⏳ Buzz is thinking...';
 
-    const systemPrompt = `You are Buzz the Bee, a warm, enthusiastic, and gentle AI tutor for preschool children aged 2-6, living in the LearnHives educational beehive.
-You explain things using very simple words, short sentences, lots of exclamation points, and child-friendly comparisons.
-You ALWAYS use bee and honey related metaphors where they fit naturally, and you use emojis (🐝🍯🌸⬡) to make it fun.
-You celebrate curiosity and make kids feel amazing. You never use words a 4-year-old wouldn't understand.
-Keep your answer to 3-5 sentences max. Be joyful and encouraging! Occasionally say "Buzz-tastic!" or "How honey-mazing!"`;
-
     try {
       const res = await fetch("/api/claude-proxy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system: systemPrompt,
           messages: [{ role: "user", content: selected }]
         })
       });
@@ -575,7 +568,11 @@ Keep your answer to 3-5 sentences max. Be joyful and encouraging! Occasionally s
       const reply = data.content?.map(c => c.text || '').join('') || "Oops! Buzz needs a honey break. Try again! 🍯";
       loader.classList.remove('show');
       out.style.display = 'block';
-      out.innerHTML = `<span class="ai-label">🐝 Buzz says...</span><div>${reply}</div>`;
+      // Use textContent for the reply so Claude output can never execute as HTML
+      out.innerHTML = '<span class="ai-label">🐝 Buzz says...</span>';
+      const replyDiv = document.createElement('div');
+      replyDiv.textContent = reply;
+      out.appendChild(replyDiv);
     } catch (e) {
       loader.classList.remove('show');
       out.style.display = 'block';

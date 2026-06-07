@@ -194,12 +194,11 @@
     try {
       const res = await fetch('/api/stripe-checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          priceId: PRICE_IDS[plan],
-          userId:  session.user.id,
-          email:   session.user.email,
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ priceId: PRICE_IDS[plan] }),
       })
 
       const data = await res.json()

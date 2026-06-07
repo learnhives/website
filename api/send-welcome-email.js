@@ -9,11 +9,12 @@ module.exports = async (req, res) => {
 
   const { email, name } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ error: 'email is required' });
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'valid email is required' });
   }
 
-  const firstName = (name || 'there').split(' ')[0];
+  const rawFirst = (name || 'there').split(' ')[0].slice(0, 50);
+  const firstName = escapeHtml(rawFirst);
 
   try {
     const { data, error } = await resend.emails.send({
@@ -34,6 +35,15 @@ module.exports = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
 
 function buildEmail(firstName) {
   return `<!DOCTYPE html>
