@@ -202,7 +202,17 @@
     .modal-btn.secondary:hover{background:var(--honey-light);}
 
     /* PRINT */
-    @media print{body>*:not(#print-worksheet){display:none!important;}#print-worksheet{display:block!important;}}
+    @media print {
+      body * { visibility: hidden !important; }
+      #print-worksheet, #print-worksheet * { visibility: visible !important; }
+      #print-worksheet {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
     #print-worksheet{display:none;font-family:'Fredoka',sans-serif;padding:32px;color:#222;}
     .ws-print-header{display:flex;align-items:center;gap:16px;border-bottom:3px solid #F5A623;padding-bottom:16px;margin-bottom:24px;}
     .ws-print-logo{font-size:40px;}
