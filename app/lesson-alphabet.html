@@ -9,12 +9,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
 
   <style>
-    :root {
+    :root, [data-theme="honey"] {
       --honey:#F5A623; --honey-deep:#E8901A; --honey-light:#FFC85A; --honey-pale:#FFF5E0;
       --amber:#D4700A; --amber-dark:#A0500A; --cream:#FFFBF2; --wax:#FEF0C7; --comb:#F9D87E;
       --pollen:#FFE066; --moss:#6B8F3E; --leaf:#88B04B; --sky:#5BB8E8; --sky-pale:#EDF7FD;
       --buzz-bg:#FFF8E7; --text-dark:#3A2A0A; --text-mid:#7A5C1E; --text-soft:#B08848;
       --shadow-warm:0 4px 24px rgba(200,120,20,0.13); --shadow-card:0 2px 16px rgba(180,100,10,0.10);
+      --radius-lg:20px; --radius-xl:32px; --radius-pill:100px;
+    }
+    /* TODO: add more themes here; all will later be selectable from the child's Supabase profile */
+    [data-theme="ocean"] {
+      --honey:#26C6DA; --honey-deep:#00ACC1; --honey-light:#80DEEA; --honey-pale:#E0F7FA;
+      --amber:#0288D1; --amber-dark:#01579B; --cream:#F0FDFF; --wax:#E1F5FE; --comb:#B3E5FC;
+      --pollen:#B2EBF2; --moss:#00695C; --leaf:#26A69A; --sky:#29B6F6; --sky-pale:#E1F5FE;
+      --buzz-bg:#F0FAFF; --text-dark:#0D2137; --text-mid:#1A5276; --text-soft:#2E86C1;
+      --shadow-warm:0 4px 24px rgba(0,150,200,0.13); --shadow-card:0 2px 16px rgba(0,130,180,0.10);
       --radius-lg:20px; --radius-xl:32px; --radius-pill:100px;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -296,13 +305,13 @@
 <div class="modal-overlay" id="completionModal">
   <div class="completion-modal">
     <div class="modal-bees">🐝🌟🍯</div>
-    <div class="modal-title">Amazing Work!</div>
+    <div class="modal-title" data-i18n="modalTitle">Amazing Work!</div>
     <div class="modal-subtitle" id="modalSubtitle">You finished the letter!<br>Buzz the Bee is so proud of you!</div>
-    <div class="modal-xp">+50 Honey Points! 🍯</div>
+    <div class="modal-xp" data-i18n="modalXP">+50 Honey Points! 🍯</div>
     <div class="modal-stars">⭐⭐⭐</div>
     <div class="modal-actions">
-      <button class="modal-btn secondary" onclick="closeModal()">Stay Here</button>
-      <button class="modal-btn primary" onclick="closeModal(); nextLetter()">Next Letter →</button>
+      <button class="modal-btn secondary" onclick="closeModal()" data-i18n="stayHere">Stay Here</button>
+      <button class="modal-btn primary" onclick="closeModal(); nextLetter()" data-i18n="nextLetter">Next Letter →</button>
     </div>
   </div>
 </div>
@@ -312,7 +321,7 @@
   <!-- NAV -->
   <nav class="top-nav">
     <div class="nav-left">
-      <a href="/app/dashboard.html" class="back-btn">← Dashboard</a>
+      <a href="/app/dashboard.html" class="back-btn" data-i18n="backBtn">← Dashboard</a>
       <div class="logo-mark"><span>🐝</span> LearnHives</div>
     </div>
     <div class="nav-right">
@@ -320,7 +329,7 @@
         <div class="child-avatar" id="childAvatarNav">🌱</div>
         <span id="childNameNav">Lily</span>
       </div>
-      <button class="print-btn" onclick="printAllLetters()">🖨️ Print A–Z Pack</button>
+      <button class="print-btn" onclick="printAllLetters()" data-i18n="printPack">🖨️ Print A–Z Pack</button>
     </div>
   </nav>
 
@@ -337,7 +346,7 @@
       </div>
     </div>
     <div class="stage-selector">
-      <div class="stage-label">Age Stage</div>
+      <div class="stage-label" data-i18n="ageStageLabel">Age Stage</div>
       <div class="stage-tabs">
         <button class="stage-tab active" data-stage="seedling" onclick="setStage('seedling',this)">🌱</button>
         <button class="stage-tab" data-stage="sprout"  onclick="setStage('sprout',this)">🌿</button>
@@ -349,7 +358,7 @@
 
   <!-- LETTER STRIP -->
   <div class="letter-strip-wrap">
-    <div class="letter-strip-label">🔤 Pick a letter to learn</div>
+    <div class="letter-strip-label" data-i18n="pickLetter">🔤 Pick a letter to learn</div>
     <div class="letter-strip" id="letterStrip"></div>
   </div>
 
@@ -372,9 +381,9 @@
     <div class="activity-panel">
       <div class="panel-card">
         <div class="activity-tabs">
-          <button class="activity-tab active" onclick="switchTab('cards',this)">🃏 Cards</button>
-          <button class="activity-tab" onclick="switchTab('quiz',this)">🎯 Quiz</button>
-          <button class="activity-tab" onclick="switchTab('story',this)">📖 Story</button>
+          <button class="activity-tab active" onclick="switchTab('cards',this)" data-i18n="tabCards">🃏 Cards</button>
+          <button class="activity-tab" onclick="switchTab('quiz',this)" data-i18n="tabQuiz">🎯 Quiz</button>
+          <button class="activity-tab" onclick="switchTab('story',this)" data-i18n="tabStory">📖 Story</button>
         </div>
 
         <div class="activity-content active" id="tab-cards">
@@ -384,7 +393,7 @@
                 <div class="flashcard-front">
                   <div class="card-emoji" id="cardEmoji">🍎</div>
                   <div class="card-word" id="cardWord">APPLE</div>
-                  <div class="card-hint">Tap to flip!</div>
+                  <div class="card-hint" data-i18n="cardHint">Tap to flip!</div>
                 </div>
                 <div class="flashcard-back">
                   <div style="font-size:36px;margin-bottom:8px;">🔊</div>
@@ -393,9 +402,9 @@
               </div>
             </div>
             <div class="flashcard-nav">
-              <button class="card-btn" onclick="prevCard()">← Prev</button>
+              <button class="card-btn" onclick="prevCard()" data-i18n="prevCard">← Prev</button>
               <span class="card-counter" id="cardCounter">1 / 4</span>
-              <button class="card-btn" onclick="nextCard()">Next →</button>
+              <button class="card-btn" onclick="nextCard()" data-i18n="nextCard">Next →</button>
             </div>
           </div>
         </div>
@@ -405,15 +414,15 @@
           <div class="quiz-question" id="quizQuestion"></div>
           <div class="quiz-options" id="quizOptions"></div>
           <div class="quiz-feedback" id="quizFeedback"></div>
-          <button class="next-q-btn" id="nextQBtn" disabled onclick="nextQuestion()">Next Question →</button>
+          <button class="next-q-btn" id="nextQBtn" disabled onclick="nextQuestion()" data-i18n="nextQuestion">Next Question →</button>
         </div>
 
         <div class="activity-content" id="tab-story">
           <div class="story-illustration" id="storyIllustration">🍎</div>
           <div class="story-text" id="storyText"></div>
           <div class="story-actions">
-            <button class="listen-btn" id="listenBtn" onclick="listenStory()">🔊 Listen</button>
-            <button class="next-q-btn" style="margin:0" onclick="finishStory()">I read it! ✅</button>
+            <button class="listen-btn" id="listenBtn" onclick="listenStory()" data-i18n="listenBtn">🔊 Listen</button>
+            <button class="next-q-btn" style="margin:0" onclick="finishStory()" data-i18n="finishStory">I read it! ✅</button>
           </div>
         </div>
       </div>
@@ -423,12 +432,12 @@
         <div class="worksheet-title" id="wsTitle">Letter A Worksheet</div>
         <div class="worksheet-desc">Printable take-home activity for the <strong id="wsStage">Seedling</strong> stage — tracing, drawing, circling, and matching.</div>
         <div class="worksheet-pages">
-          <span class="ws-page">📝 Trace</span>
-          <span class="ws-page">🎨 Draw</span>
-          <span class="ws-page">🔵 Circle</span>
-          <span class="ws-page">🔗 Match</span>
+          <span class="ws-page" data-i18n="wsPageTrace">📝 Trace</span>
+          <span class="ws-page" data-i18n="wsPageDraw">🎨 Draw</span>
+          <span class="ws-page" data-i18n="wsPageCircle">🔵 Circle</span>
+          <span class="ws-page" data-i18n="wsPageMatch">🔗 Match</span>
         </div>
-        <button class="ws-print-btn" onclick="printCurrentLetter()">🖨️ Print Worksheet</button>
+        <button class="ws-print-btn" onclick="printCurrentLetter()" data-i18n="printWorksheet">🖨️ Print Worksheet</button>
       </div>
     </div>
 
@@ -438,7 +447,7 @@
         <div class="buzz-header">
           <div class="buzz-avatar">🐝</div>
           <div class="buzz-info">
-            <div class="buzz-name">Buzz the Bee</div>
+            <div class="buzz-name" data-i18n="buzzName">Buzz the Bee</div>
             <div class="buzz-status"><div class="status-dot"></div>Ready to help!</div>
           </div>
         </div>
@@ -460,13 +469,51 @@
   const ALPHABET = Object.keys(LESSON_CONFIG.letters); // A..Z
 
   // ── STATE ──
-  // ── STAGE SOURCE ──
-  // TODO: replace this block with child's profile.stage loaded from Supabase
-  //       e.g. const { data: profile } = await db.from('children').select('stage').eq('id', childId).single()
-  //            currentStage = profile?.stage ?? 'seedling'
-  const _params = new URLSearchParams(location.search);
-  const _STAGES = ['seedling','sprout','blossom','bloom'];
+  // ── SETTINGS (stage · lang · theme) ──
+  // TODO: replace URL fallbacks with child's Supabase profile:
+  //       const { data: p } = await db.from('children').select('stage,lang,theme').eq('id',childId).single()
+  //       currentStage = p?.stage ?? 'seedling'; currentLang = p?.lang ?? 'en'; currentTheme = p?.theme ?? 'honey'
+  const _params  = new URLSearchParams(location.search);
+  const _STAGES  = ['seedling','sprout','blossom','bloom'];
+  const _LANGS   = ['en'];
+  const _THEMES  = ['honey','ocean'];
   let currentStage = _STAGES.includes(_params.get('stage')) ? _params.get('stage') : 'seedling';
+  let currentLang  = _LANGS.includes(_params.get('lang'))   ? _params.get('lang')  : 'en';
+  let currentTheme = _THEMES.includes(_params.get('theme')) ? _params.get('theme') : 'honey';
+
+  // ── i18n ──
+  const UI_STRINGS = {
+    en: {
+      backBtn:'← Dashboard',
+      tabCards:'🃏 Cards', tabQuiz:'🎯 Quiz', tabStory:'📖 Story',
+      printPack:'🖨️ Print A–Z Pack',
+      ageStageLabel:'Age Stage',
+      pickLetter:'🔤 Pick a letter to learn',
+      cardHint:'Tap to flip!',
+      prevCard:'← Prev', nextCard:'Next →',
+      nextQuestion:'Next Question →',
+      listenBtn:'🔊 Listen', listenSpeaking:'🔊 Speaking...', finishStory:'I read it! ✅',
+      wsPageTrace:'📝 Trace', wsPageDraw:'🎨 Draw', wsPageCircle:'🔵 Circle', wsPageMatch:'🔗 Match',
+      printWorksheet:'🖨️ Print Worksheet',
+      buzzName:'Buzz the Bee', buzzReady:'Ready to help!',
+      chatPlaceholder:'Ask Buzz anything…',
+      modalTitle:'Amazing Work!', modalXP:'+50 Honey Points! 🍯',
+      stayHere:'Stay Here', nextLetter:'Next Letter →',
+      quizComplete:'🎉 Quiz complete! Great job!',
+      feedbackCorrect:"Yes! That's right!",
+      feedbackTryAgain:'Try again!',
+      feedbackReveal:label=>`The answer is ${label}!`,
+      buzzTired:'Bzzz! 🐝 My wings are a little tired — try again in a moment!',
+      noVoice:"🐝 Your browser doesn't support voice yet — try Chrome or Safari!",
+      letterProgress:L=>`Letter ${L} Progress`,
+      letterTitle:L=>`The Letter ${L}`,
+    }
+  };
+  function t(key,...args){
+    const str=UI_STRINGS[currentLang]?.[key]??UI_STRINGS.en[key];
+    return typeof str==='function'?str(...args):(str??key);
+  }
+
   let currentLetter='A';
   let currentCard=0, currentQuestion=0, answered=false, wrongAttempts=0;
   let isTyping=false, isListening=false, recognition=null, quizSet=[];
@@ -474,11 +521,14 @@
   let seenCards=new Set(), answeredQuestions=new Set(), storyDone=false, completionShown=false;
 
   document.addEventListener('DOMContentLoaded',()=>{
+    document.body.dataset.theme = currentTheme;
+    document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=t(el.dataset.i18n); });
+    document.getElementById('chatInput').placeholder=t('chatPlaceholder');
     // Show stage selector only when ?preview=1 (dev/QA only — never visible to children)
     if(_params.get('preview')==='1'){
       document.body.classList.add('preview-mode');
       // Sync active tab to the loaded stage (in case ?stage= overrides the default)
-      document.querySelectorAll('.stage-tab').forEach(t=>t.classList.toggle('active',t.dataset.stage===currentStage));
+      document.querySelectorAll('.stage-tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.stage===currentStage));
     }
     buildLetterStrip();
     loadLetter('A');
@@ -521,7 +571,7 @@
 
   // ── STAGE ──
   function setStage(stage,btn){
-    document.querySelectorAll('.stage-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.stage-tab').forEach(tab=>tab.classList.remove('active'));
     btn.classList.add('active');
     currentStage=stage;
     completionShown=false;
@@ -537,13 +587,13 @@
     document.getElementById('ageBadge').textContent=s.age;
     document.getElementById('letterBadge').textContent='Letter '+idx+' of 26';
     document.getElementById('childAvatarNav').textContent=s.avatar;
-    document.getElementById('lessonTitle').textContent='The Letter '+currentLetter;
+    document.getElementById('lessonTitle').textContent=t('letterTitle',currentLetter);
     document.getElementById('subjectIcon').textContent=d.emoji;
     document.getElementById('storyIllustration').textContent=d.emoji;
     document.getElementById('storyText').innerHTML=s.story(currentLetter,d);
     document.getElementById('wsTitle').textContent='Letter '+currentLetter+' Worksheet';
     document.getElementById('wsStage').textContent=s.label.replace(/^[^\s]+\s/,'');
-    document.getElementById('progressLabel').textContent='Letter '+currentLetter+' Progress';
+    document.getElementById('progressLabel').textContent=t('letterProgress',currentLetter);
     // Buzz reset + quick prompts
     buildQuickPrompts();
     chatHistory=[];
@@ -652,7 +702,7 @@
 
   function renderQuiz(){
     if(currentQuestion>=quizSet.length){
-      document.getElementById('quizQuestion').textContent='🎉 Quiz complete! Great job!';
+      document.getElementById('quizQuestion').textContent=t('quizComplete');
       document.getElementById('quizOptions').innerHTML='';
       document.getElementById('quizImage').textContent='🏆';
       document.getElementById('nextQBtn').disabled=true;
@@ -687,8 +737,8 @@
       document.querySelectorAll('.quiz-option').forEach(b=>b.disabled=true);
       btn.classList.add('correct');
       fb.className='quiz-feedback feedback-correct';
-      fb.innerHTML='<span class="qfb-emoji">⭐</span>Yes! That\'s right!';
-      speakQuiz("Yes! That's right!");
+      fb.innerHTML='<span class="qfb-emoji">⭐</span>'+t('feedbackCorrect');
+      speakQuiz(t('feedbackCorrect'));
       answered=true;
       document.getElementById('nextQBtn').disabled=false;
       answeredQuestions.add(currentQuestion);
@@ -706,14 +756,14 @@
         });
         const correctLabel=quizSet[currentQuestion].options.find(o=>o.c)?.l||'';
         fb.className='quiz-feedback feedback-correct';
-        fb.innerHTML=`<span class="qfb-emoji">✅</span>The answer is ${correctLabel}!`;
-        speakQuiz('The answer is '+correctLabel);
+        fb.innerHTML='<span class="qfb-emoji">✅</span>'+t('feedbackReveal',correctLabel);
+        speakQuiz(t('feedbackReveal',correctLabel));
         answered=true;
         document.getElementById('nextQBtn').disabled=false;
       }else{
         fb.className='quiz-feedback feedback-wrong';
-        fb.innerHTML='<span class="qfb-emoji">🤔</span>Try again!';
-        speakQuiz('Try again!');
+        fb.innerHTML='<span class="qfb-emoji">🤔</span>'+t('feedbackTryAgain');
+        speakQuiz(t('feedbackTryAgain'));
       }
     }
   }
@@ -726,8 +776,8 @@
     const utter=new SpeechSynthesisUtterance(text);
     utter.lang='en-US'; utter.rate=0.9;
     const btn=document.getElementById('listenBtn');
-    if(btn){btn.classList.add('speaking');btn.textContent='🔊 Speaking...';}
-    utter.onend=utter.onerror=()=>{if(btn){btn.classList.remove('speaking');btn.textContent='🔊 Listen';}};
+    if(btn){btn.classList.add('speaking');btn.textContent=t('listenSpeaking');}
+    utter.onend=utter.onerror=()=>{if(btn){btn.classList.remove('speaking');btn.textContent=t('listenBtn');}};
     window.speechSynthesis.speak(utter);
     storyDone=true;
     recomputeProgress();
@@ -767,7 +817,7 @@
       const res=await fetch('/api/claude-proxy',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({system:s.prompt(currentLetter,d),messages,max_tokens:200})
+        body:JSON.stringify({system:s.prompt(currentLetter,d)+` Respond in language: ${currentLang}.`,messages,max_tokens:200})
       });
       const data=await res.json();
       const reply=data?.content?.[0]?.text || data?.reply || "Bzzz! 🐝 Let me think about that...";
@@ -775,7 +825,7 @@
       chatHistory.push({role:'assistant',content:reply});
     }catch(err){
       removeTyping();
-      addMessage('buzz',"Bzzz! 🐝 My wings are a little tired — try again in a moment!");
+      addMessage('buzz',t('buzzTired'));
       console.error(err);
     }
     isTyping=false; document.getElementById('sendBtn').disabled=false;
@@ -787,7 +837,7 @@
   // ── VOICE ──
   function toggleVoice(){
     if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
-      addMessage('buzz',"🐝 Your browser doesn't support voice yet — try Chrome or Safari!");return;
+      addMessage('buzz',t('noVoice'));return;
     }
     const btn=document.getElementById('voiceBtn');
     if(isListening){recognition?.stop();isListening=false;btn.classList.remove('listening');btn.textContent='🎤';return;}
