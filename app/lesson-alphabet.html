@@ -221,18 +221,36 @@
         width: 100%;
       }
     }
-    /* Worksheet page-fit: tighten spacing so one letter = one page */
+    /* Worksheet: page isolation + orange-bleed fix + element sizing */
     @media print {
-      #print-worksheet { padding: 14px 20px !important; }
+      /* body::before (honeycomb gradient) is not a child element — visibility:hidden misses it */
+      body::before { display: none !important; }
+      /* Collapse invisible page chrome so only the worksheet creates print pages */
+      .page-wrap, .modal-overlay { display: none !important; }
+      /* Flow the worksheet naturally instead of positioning into a tall document */
+      #print-worksheet { position: static !important; padding: 14px 20px !important; }
+      /* Section spacing */
       .ws-letter-section .ws-print-header { margin-bottom: 10px !important; padding-bottom: 10px !important; }
       .ws-letter-section .ws-print-title { font-size: 22px !important; }
       .ws-letter-section .ws-name-line { margin-bottom: 8px !important; }
       .ws-letter-section .ws-section { margin-bottom: 8px !important; }
       .ws-letter-section .ws-section-title { font-size: 15px !important; margin-bottom: 8px !important; }
-      .ws-letter-section .ws-trace-box { width: 52px !important; height: 52px !important; font-size: 24px !important; }
-      .ws-letter-section .ws-trace-row { gap: 8px !important; }
+      /* Trace boxes — uniform size */
+      .ws-letter-section .ws-trace-box { width: 52px !important; height: 52px !important; }
+      .ws-letter-section .ws-trace-row,
+      .ws-letter-section .ws-trace-row-bloom { gap: 8px !important; }
+      .ws-guide { font-size: 36px !important; }
+      /* Circle activity */
+      .ws-ci { font-size: 20px !important; }
+      .ws-ci-lg { font-size: 28px !important; }
+      .ws-circle-row, .ws-circle-grid { gap: 6px 14px !important; }
+      /* Draw box */
+      .ws-draw-box { min-height: 82px !important; padding: 8px !important; }
+      .ws-draw-emoji { font-size: 38px !important; }
+      /* Words activity */
       .ws-letter-section .ws-answer-item { font-size: 20px !important; }
       .ws-letter-section .ws-circle-answer { gap: 10px !important; }
+      .ws-footer { margin-top: 8px !important; padding-top: 6px !important; }
     }
     #print-worksheet{display:none;font-family:'Fredoka',sans-serif;padding:32px;color:#222;}
     .ws-print-header{display:flex;align-items:center;gap:16px;border-bottom:3px solid #F5A623;padding-bottom:16px;margin-bottom:24px;}
@@ -248,6 +266,24 @@
     .ws-answer-label{font-size:13px;color:#7A5C1E;margin-top:4px;}
     .ws-name-line{display:flex;gap:20px;margin-bottom:16px;}
     .ws-name-field{flex:1;border-bottom:2px solid #E8C070;padding-bottom:6px;font-size:14px;color:#7A5C1E;}
+    /* ── Worksheet new elements ── */
+    .ws-guide{opacity:0.15;font-family:'Fredoka',sans-serif;font-weight:700;font-size:40px;color:#F5A623;line-height:1;}
+    .ws-trace-row-bloom{display:flex;align-items:center;gap:12px;min-height:52px;}
+    .ws-hw-area{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:6px 0;}
+    .ws-hw-baseline{border-bottom:1.5px solid #E8C070;width:100%;}
+    .ws-hw-baseline.dashed{border-bottom-style:dashed;opacity:0.5;}
+    .ws-circle-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:4px;}
+    .ws-circle-grid{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:4px;}
+    .ws-ci{font-family:'Fredoka',sans-serif;font-weight:700;font-size:22px;color:#3A2A0A;display:inline-block;min-width:26px;text-align:center;}
+    .ws-ci-lg{font-size:34px;}
+    .ws-draw-box{border:2px dashed #F5A623;border-radius:12px;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;}
+    .ws-draw-emoji{font-size:52px;opacity:0.22;}
+    .ws-draw-label{font-size:13px;color:#7A5C1E;font-weight:600;text-align:center;line-height:1.4;}
+    .ws-write-line{border-bottom:1.5px solid #E8C070;width:70%;margin-top:6px;}
+    .ws-write-line-inline{display:inline-block;border-bottom:1.5px solid #E8C070;width:100px;vertical-align:bottom;margin-left:4px;}
+    .ws-words-note{font-size:12px;color:#7A5C1E;margin-top:6px;text-align:center;font-style:italic;}
+    .ws-write-prompt{font-size:13px;color:#7A5C1E;margin-top:6px;text-align:center;}
+    .ws-footer{text-align:center;margin-top:10px;color:#B08848;font-size:12px;border-top:1px solid #E8C070;padding-top:8px;}
   </style>
 </head>
 <body>
@@ -786,15 +822,82 @@
     });
   }
 
-  // ── PRINTABLE WORKSHEET (built dynamically per letter) ──
-  function buildLetterHTML(L,d,s,isLast){
-    const matchItems=d.words.slice(0,4);
-    return `<div class="ws-letter-section"${isLast?'':' style="page-break-after:always"'}>
+  // ── PRINTABLE WORKSHEET (built dynamically per letter + stage) ──
+  function buildLetterHTML(L, d, s, stageKey, isLast){
+    const pgBreak = isLast ? '' : ' style="page-break-after:always"';
+    const lc = L.toLowerCase();
+    // Distractor letters: all uppercase except L, in alpha order
+    const da = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').filter(c=>c!==L);
+    const [d0,d1,d2,d3,d4,d5,d6,d7] = da;
+
+    // ── Activity 1: Trace ──
+    const guideBox = `<div class="ws-trace-box"><span class="ws-guide">${L}</span></div>`;
+    const emptyBox = `<div class="ws-trace-box"></div>`;
+    let act1;
+    if(stageKey==='seedling'){
+      // All 5 boxes show a faded guide letter
+      act1=`<div class="ws-trace-row">${guideBox.repeat(5)}</div>`;
+    }else if(stageKey==='sprout'){
+      // First 2 have guide, last 3 empty
+      act1=`<div class="ws-trace-row">${guideBox}${guideBox}${emptyBox}${emptyBox}${emptyBox}</div>`;
+    }else if(stageKey==='blossom'){
+      // First box has guide, rest empty
+      act1=`<div class="ws-trace-row">${guideBox}${emptyBox}${emptyBox}${emptyBox}${emptyBox}</div>`;
+    }else{
+      // One guide box + a handwriting baseline row
+      act1=`<div class="ws-trace-row-bloom">${guideBox}<div class="ws-hw-area"><div class="ws-hw-baseline"></div><div class="ws-hw-baseline dashed"></div><div class="ws-hw-baseline"></div></div></div>`;
+    }
+
+    // ── Activity 2: Circle ──
+    let circleItems, circleClass, ciExtra;
+    if(stageKey==='seedling'){
+      circleItems=[L,d0,L,d1,d2]; circleClass='ws-circle-row'; ciExtra=' ws-ci-lg';
+    }else if(stageKey==='sprout'){
+      circleItems=[d0,L,d1,d2,L,d3,L,d4]; circleClass='ws-circle-row'; ciExtra='';
+    }else if(stageKey==='blossom'){
+      circleItems=[L,d0,d1,L,d2,d3,d4,L,d5,L,d6,d7]; circleClass='ws-circle-grid'; ciExtra='';
+    }else{
+      // Mix uppercase L and lowercase l among other letters
+      circleItems=[L,d0,lc,d1.toLowerCase(),L,d2.toLowerCase(),lc,d3,d4.toLowerCase(),L,d5,lc];
+      circleClass='ws-circle-grid'; ciExtra='';
+    }
+    const act2=`<div class="${circleClass}">${circleItems.map(c=>`<span class="ws-ci${ciExtra}">${c}</span>`).join('')}</div>`;
+
+    // ── Activity 3: Draw ──
+    const w0=d.words[0];
+    let drawContent;
+    if(stageKey==='seedling'){
+      drawContent=`<div class="ws-draw-emoji">${w0.e}</div><div class="ws-draw-label">Color the ${w0.w}! 🎨</div>`;
+    }else if(stageKey==='sprout'){
+      drawContent=`<div class="ws-draw-label">Draw a ${w0.w}. 🖍️</div>`;
+    }else if(stageKey==='blossom'){
+      drawContent=`<div class="ws-draw-label">Draw 2 things that start with ${L}. ✏️</div>`;
+    }else{
+      drawContent=`<div class="ws-draw-label">Draw something starting with ${L} and write its name:</div><div class="ws-write-line"></div>`;
+    }
+    const act3=`<div class="ws-draw-box">${drawContent}</div>`;
+
+    // ── Activity 4: Words ──
+    const wordList = stageKey==='seedling' ? d.words.slice(0,3) : d.words;
+    const wordItems = wordList.map(w=>`<div class="ws-answer-item">${w.e}<div class="ws-answer-label">${w.w}</div></div>`).join('');
+    let act4extra='';
+    if(stageKey==='blossom') act4extra=`<div class="ws-words-note">⭐ Circle your favourite!</div>`;
+    if(stageKey==='bloom')   act4extra=`<div class="ws-write-prompt">Write a word that starts with <strong>${L}</strong>: <span class="ws-write-line-inline"></span></div>`;
+    const act4=`<div class="ws-circle-answer">${wordItems}</div>${act4extra}`;
+
+    // ── Section titles (vary by stage) ──
+    const t2 = stageKey==='bloom' ? `Find the letters ${L} and ${lc}` : `Circle every letter ${L}`;
+    const t3 = stageKey==='seedling' ? `Color the ${w0.w}` : stageKey==='sprout' ? `Draw a ${w0.w}` : `Draw`;
+    const t4 = stageKey==='seedling' ? `${L} words — say each one!`
+             : stageKey==='bloom'    ? `${L} words — say & write!`
+             : `${L} words`;
+
+    return `<div class="ws-letter-section"${pgBreak}>
       <div class="ws-print-header">
         <div class="ws-print-logo">🐝</div>
         <div>
-          <div class="ws-print-title">LearnHives — Letter ${L} Worksheet</div>
-          <div class="ws-print-sub">${s.label} · ${s.age} · sound "${d.sound}"</div>
+          <div class="ws-print-title">LearnHives · Letter ${L} · ${s.label}</div>
+          <div class="ws-print-sub">${s.age} · sound "${d.sound}"${d.isVowel?' · vowel ⭐':''}</div>
         </div>
       </div>
       <div class="ws-name-line">
@@ -804,43 +907,31 @@
       </div>
       <div class="ws-section">
         <div class="ws-section-title">1. Trace the letter ${L}</div>
-        <div class="ws-trace-row">
-          <div class="ws-trace-box" style="color:#E8C070;border-style:dotted;">${L}</div>
-          <div class="ws-trace-box"></div><div class="ws-trace-box"></div>
-          <div class="ws-trace-box"></div><div class="ws-trace-box"></div>
-        </div>
+        ${act1}
       </div>
       <div class="ws-section">
-        <div class="ws-section-title">2. Circle every letter ${L}</div>
-        <div class="ws-circle-answer">
-          ${[L,'B',L,'D',L,'A',L].map(x=>`<div class="ws-answer-item">${x}<div class="ws-answer-label">&nbsp;</div></div>`).join('')}
-        </div>
+        <div class="ws-section-title">2. ${t2}</div>
+        ${act2}
       </div>
       <div class="ws-section">
-        <div class="ws-section-title">3. Draw something that starts with ${L}</div>
-        <div style="border:2px dashed #F5A623;border-radius:12px;height:90px;display:flex;align-items:center;justify-content:center;color:#B08848;font-size:14px;">
-          Draw a picture of <strong style="color:#D4700A;margin:0 4px">${d.words[0].w}</strong> ${d.words[0].e} here! 🎨
-        </div>
+        <div class="ws-section-title">3. ${t3}</div>
+        ${act3}
       </div>
       <div class="ws-section">
-        <div class="ws-section-title">4. ${L} words — say each one out loud!</div>
-        <div class="ws-circle-answer">
-          ${matchItems.map(w=>`<div class="ws-answer-item">${w.e}<div class="ws-answer-label">${w.w}</div></div>`).join('')}
-        </div>
+        <div class="ws-section-title">4. ${t4}</div>
+        ${act4}
       </div>
-      <div style="text-align:center;margin-top:12px;color:#B08848;font-size:12px;border-top:1px solid #E8C070;padding-top:8px;">
-        🐝 LearnHives · learnhives.com · Great work, little learner! 🌟
-      </div>
+      <div class="ws-footer">🐝 LearnHives · learnhives.com · Great work! 🌟</div>
     </div>`;
   }
   function buildWorksheet(){
     const L=currentLetter, d=LESSON_CONFIG.letters[L], s=LESSON_CONFIG.stages[currentStage];
-    document.getElementById('print-worksheet').innerHTML=buildLetterHTML(L,d,s,true);
+    document.getElementById('print-worksheet').innerHTML=buildLetterHTML(L,d,s,currentStage,true);
   }
   function buildFullWorksheet(){
     const s=LESSON_CONFIG.stages[currentStage];
     document.getElementById('print-worksheet').innerHTML=
-      ALPHABET.map((L,i)=>buildLetterHTML(L,LESSON_CONFIG.letters[L],s,i===ALPHABET.length-1)).join('');
+      ALPHABET.map((L,i)=>buildLetterHTML(L,LESSON_CONFIG.letters[L],s,currentStage,i===ALPHABET.length-1)).join('');
   }
   function printCurrentLetter(){
     buildWorksheet();
