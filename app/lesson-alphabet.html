@@ -48,7 +48,8 @@
     .lesson-title{font-family:'Fredoka',sans-serif;font-size:32px;font-weight:700;color:white;line-height:1.1;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,0.15);}
     .lesson-badges{display:flex;flex-wrap:wrap;gap:8px;}
     .badge{background:rgba(255,255,255,0.22);backdrop-filter:blur(4px);border:1.5px solid rgba(255,255,255,0.35);border-radius:var(--radius-pill);padding:4px 12px;font-size:13px;font-weight:700;color:white;}
-    .stage-selector{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+    .stage-selector{display:none;flex-direction:column;gap:8px;align-items:flex-end;}
+    .preview-mode .stage-selector{display:flex;}
     .stage-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.6px;}
     .stage-tabs{display:flex;gap:6px;}
     .stage-tab{background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius-pill);padding:6px 14px;font-family:'Fredoka',sans-serif;font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);cursor:pointer;transition:all .18s;}
@@ -459,13 +460,26 @@
   const ALPHABET = Object.keys(LESSON_CONFIG.letters); // A..Z
 
   // ── STATE ──
-  let currentStage='seedling', currentLetter='A';
+  // ── STAGE SOURCE ──
+  // TODO: replace this block with child's profile.stage loaded from Supabase
+  //       e.g. const { data: profile } = await db.from('children').select('stage').eq('id', childId).single()
+  //            currentStage = profile?.stage ?? 'seedling'
+  const _params = new URLSearchParams(location.search);
+  const _STAGES = ['seedling','sprout','blossom','bloom'];
+  let currentStage = _STAGES.includes(_params.get('stage')) ? _params.get('stage') : 'seedling';
+  let currentLetter='A';
   let currentCard=0, currentQuestion=0, answered=false, wrongAttempts=0;
   let isTyping=false, isListening=false, recognition=null, quizSet=[];
   let chatHistory=[];
   let seenCards=new Set(), answeredQuestions=new Set(), storyDone=false, completionShown=false;
 
   document.addEventListener('DOMContentLoaded',()=>{
+    // Show stage selector only when ?preview=1 (dev/QA only — never visible to children)
+    if(_params.get('preview')==='1'){
+      document.body.classList.add('preview-mode');
+      // Sync active tab to the loaded stage (in case ?stage= overrides the default)
+      document.querySelectorAll('.stage-tab').forEach(t=>t.classList.toggle('active',t.dataset.stage===currentStage));
+    }
     buildLetterStrip();
     loadLetter('A');
     window.onbeforeprint = buildWorksheet;
