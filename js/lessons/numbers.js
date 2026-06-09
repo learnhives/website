@@ -38,11 +38,20 @@ function makeObjRows(emoji, n) {
   return rows.join('\n');
 }
 
-// Front label for the count card (used as textContent → \n needs white-space:pre-line in CSS)
+// Rows of 5; for n>10 inserts a blank line after position 10 so "ten block + remainder" reads clearly.
+// Returns \n-joined string → use white-space:pre-line for textContent, .replace(/\n/g,'<br>') for innerHTML.
+function makeGroupedRows(emoji, n) {
+  const rows = [];
+  for (let i = 0; i < n; i += 5) {
+    rows.push(emoji.repeat(Math.min(5, n - i)));
+    if (n > 10 && i + 5 === 10) rows.push(''); // blank separator after the 10th object
+  }
+  return rows.join('\n');
+}
+
+// Front label for the count card (textContent, so \n works with white-space:pre-line)
 function countLabel(n, word, objEmoji, stageKey) {
-  // Cap object display at 10 to fit the card; append indicator for larger numbers
-  const cap = Math.min(n, 10);
-  const objPart = makeObjRows(objEmoji, cap) + (n > 10 ? '\n…' + n : '');
+  const objPart = makeGroupedRows(objEmoji, n);
   return stageKey === 'seedling' ? objPart : word + '\n' + objPart;
 }
 
@@ -227,10 +236,8 @@ function _buildNumberHTML(key, n, d, s, stageKey, isLast) {
   else if (stageKey === 'blossom') act1 = `<div class="ws-trace-row">${guideBox}${emptyBox}${emptyBox}${emptyBox}${emptyBox}</div>`;
   else act1 = `<div class="ws-trace-row-bloom">${guideBox}<div class="ws-hw-area"><div class="ws-hw-baseline"></div><div class="ws-hw-baseline dashed"></div><div class="ws-hw-baseline"></div></div></div>`;
 
-  // Activity 2: Count objects and circle the right number
-  // Show objects in rows of 5 (cap at 15 to prevent overflow on print); \n → <br> for innerHTML
-  const capCount  = Math.min(n, 15);
-  const objRows   = makeObjRows(objEmoji, capCount).replace(/\n/g, '<br>') + (n > 15 ? ` +${n - 15}` : '');
+  // Activity 2: Count objects and circle the right number — full true count, \n → <br> for innerHTML
+  const objRows = makeGroupedRows(objEmoji, n).replace(/\n/g, '<br>');
   const nearbySet = new Set([Math.max(1,n-2), Math.max(1,n-1), n, Math.min(20,n+1), Math.min(20,n+2)]);
   const nearbyNums = [...nearbySet].sort((a,b) => a-b);
   const act2 = `<div class="ws-count-objects">${objRows}</div>
