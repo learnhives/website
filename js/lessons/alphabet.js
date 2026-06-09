@@ -51,5 +51,146 @@ export const LESSON_CONFIG = {
     X:{emoji:'🎵',sound:'Ks',isVowel:false,words:[{e:'🎵',w:'Xylophone'},{e:'🩻',w:'X-ray'},{e:'❌',w:'X mark'},{e:'📦',w:'Box (ends in x)'}],fact:'X usually sounds like "ks" at the end!'},
     Y:{emoji:'🪀',sound:'Yuh',isVowel:false,words:[{e:'🪀',w:'Yo-yo'},{e:'💛',w:'Yellow'},{e:'🧶',w:'Yarn'},{e:'🥱',w:'Yawn'}],fact:'Y can be a sound AND sometimes a vowel!'},
     Z:{emoji:'🦓',sound:'Zzz',isVowel:false,words:[{e:'🦓',w:'Zebra'},{e:'0️⃣',w:'Zero'},{e:'⚡',w:'Zigzag'},{e:'🤐',w:'Zip'}],fact:'Z is the very LAST letter — and it buzzes like Buzz!'}
-  }
+  },
+
+  // ── Subject-specific UI string overrides (merged into engine t() lookup) ──
+  uiStrings: {
+    en: {
+      pickItem:  '🔤 Pick a letter to learn',
+      nextItem:  'Next Letter →',
+      printPack: '🖨️ Print A–Z Pack',
+    }
+  },
+
+  // ── Engine interface ──
+
+  getCards(key){ return this.letters[key].words; },
+
+  renderCard(card, key, stageKey){
+    return {
+      emoji:   card.e,
+      label:   card.w.toUpperCase(),
+      backHtml:`<strong style="color:var(--amber)">${key}</strong> is for<br><em style="color:var(--moss)">${card.w}</em> ${card.e}<br>${key}–${key}–${card.w}!`
+    };
+  },
+
+  buildQuiz(key, stageKey){
+    const d      = this.letters[key];
+    const others = this.items.filter(x=>x!==key).flatMap(x=>this.letters[x].words.map(w=>({...w,from:x})));
+    const pick    = n => [...others].sort(()=>Math.random()-0.5).slice(0,n);
+    const shuffle = arr => arr.sort(()=>Math.random()-0.5);
+
+    const q1d = pick(3);
+    const q1  = { question:`Which picture starts with ${key}?`, image:'🤔',
+      options:shuffle([{e:d.words[0].e,l:d.words[0].w,c:true},...q1d.map(x=>({e:x.e,l:x.w,c:false}))]) };
+
+    const q2d = pick(3);
+    const q2  = { question:`Which word starts with the letter ${key}?`, image:d.emoji,
+      options:shuffle([{e:d.words[1]?d.words[1].e:d.words[0].e,l:d.words[1]?d.words[1].w:d.words[0].w,c:true},...q2d.map(x=>({e:x.e,l:x.w,c:false}))]) };
+
+    const wrongKeys = shuffle(this.items.filter(x=>x!==key)).slice(0,3);
+    const q3  = { question:`Find the letter ${key}!`, image:'🔤',
+      options:shuffle([{e:key,l:'Letter '+key,c:true},...wrongKeys.map(x=>({e:x,l:'Letter '+x,c:false}))]) };
+
+    return [q1,q2,q3];
+  },
+
+  getQuickPrompts(key){
+    return [
+      {t:`🔊 ${key} sound`, m:`Say the ${key} sound for me!`},
+      {t:`💬 ${key} word`,  m:`Give me a fun word that starts with ${key}!`},
+      {t:'🌟 Fun fact',     m:`Tell me a fun fact about the letter ${key}`},
+      {t:'🟢 Easier',       m:'Can you explain that in an easier way?'},
+      {t:'🔴 Harder',       m:'Can you make it a bit harder for me?'}
+    ];
+  },
+
+  renderWorksheet(key, stageKey, isLast){
+    return _buildLetterHTML(key, this.letters[key], this.stages[stageKey], stageKey, isLast);
+  },
+
+  getItemTitle(key)          { return `The Letter ${key}`; },
+  getItemDisplayName(key)    { return `the letter ${key}`; },
+  getProgressLabel(key)      { return `Letter ${key} Progress`; },
+  getItemBadge(key)          { return `Letter ${this.items.indexOf(key)+1} of ${this.items.length}`; },
+  getWorksheetTitle(key)     { return `Letter ${key} Worksheet`; },
+  getItemEmoji(key)          { return this.letters[key].emoji; },
+  getStory(key, stageKey)    { return this.stages[stageKey].story(key, this.letters[key]); },
+  getBuzzPrompt(key, stageKey){ return this.stages[stageKey].prompt(key, this.letters[key]); },
+
+  getGreeting(key, stageKey){
+    const d = this.letters[key];
+    if(stageKey==='seedling')
+      return `Bzzz! 🐝 Hi! Let's learn the letter <strong>${key}</strong>! ${d.emoji} It says "${d.sound}"! Tap a chip or talk to me!`;
+    return `Hi explorer! 🐝 Today we're learning the letter <strong>${key}</strong> — it makes the "${d.sound}" sound. Ask me anything about ${key}!`;
+  },
 };
+
+// Ordered item key list (computed once after object is fully defined)
+LESSON_CONFIG.items = Object.keys(LESSON_CONFIG.letters);
+
+// ── Worksheet renderer (alphabet-specific; called via config.renderWorksheet) ──
+function _buildLetterHTML(L, d, s, stageKey, isLast){
+  const pgBreak = isLast ? '' : ' style="page-break-after:always"';
+  const lc = L.toLowerCase();
+  const da = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').filter(c=>c!==L);
+  const [d0,d1,d2,d3,d4,d5,d6,d7] = da;
+
+  // Activity 1: Trace
+  const guideBox = `<div class="ws-trace-box"><span class="ws-guide">${L}</span></div>`;
+  const emptyBox = `<div class="ws-trace-box"></div>`;
+  let act1;
+  if(stageKey==='seedling')     act1=`<div class="ws-trace-row">${guideBox.repeat(5)}</div>`;
+  else if(stageKey==='sprout')  act1=`<div class="ws-trace-row">${guideBox}${guideBox}${emptyBox}${emptyBox}${emptyBox}</div>`;
+  else if(stageKey==='blossom') act1=`<div class="ws-trace-row">${guideBox}${emptyBox}${emptyBox}${emptyBox}${emptyBox}</div>`;
+  else act1=`<div class="ws-trace-row-bloom">${guideBox}<div class="ws-hw-area"><div class="ws-hw-baseline"></div><div class="ws-hw-baseline dashed"></div><div class="ws-hw-baseline"></div></div></div>`;
+
+  // Activity 2: Circle
+  let circleItems, circleClass, ciExtra;
+  if(stageKey==='seedling'){      circleItems=[L,d0,L,d1,d2];                      circleClass='ws-circle-row';  ciExtra=' ws-ci-lg'; }
+  else if(stageKey==='sprout'){   circleItems=[d0,L,d1,d2,L,d3,L,d4];             circleClass='ws-circle-row';  ciExtra=''; }
+  else if(stageKey==='blossom'){  circleItems=[L,d0,d1,L,d2,d3,d4,L,d5,L,d6,d7]; circleClass='ws-circle-grid'; ciExtra=''; }
+  else{ circleItems=[L,d0,lc,d1.toLowerCase(),L,d2.toLowerCase(),lc,d3,d4.toLowerCase(),L,d5,lc]; circleClass='ws-circle-grid'; ciExtra=''; }
+  const act2=`<div class="${circleClass}">${circleItems.map(c=>`<span class="ws-ci${ciExtra}">${c}</span>`).join('')}</div>`;
+
+  // Activity 3: Draw
+  const w0=d.words[0];
+  let drawContent;
+  if(stageKey==='seedling')     drawContent=`<div class="ws-draw-emoji">${w0.e}</div><div class="ws-draw-label">Color the ${w0.w}! 🎨</div>`;
+  else if(stageKey==='sprout')  drawContent=`<div class="ws-draw-label">Draw a ${w0.w}. 🖍️</div>`;
+  else if(stageKey==='blossom') drawContent=`<div class="ws-draw-label">Draw 2 things that start with ${L}. ✏️</div>`;
+  else drawContent=`<div class="ws-draw-label">Draw something starting with ${L} and write its name:</div><div class="ws-write-line"></div>`;
+  const act3=`<div class="ws-draw-box">${drawContent}</div>`;
+
+  // Activity 4: Words
+  const wordList  = stageKey==='seedling' ? d.words.slice(0,3) : d.words;
+  const wordItems = wordList.map(w=>`<div class="ws-answer-item">${w.e}<div class="ws-answer-label">${w.w}</div></div>`).join('');
+  let act4extra='';
+  if(stageKey==='blossom') act4extra=`<div class="ws-words-note">⭐ Circle your favourite!</div>`;
+  if(stageKey==='bloom')   act4extra=`<div class="ws-write-prompt">Write a word that starts with <strong>${L}</strong>: <span class="ws-write-line-inline"></span></div>`;
+  const act4=`<div class="ws-circle-answer">${wordItems}</div>${act4extra}`;
+
+  const t2 = stageKey==='bloom' ? `Find the letters ${L} and ${lc}` : `Circle every letter ${L}`;
+  const t3 = stageKey==='seedling' ? `Color the ${w0.w}` : stageKey==='sprout' ? `Draw a ${w0.w}` : `Draw`;
+  const t4 = stageKey==='seedling' ? `${L} words — say each one!` : stageKey==='bloom' ? `${L} words — say & write!` : `${L} words`;
+
+  return `<div class="ws-letter-section"${pgBreak}>
+    <div class="ws-print-header">
+      <div class="ws-print-logo">🐝</div>
+      <div>
+        <div class="ws-print-title">LearnHives · Letter ${L} · ${s.label}</div>
+        <div class="ws-print-sub">${s.age} · sound "${d.sound}"${d.isVowel?' · vowel ⭐':''}</div>
+      </div>
+    </div>
+    <div class="ws-name-line">
+      <div class="ws-name-field">Name: _______________</div>
+      <div class="ws-name-field">Date: _______________</div>
+      <div class="ws-name-field">🌟 Stars: _______________</div>
+    </div>
+    <div class="ws-section"><div class="ws-section-title">1. Trace the letter ${L}</div>${act1}</div>
+    <div class="ws-section"><div class="ws-section-title">2. ${t2}</div>${act2}</div>
+    <div class="ws-section"><div class="ws-section-title">3. ${t3}</div>${act3}</div>
+    <div class="ws-section"><div class="ws-section-title">4. ${t4}</div>${act4}</div>
+    <div class="ws-footer">🐝 LearnHives · learnhives.com · Great work! 🌟</div>
+  </div>`;
+}
