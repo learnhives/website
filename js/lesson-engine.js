@@ -50,8 +50,13 @@ export function startLesson(config) {
     return typeof str==='function'?str(...args):(str??key);
   }
 
+  // ── STAGE-AWARE ITEMS ──
+  // If config defines getItems(stage), use it (e.g. numbers shows 1–10 in seedling/sprout).
+  // Falls back to config.items so alphabet (no getItems) is unaffected.
+  const getStageItems = (stage) => config.getItems?.(stage) ?? config.items;
+
   // ── STATE ──
-  let currentKey   = config.items[0];
+  let currentKey   = getStageItems(currentStage)[0];
   let currentCard  = 0, currentQuestion = 0, answered = false, wrongAttempts = 0;
   let isTyping = false, isListening = false, recognition = null, quizSet = [];
   let chatHistory  = [];
@@ -67,7 +72,7 @@ export function startLesson(config) {
       document.querySelectorAll('.stage-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.stage === currentStage));
     }
     buildItemStrip();
-    loadItem(config.items[0]);
+    loadItem(getStageItems(currentStage)[0]);
     window.onbeforeprint = buildWorksheet;
   });
 
@@ -75,7 +80,7 @@ export function startLesson(config) {
   function buildItemStrip() {
     const strip = document.getElementById('itemStrip');
     strip.innerHTML = '';
-    config.items.forEach(key => {
+    getStageItems(currentStage).forEach(key => {
       const b = document.createElement('button');
       b.className = 'item-key' + (key === currentKey ? ' active' : '');
       b.id = 'key-' + key;
@@ -101,8 +106,9 @@ export function startLesson(config) {
   }
 
   function nextItem() {
-    const i = config.items.indexOf(currentKey);
-    if (i < config.items.length - 1) loadItem(config.items[i + 1]);
+    const items = getStageItems(currentStage);
+    const i = items.indexOf(currentKey);
+    if (i < items.length - 1) loadItem(items[i + 1]);
   }
 
   // ── STAGE ──
@@ -111,6 +117,14 @@ export function startLesson(config) {
     btn.classList.add('active');
     currentStage = stage;
     completionShown = false;
+    // If currentKey is outside the new stage's item set, reset to first valid item
+    const items = getStageItems(stage);
+    if (!items.includes(currentKey)) {
+      currentKey = items[0];
+      currentCard = 0; currentQuestion = 0; answered = false; completionShown = false;
+      document.querySelectorAll('.star').forEach(star => star.classList.remove('earned'));
+    }
+    buildItemStrip();
     applyStage(stage);
     buildQuizData(); renderQuiz(); updateCard(); buildWorksheet(); loadProgress();
   }
@@ -119,7 +133,7 @@ export function startLesson(config) {
     const s = config.stages[stage];
     document.getElementById('stageBadge').textContent       = s.label;
     document.getElementById('ageBadge').textContent         = s.age;
-    document.getElementById('itemBadge').textContent        = config.getItemBadge(currentKey);
+    document.getElementById('itemBadge').textContent        = config.getItemBadge(currentKey, stage);
     document.getElementById('childAvatarNav').textContent   = s.avatar;
     document.getElementById('lessonTitle').textContent      = config.getItemTitle(currentKey);
     document.getElementById('subjectIcon').textContent      = config.getItemEmoji(currentKey);
@@ -416,9 +430,10 @@ export function startLesson(config) {
   }
 
   function buildFullWorksheet() {
+    const items = getStageItems(currentStage);
     document.getElementById('print-worksheet').innerHTML =
-      config.items.map((key, i) =>
-        config.renderWorksheet(key, currentStage, i === config.items.length - 1)
+      items.map((key, i) =>
+        config.renderWorksheet(key, currentStage, i === items.length - 1)
       ).join('');
   }
 

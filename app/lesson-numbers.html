@@ -286,6 +286,16 @@
     /* Numbers-specific worksheet styles */
     .ws-count-objects{font-size:22px;line-height:1.8;word-break:break-all;margin-bottom:8px;}
     .ws-section-note{font-size:13px;color:#7A5C1E;margin-bottom:6px;}
+
+    /* ── Flashcard: content-driven height for multi-row number cards ──
+       Front is in-flow (position:relative) so it drives card height.
+       Back stays position:absolute and fills whatever height the front defines.
+       This overrides the alphabet-style fixed aspect-ratio without touching the engine. */
+    .flashcard            { aspect-ratio:unset; height:auto; min-height:180px; }
+    .flashcard-inner      { height:auto; min-height:180px; }
+    .flashcard-front      { position:relative; inset:unset; }
+    /* Smaller numeral so it doesn't dominate a card that may have 4+ object rows */
+    .card-emoji           { font-size:46px; margin-bottom:4px; }
   </style>
 </head>
 <body>

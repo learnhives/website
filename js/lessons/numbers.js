@@ -199,10 +199,20 @@ export const LESSON_CONFIG = {
     return _buildNumberHTML(key, parseInt(key), this.numbers[key], this.stages[stageKey], stageKey, isLast);
   },
 
+  // Seedling & Sprout: 1–10 only. Blossom & Bloom: 1–20.
+  getItems(stageKey) {
+    return (stageKey === 'seedling' || stageKey === 'sprout')
+      ? this.items.slice(0, 10)
+      : this.items;
+  },
+
   getItemTitle(key)            { return `The Number ${key}`; },
   getItemDisplayName(key)      { return `the number ${key}`; },
   getProgressLabel(key)        { return `Number ${key} Progress`; },
-  getItemBadge(key)            { return `Number ${this.items.indexOf(key)+1} of ${this.items.length}`; },
+  getItemBadge(key, stageKey)  {
+    const items = stageKey ? this.getItems(stageKey) : this.items;
+    return `Number ${items.indexOf(key)+1} of ${items.length}`;
+  },
   getWorksheetTitle(key)       { return `Number ${key} Worksheet`; },
   getItemEmoji(key)            { return NUM_EMOJI[parseInt(key)]; },
   getStory(key, stageKey)      { return this.stages[stageKey].story(parseInt(key), this.numbers[key]); },
