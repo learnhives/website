@@ -34,7 +34,7 @@ _Last updated: end of Day 16 (Jun 2026)_
 
 ---
 
-## ▶️ REMAINING — Days 16–28
+## ▶️ REMAINING — Days 17–28
 
 ### Phase 4 (cont.) — Core lessons & data
 | Day | Task | Goal |

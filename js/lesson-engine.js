@@ -161,7 +161,7 @@ export function startLesson(config) {
     const cards = config.getCards(currentKey);
     currentCard = Math.min(currentCard, cards.length - 1);
     const rendered = config.renderCard(cards[currentCard], currentKey, currentStage);
-    document.getElementById('cardEmoji').textContent   = rendered.emoji;
+    document.getElementById('cardEmoji').innerHTML      = rendered.emoji;
     document.getElementById('cardWord').textContent    = rendered.label;
     document.getElementById('cardBackText').innerHTML  = rendered.backHtml;
     document.getElementById('cardCounter').textContent = (currentCard + 1) + ' / ' + cards.length;
@@ -201,7 +201,7 @@ export function startLesson(config) {
     }
     const q = quizSet[currentQuestion];
     document.getElementById('quizQuestion').textContent = q.question;
-    document.getElementById('quizImage').textContent = q.image;
+    document.getElementById('quizImage').innerHTML   = q.image;
     document.getElementById('quizFeedback').textContent = '';
     document.getElementById('nextQBtn').disabled = true;
     answered = false; wrongAttempts = 0;
