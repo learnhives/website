@@ -17,11 +17,11 @@ should now be faster because the template + seams exist. The plan is a guide, no
 a contract — lessons can ship post-launch too (the catalog supports adding them
 independently per stage).
 
-_Last updated: end of Day 15 (Jun 2026)_
+_Last updated: end of Day 16 (Jun 2026)_
 
 ---
 
-## ✅ DONE — Days 1–15
+## ✅ DONE — Days 1–16
 
 | Day | What landed |
 | --- | --- |
@@ -30,6 +30,7 @@ _Last updated: end of Day 15 (Jun 2026)_
 | 9–12 | **Phase 3 — Payments:** Stripe products (Free / Family $9.99 / Family Plus $14.99, 30-day trial), trial gating, webhooks → Supabase, Resend welcome email. |
 | 13 | **Secure the API:** Anthropic calls moved to Vercel serverless proxy (`api/claude-proxy.js`); rate limiting, JWT verification, RLS policies. |
 | 14–15 | **Alphabet lesson + architecture:** full A–Z `lesson-alphabet.html` (Cards/Quiz/Story, Buzz AI chat, voice input, TTS, age-differentiated single-page worksheets + A–Z pack). Teaching-correct quiz (2-try reveal, emoji + spoken feedback). State-based progress. **Config split into ES module `js/lessons/alphabet.js`.** **Three profile-driven seams (stage / lang / theme) via one settings helper**, `?preview=1` dev flag, Supabase wiring TODO-marked. Lesson catalog designed (`catalog.js`). `BACKLOG.md` + `HANDOFF.md` created. |
+| **16** | **Shared engine + Numbers lesson** *(not in the original plan — emerged from building the 2nd lesson)*: Extracted inline engine to `js/lesson-engine.js` (`startLesson(config)` — single export). Each lesson is now **engine + config module + 4-line HTML shell**. Built `lesson-numbers.html`: 1–20, four stages, stage-scaled item sets (Seedling/Sprout 1–10, Blossom/Bloom 1–20), ten-frame layout, Bloom +1 peek. **Days 17–20 lesson builds are now config-only — significantly faster.** |
 
 ---
 
@@ -38,7 +39,6 @@ _Last updated: end of Day 15 (Jun 2026)_
 ### Phase 4 (cont.) — Core lessons & data
 | Day | Task | Goal |
 | --- | --- | --- |
-| **16** | **`lesson-numbers.html`** — build on the alphabet template: numbers 1–20, counting objects instead of letter-words, per-stage difficulty. Reuse the module-config + seams pattern. | 2nd subject live |
 | **17** | **`lesson-colors-shapes.html`** — same template, colors & shapes content per stage. | 3rd subject live |
 | **18** | **Progress tracking → Supabase + structured event logging.** Swap localStorage progress for Supabase; design the **events table** with the longitudinal "champion the child" vision in mind (clean structured events, stage as flexible string, COPPA/GDPR-aware). | Progress persisted; data foundation laid |
 | **19** | **`lesson-nature-animals.html`** | 4th subject live |

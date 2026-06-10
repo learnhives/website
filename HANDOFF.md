@@ -5,7 +5,7 @@ oriented. Pair it with `BACKLOG.md` (current task list) and, if useful, the
 project plan docx + Gantt. Keep this file updated as the project's "stable facts"
 change; use `BACKLOG.md` for the moving task list.
 
-_Last updated: Day 15 (Jun 2026)_
+_Last updated: Day 16 (Jun 2026)_
 
 ---
 
@@ -56,35 +56,72 @@ Bloom (5–6). Core subjects are shared across all stages; higher stages get
 **additional, independently-counted** lessons (no fixed pattern). AI tutor =
 **Buzz the Bee** (bee/honey theme; other characters: Honey, Flora, Petal).
 
-## Current state — Day 15 of 28
+## Current state — Day 16 of 28
 
 Phases 1–3 done: dev setup, auth/Supabase, Stripe payments/webhooks/welcome
 email, security hardening (rate limiting, JWT verification, RLS).
 
-**`lesson-alphabet.html` is fully built and is the architectural template for all
-future lessons:**
-- Full A–Z, **data-driven** from `js/lessons/alphabet.js` (ES module — engine and
-  content decoupled).
-- Tabs: **Cards / Quiz / Story** (Cards default). Story has a **Listen** TTS button.
-- **Quiz teaches:** correct-answer-required, 2-wrong-then-reveal, no reward for
-  guessing. Emoji + spoken feedback for non-readers. Pulse-glow on correct answer
-  (respects `prefers-reduced-motion`).
-- **State-based progress** (not click-based). localStorage now; Supabase later
-  (TODO marked in code).
-- **Buzz AI chat** via `/api/claude-proxy`; **voice input** (Web Speech API).
-- **Worksheets:** age-differentiated, single-page per letter (all 4 stages) + a
-  26-page **A–Z pack** with a print-count confirmation dialog.
-- **Three profile-driven seams via one consolidated settings helper:**
-  `stage`, `lang` (default `en`), `theme` (default `honey`; `ocean` built as
-  proof). Read from URL params now (`?stage=bloom`, `?lang=`, `?theme=ocean`).
-  `?preview=1` shows the dev-only stage selector. **TODO comments mark exactly
-  where Supabase child-profile wiring replaces the URL/default fallback.**
-- **i18n is UI-chrome only** (`UI_STRINGS` + `t()` with `en` fallback). Per-language
-  lesson *content* is a separate future product decision (different alphabets are
-  NOT translations).
+**Two subjects live. Architecture: shared engine + per-subject config.**
+
+### Lesson engine architecture (read this before building a new lesson)
+
+Lesson logic lives in **`js/lesson-engine.js`** — single export `startLesson(config)`.
+Every lesson page is a 4-line shell:
+
+```js
+import { LESSON_CONFIG } from '../js/lessons/alphabet.js';
+import { startLesson }   from '../js/lesson-engine.js';
+startLesson(LESSON_CONFIG);
+```
+
+The engine is fully subject-agnostic. **A new lesson = one config file + one thin HTML
+shell. No engine changes needed.**
+
+**Config interface — every lesson must implement these:**
+
+| Property / method | What the engine uses it for |
+|---|---|
+| `subject`, `lessonKey`, `icon` | Display + localStorage key prefix |
+| `stages` | `{ seedling/sprout/blossom/bloom: { label, age, avatar, story(key,d), prompt(key,d) } }` |
+| `items` | Ordered array of all item keys (`['A'..'Z']`, `['1'..'20']`, …) |
+| `getItems(stageKey)` *(optional)* | Stage-filtered subset; falls back to `items` if absent. Numbers uses this for 1–10 vs 1–20. |
+| `uiStrings.en` *(optional)* | Per-subject label overrides (`nextItem`, `pickItem`, `printPack`); engine has generic fallbacks |
+| `getCards(key)` | Array of card objects (passed to `renderCard`) |
+| `renderCard(card, key, stageKey)` | Returns `{ emoji, label, backHtml }` |
+| `buildQuiz(key, stageKey)` | Returns `[{ question, image, options:[{e,l,c}] }]` |
+| `getQuickPrompts(key)` | `[{ t, m }]` Buzz quick-prompt chips |
+| `renderWorksheet(key, stageKey, isLast)` | HTML string for the printable page |
+| `getItemTitle(key)` | Header title ("The Letter A") |
+| `getItemDisplayName(key)` | Lowercase for completion modal ("the letter a") |
+| `getProgressLabel(key)` | Progress bar label |
+| `getItemBadge(key, stageKey)` | Badge text; receives stage for range-aware display |
+| `getWorksheetTitle(key)` | Worksheet preview title |
+| `getItemEmoji(key)` | Subject illustration emoji |
+| `getStory(key, stageKey)` | HTML string for the Story tab |
+| `getBuzzPrompt(key, stageKey)` | Buzz system prompt string |
+| `getGreeting(key, stageKey)` | Buzz opening message HTML |
+
+**Lessons built:**
+- `js/lessons/alphabet.js` + `app/lesson-alphabet.html` — A–Z, all 4 stages
+- `js/lessons/numbers.js` + `app/lesson-numbers.html` — 1–20, all 4 stages.
+  Seedling/Sprout: items 1–10 (🍯 objects, ten-frame for 6–10, no word for Seedling).
+  Blossom/Bloom: items 1–20 (per-number emoji, number word; Bloom adds a "+1 peek").
+
+**Settings seams** (applied inside the engine for every lesson):
+- `stage`, `lang` (default `en`), `theme` (default `honey`; `ocean` proof-of-concept built).
+- Read from URL params (`?stage=bloom`, `?theme=ocean`). `?preview=1` shows stage selector.
+- **TODO comments mark exactly where Supabase child-profile wiring replaces the fallback.**
+- i18n: `UI_STRINGS` + `t()` with config-override → engine-fallback chain. English only.
+
+**Engine features (shared across all lessons):**
+- Tabs: Cards / Quiz / Story (TTS Listen button in Story).
+- Quiz: 2-wrong-then-reveal, no reward for guessing, emoji + spoken feedback, pulse-glow.
+- XP progress: state-based (seen cards + answered questions + story done). localStorage now; Supabase later (TODO marked).
+- Buzz AI chat via `/api/claude-proxy`; voice input (Web Speech API).
+- Worksheets: age-differentiated single-page + full pack with print-count confirmation.
 
 A **lesson catalog** was designed (artifact `catalog.js`, not yet committed):
-a stage-tagged list the dashboard will filter by child stage. Added **Motion &
+stage-tagged list for the dashboard to filter by child stage. Added **Motion &
 Movement** as a core subject across all stages.
 
 ## Design principles I care about
@@ -110,8 +147,8 @@ See **`BACKLOG.md`** (repo root) for the live task list, organized by hashtag:
 `#polish-feel`, `#infra`, `#vision`.
 
 Most likely next moves:
+- **#product-next** — `lesson-colors-shapes.html` (3rd subject; now just a config file + thin shell).
 - **#architecture-next** — build the dashboard lesson catalog (from `catalog.js`).
-- **#product-next** — `lesson-numbers.html` (fast now on the clean template).
 
 ## Note on assistant memory
 

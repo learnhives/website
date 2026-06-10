@@ -8,7 +8,7 @@ items are easy to scan and group. Update freely as things get added or done.
 relevant section into the chat. Move finished items to the bottom under
 `## ✅ Done`.
 
-_Last updated: Day 15 (Jun 2026)_
+_Last updated: Day 16 (Jun 2026)_
 
 ---
 
@@ -29,8 +29,6 @@ _Real structural work — higher priority than polish._
 ## #product-next
 _Building the product forward._
 
-- [ ] `lesson-numbers.html` — next subject (numbers 1–20). Fast now on the clean
-      template (module config + stage/lang/theme seams).
 - [ ] Remaining subjects: Colors & Shapes, Nature & Animals, Music & Emotions,
       Motion & Movement.
 - [ ] Dashboard: show overall progress across all lessons.
@@ -45,6 +43,8 @@ _Richer lesson content._
 _Minor worksheet layout/spacing tweaks (anytime)._
 
 - [ ] Small fine-tuning tweaks flagged during the Day 15 worksheet redesign.
+- [ ] **Stage-aware lesson subtitle** — breadcrumb hardcoded "Numbers · 1 to 20";
+      should read "1 to 10" for Seedling/Sprout and "1 to 20" for Blossom/Bloom.
 
 ## #polish-feel
 _One combined "make it feel alive" session — best done after a few more lessons
@@ -78,6 +78,15 @@ _Long-horizon north-star items._
 ## ✅ Done
 _Move completed items here with the day they landed._
 
+- [x] **Day 16** — Extracted shared lesson engine into `js/lesson-engine.js` (single export
+      `startLesson(config)`). `lesson-alphabet.html` is now a 4-line shell. Engine is
+      subject-agnostic: `config.items` / `config.getItems(stage)` for item sets,
+      `config.renderCard` / `config.renderWorksheet` for rendering, `config.uiStrings`
+      for per-subject label overrides.
+- [x] **Day 16** — `lesson-numbers.html` built: 1–20, four stages. Seedling/Sprout show
+      1–10 (🍯 objects, ten-frame for 6–10, no word for Seedling); Blossom/Bloom show
+      1–20 (per-number emoji, number word; Bloom adds a +1 peek). Config-only build on
+      the engine — no engine changes needed.
 - [x] **Day 15** — `lesson-alphabet.html` full build: A–Z data-driven lesson,
       flashcards, story (with Listen TTS), Buzz AI tutor, voice input.
 - [x] **Day 15** — Quiz that teaches: correct-answer-required, 2-try reveal,
