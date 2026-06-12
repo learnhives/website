@@ -98,35 +98,30 @@ export const LESSON_CONFIG = {
 
   // ── Engine interface ──
 
-  // Two cards per number: count (visual) and word (reading)
+  // One card per number: combined numeral + word + honey-pot count
   getCards(key) {
-    return [{ type:'count' }, { type:'word' }];
+    return [{ type:'combo' }];
   },
 
   renderCard(card, key, stageKey) {
-    const n    = parseInt(key);
-    const d    = this.numbers[key];
-    const honey    = '🍯';
-    const useHoney = stageKey === 'seedling' || stageKey === 'sprout';
-    const objEmoji = useHoney ? honey : d.emoji;
-
-    if (card.type === 'count') {
-      // Front: big numeral + object rows (+ word for Sprout+)
-      // Back: word + fact (+ +1 peek for Bloom)
-      const label = countLabel(n, d.word, objEmoji, stageKey);
-      let backHtml = `<strong style="color:var(--amber);font-size:28px">${d.word}</strong><br><em style="color:var(--moss)">${d.fact}</em>`;
-      if (stageKey === 'bloom' && n < 20) {
-        backHtml += `<br><br><strong style="color:var(--amber)">${n} + 1 = ${n+1} 🌟</strong>`;
-      }
-      return { emoji: String(n), label, backHtml };
-    } else {
-      // Word card — Front: per-number emoji + word name. Back: numeral + fact + peek
-      let backHtml = `<strong style="color:var(--amber);font-size:36px">${n}</strong><br><em style="color:var(--moss)">${d.word}</em><br>${d.fact}`;
-      if (stageKey === 'bloom' && n < 20) {
-        backHtml += `<br><br><strong style="color:var(--amber)">${n} + 1 = ${n+1}</strong>`;
-      }
-      return { emoji: d.emoji, label: d.word, backHtml };
+    const n = parseInt(key);
+    const d = this.numbers[key];
+    // Always 🍯 as the counting object — consistent mental model
+    const pots = makeGroupedRows('🍯', n).replace(/\n/g, '<br>');
+    // emoji area: big numeral + honey pots below (HTML composition)
+    const emojiHtml =
+      `<div class="num-combo">` +
+        `<span class="num-big">${n}</span>` +
+        `<div class="num-pots">${pots}</div>` +
+      `</div>`;
+    // Back: word name + fact + bloom bonus
+    let backHtml =
+      `<strong style="color:var(--amber);font-size:1.15em">${d.word}</strong>` +
+      `<br><em style="color:var(--moss)">${d.fact}</em>`;
+    if (stageKey === 'bloom' && n < 20) {
+      backHtml += `<br><br><strong style="color:var(--amber)">${n} + 1 = ${n+1} 🌟</strong>`;
     }
+    return { emoji: emojiHtml, label: d.word, backHtml };
   },
 
   buildQuiz(key, stageKey) {
@@ -147,11 +142,12 @@ export const LESSON_CONFIG = {
     for (let x = 1; pool.size < 3; x++) { if (x !== n) pool.add(x); }
     const getDist = () => shuffle([...pool]).slice(0, 3);
 
-    // Q1: count the objects → pick numeral
+    // Q1: count the objects → pick numeral (grouped rows, always honey pots)
+    const q1Rows = makeGroupedRows('🍯', n).replace(/\n/g, '<br>');
     const dist1 = getDist();
     const q1 = {
       question: 'How many?',
-      image: objEmoji.repeat(n),
+      image: `<div class="num-q1-img">${q1Rows}</div>`,
       options: shuffle([
         { e: String(n), l: String(n), c: true },
         ...dist1.map(x => ({ e: String(x), l: String(x), c: false }))

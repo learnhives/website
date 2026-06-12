@@ -62,6 +62,9 @@ export function startLesson(config) {
   let chatHistory  = [];
   let seenCards = new Set(), answeredQuestions = new Set(), storyDone = false, completionShown = false;
 
+  // ── KID MODE STATE ──
+  const KID = { active: false, step: 'cards', lastMoved: null, holdTimer: null, buzzLineIdx: 0, wobbleTimer: null };
+
   // ── INIT ──
   document.addEventListener('DOMContentLoaded', () => {
     document.body.dataset.theme = currentTheme;
@@ -74,6 +77,7 @@ export function startLesson(config) {
     buildItemStrip();
     loadItem(getStageItems(currentStage)[0]);
     window.onbeforeprint = buildWorksheet;
+    injectKidModeDom();
   });
 
   // ── ITEM STRIP ──
@@ -168,7 +172,10 @@ export function startLesson(config) {
     document.getElementById('flashcard').classList.remove('flipped');
   }
 
-  function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+  function flipCard() {
+    document.getElementById('flashcard').classList.toggle('flipped');
+    if (KID.active) stopCardWobble();
+  }
 
   function nextCard() {
     const cards = config.getCards(currentKey);
@@ -213,6 +220,7 @@ export function startLesson(config) {
       b.onclick = () => answerQuiz(b, opt.c);
       optEl.appendChild(b);
     });
+    if (KID.active) setTimeout(() => speakQuiz(q.question), 400);
   }
 
   function speakQuiz(text) {
@@ -258,7 +266,15 @@ export function startLesson(config) {
     }
   }
 
-  function nextQuestion() { currentQuestion++; renderQuiz(); }
+  function nextQuestion() {
+    currentQuestion++;
+    if (KID.active && currentQuestion >= quizSet.length) {
+      renderQuiz(); // shows 🏆 state briefly
+      setTimeout(() => kidShowStep('story'), 700);
+      return;
+    }
+    renderQuiz();
+  }
 
   // ── STORY ──
   function listenStory() {
@@ -268,13 +284,20 @@ export function startLesson(config) {
     utter.lang = 'en-US'; utter.rate = 0.9;
     const btn = document.getElementById('listenBtn');
     if (btn) { btn.classList.add('speaking'); btn.textContent = t('listenSpeaking'); }
-    utter.onend = utter.onerror = () => { if (btn) { btn.classList.remove('speaking'); btn.textContent = t('listenBtn'); } };
+    utter.onend = utter.onerror = () => {
+      if (btn) { btn.classList.remove('speaking'); btn.textContent = t('listenBtn'); }
+      if (KID.active) setTimeout(() => kidShowStep('done'), 500);
+    };
     window.speechSynthesis.speak(utter);
     storyDone = true;
     recomputeProgress();
   }
 
-  function finishStory() { storyDone = true; recomputeProgress(); }
+  function finishStory() {
+    storyDone = true;
+    recomputeProgress();
+    if (KID.active) setTimeout(() => kidShowStep('done'), 400);
+  }
 
   // ── BUZZ CHAT ──
   function addMessage(role, html) {
@@ -378,11 +401,12 @@ export function startLesson(config) {
 
   // ── COMPLETION ──
   function showCompletion() {
+    document.getElementById('key-' + currentKey)?.classList.add('done');
+    saveProgress(true);
+    if (KID.active) return; // modal suppressed in kid mode; celebration via kid done screen
     document.getElementById('modalSubtitle').innerHTML =
       `You finished ${config.getItemDisplayName(currentKey)}!<br>Buzz the Bee is so proud of you!`;
     document.getElementById('completionModal').classList.add('visible');
-    document.getElementById('key-' + currentKey)?.classList.add('done');
-    saveProgress(true);
   }
 
   function closeModal() { document.getElementById('completionModal').classList.remove('visible'); }
@@ -449,6 +473,890 @@ export function startLesson(config) {
     window.print();
   }
 
+  // ── KID MODE ──
+
+  function enterKidMode() {
+    KID.active = true;
+    KID.step   = 'cards';
+    const km = document.getElementById('kidMode');
+    km.classList.add('active');
+    // Request fullscreen on the overlay element; graceful fallback if unsupported (e.g. iOS Safari)
+    const rfs = km.requestFullscreen || km.webkitRequestFullscreen || km.mozRequestFullScreen || km.msRequestFullscreen;
+    rfs?.call(km).catch(() => {});
+    kidShowStep('cards');
+    showKidHint('Hold 🔒 to exit');
+  }
+
+  function exitKidMode() {
+    kidRestoreTab();
+    document.getElementById('kidMode').classList.remove('active');
+    KID.active = false;
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen)?.call(document).catch(() => {});
+    }
+  }
+
+  function kidShowStep(step) {
+    kidRestoreTab();
+    stopCardWobble();
+    KID.step = step;
+
+    const wrap = document.getElementById('kidActivityWrap');
+    const done = document.getElementById('kidDoneScreen');
+    if (done) done.style.display = (step === 'done') ? 'flex' : 'none';
+
+    if (step === 'done') { kidShowDone(); }
+    if (step !== 'done') {
+      const tabEl = document.getElementById('tab-' + step);
+      if (tabEl) {
+        tabEl.classList.add('active');
+        wrap.appendChild(tabEl);
+        KID.lastMoved = step;
+      }
+      // Re-render content for the new step
+      if (step === 'cards') {
+        currentCard = 0;
+        updateCard();
+        seenCards.add(0);
+        recomputeProgress();
+        startCardWobble();
+        ensureKidSpeakerBtn();
+      }
+      if (step === 'quiz') {
+        currentQuestion = 0; answered = false; wrongAttempts = 0;
+        buildQuizData();
+        renderQuiz();
+      }
+      // story: already rendered by applyStage() when item was loaded — no re-render needed
+    }
+
+    updateKidNav();
+    updateKidDots();
+  }
+
+  function kidRestoreTab() {
+    if (!KID.lastMoved) return;
+    const tabEl = document.getElementById('tab-' + KID.lastMoved);
+    if (tabEl) {
+      tabEl.classList.remove('active');
+      document.querySelector('.panel-card')?.appendChild(tabEl);
+    }
+    KID.lastMoved = null;
+  }
+
+  function kidAdvance() {
+    if (KID.step === 'cards') {
+      const cards = config.getCards(currentKey);
+      if (currentCard < cards.length - 1) {
+        nextCard();
+        updateKidNav();
+      } else {
+        kidShowStep('quiz');
+      }
+    }
+    // Quiz and story advance via their own UI; no kidAdvance action needed
+  }
+
+  function kidBack() {
+    if (KID.step === 'cards' && currentCard > 0) {
+      prevCard();
+      updateKidNav();
+    }
+  }
+
+  function kidShowDone() {
+    const items  = getStageItems(currentStage);
+    const isLast = items.indexOf(currentKey) >= items.length - 1;
+    const emoji  = document.getElementById('kidDoneEmoji');
+    const label  = document.getElementById('kidDoneLabel');
+    const nextBtn = document.getElementById('kidNextItemBtn');
+    const exitBtn = document.getElementById('kidDoneExitBtn');
+    if (emoji)   emoji.textContent  = isLast ? '🏆' : '🎉';
+    if (label)   label.textContent  = isLast
+      ? 'You did it all! Amazing! 🌟'
+      : config.getItemDisplayName(currentKey) + ' — well done!';
+    if (nextBtn) nextBtn.style.display = isLast ? 'none' : '';
+    if (exitBtn) exitBtn.style.display = isLast ? '' : 'none';
+    spawnConfetti();
+    kidBuzzJump();
+  }
+
+  function kidNextItem() {
+    nextItem();          // loads next item: resets state, re-renders tabs into .panel-card
+    kidShowStep('cards');
+  }
+
+  // ── KID MODE — PHASE 2B HELPERS ──
+
+  function prefersReducedMotion() {
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  }
+
+  function kidBuzzTap() {
+    const LINES = [
+      "You're doing great!",
+      "Bzzz! Keep going!",
+      "You're so clever!",
+      "Almost there!",
+      "Buzz is so proud of you!"
+    ];
+    const line = LINES[KID.buzzLineIdx % LINES.length];
+    KID.buzzLineIdx++;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(line);
+    u.lang = 'en-US'; u.rate = 0.92; u.pitch = 1.1;
+    window.speechSynthesis.speak(u);
+    const buzz = document.getElementById('kidBuzz');
+    if (buzz && !prefersReducedMotion()) {
+      buzz.classList.add('buzz-speak');
+      setTimeout(() => buzz.classList.remove('buzz-speak'), 600);
+    }
+  }
+
+  function kidBuzzJump() {
+    if (prefersReducedMotion()) return;
+    const buzz = document.getElementById('kidBuzz');
+    if (!buzz) return;
+    buzz.classList.add('buzz-jump');
+    setTimeout(() => buzz.classList.remove('buzz-jump'), 920);
+  }
+
+  function spawnConfetti() {
+    if (prefersReducedMotion()) {
+      const screen = document.getElementById('kidDoneScreen');
+      if (screen && !screen.querySelector('.kid-star-static')) {
+        const stars = document.createElement('div');
+        stars.className = 'kid-star-static';
+        stars.textContent = '⭐ ⭐ ⭐';
+        stars.style.cssText = 'font-size:32px;text-align:center;margin:8px 0;position:relative;z-index:5';
+        screen.insertBefore(stars, screen.firstChild);
+        setTimeout(() => stars.remove(), 3000);
+      }
+      return;
+    }
+    const screen = document.getElementById('kidDoneScreen');
+    if (!screen) return;
+    const COLORS = [
+      'var(--vivid-red)', 'var(--vivid-blue)', 'var(--vivid-green)',
+      'var(--vivid-yellow)', 'var(--vivid-purple)', 'var(--vivid-orange)'
+    ];
+    for (let i = 0; i < 24; i++) {
+      const el = document.createElement('div');
+      el.className = 'kid-confetti';
+      el.style.cssText = [
+        `left:${5 + Math.random() * 90}%`,
+        `top:${5 + Math.random() * 30}%`,
+        `background:${COLORS[i % COLORS.length]}`,
+        `animation-delay:${(Math.random() * 0.4).toFixed(2)}s`,
+        `animation-duration:${(1.2 + Math.random() * 0.9).toFixed(2)}s`,
+        `width:${8 + Math.floor(Math.random() * 8)}px`,
+        `height:${8 + Math.floor(Math.random() * 8)}px`,
+        `border-radius:${Math.random() > 0.5 ? '50%' : '3px'}`,
+        `transform:rotate(${Math.floor(Math.random() * 360)}deg)`,
+      ].join(';');
+      screen.appendChild(el);
+      setTimeout(() => el.remove(), 2800);
+    }
+  }
+
+  function startCardWobble() {
+    stopCardWobble();
+    if (prefersReducedMotion()) return;
+    KID.wobbleTimer = setInterval(() => {
+      if (KID.step !== 'cards') { stopCardWobble(); return; }
+      const card = document.getElementById('flashcard');
+      if (!card || card.classList.contains('flipped')) return;
+      card.classList.add('kid-wobble');
+      setTimeout(() => card?.classList.remove('kid-wobble'), 700);
+    }, 3800);
+  }
+
+  function stopCardWobble() {
+    clearInterval(KID.wobbleTimer);
+    KID.wobbleTimer = null;
+    document.getElementById('flashcard')?.classList.remove('kid-wobble');
+  }
+
+  function ensureKidSpeakerBtn() {
+    if (document.getElementById('kidCardSpeaker')) return;
+    const front = document.querySelector('#kidActivityWrap .flashcard-front');
+    if (!front) return;
+    const btn = document.createElement('button');
+    btn.id = 'kidCardSpeaker';
+    btn.setAttribute('aria-label', 'Listen');
+    btn.innerHTML = '🔊';
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const word = document.getElementById('cardWord')?.textContent?.trim();
+      if (word) speakQuiz(word);
+    });
+    front.appendChild(btn);
+  }
+
+  function updateKidNav() {
+    const fwd = document.getElementById('kidFwdBtn');
+    const bk  = document.getElementById('kidBackBtn');
+    const bar = document.getElementById('kidNavBar');
+    if (!fwd || !bk || !bar) return;
+
+    if (KID.step === 'done') {
+      bar.style.display = 'none';
+      return;
+    }
+    bar.style.display = '';
+
+    if (KID.step === 'cards') {
+      bk.style.visibility  = currentCard === 0 ? 'hidden' : '';
+      fwd.style.visibility = '';
+      fwd.disabled = false;
+    } else {
+      // Quiz and story: hide both arrows — interaction is within the activity itself
+      bk.style.visibility  = 'hidden';
+      fwd.style.visibility = 'hidden';
+    }
+  }
+
+  function updateKidDots() {
+    const FLOW = ['cards', 'quiz', 'story'];
+    const idx  = FLOW.indexOf(KID.step);
+    FLOW.forEach((s, i) => {
+      const dot = document.getElementById('kidDot' + i);
+      if (!dot) return;
+      dot.className = 'kid-dot';
+      if (i < idx) dot.classList.add('done');
+      else if (i === idx) dot.classList.add('active');
+    });
+  }
+
+  function kidLockStart() {
+    KID.holdTimer = setTimeout(exitKidMode, 3000);
+    document.getElementById('kidLockBtn')?.classList.add('holding');
+  }
+
+  function kidLockEnd() {
+    clearTimeout(KID.holdTimer);
+    document.getElementById('kidLockBtn')?.classList.remove('holding');
+  }
+
+  function showKidHint(msg) {
+    const el = document.getElementById('kidHint');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 3500);
+  }
+
+  // ESC / browser back exits kid mode via fullscreenchange
+  document.addEventListener('fullscreenchange',       () => { if (!document.fullscreenElement && !document.webkitFullscreenElement && KID.active) exitKidMode(); });
+  document.addEventListener('webkitfullscreenchange', () => { if (!document.fullscreenElement && !document.webkitFullscreenElement && KID.active) exitKidMode(); });
+
+  function injectKidModeDom() {
+    // ── CSS ──
+    // Pre-compute the encoded honeycomb SVG for the data-URI background
+    const _hexSVG = encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='28' height='24'>" +
+      "<polygon points='14,2 24,8.5 24,15.5 14,22 4,15.5 4,8.5' " +
+      "fill='none' stroke='rgba(200,140,40,0.09)' stroke-width='1'/></svg>"
+    );
+
+    const style = document.createElement('style');
+    style.textContent = `
+      /* ═══════════════════════════════════════════
+         KID MODE — injected by lesson-engine.js
+         All selectors scoped to #kidMode / #kidActivityWrap
+         to guarantee zero impact on parent view.
+      ═══════════════════════════════════════════ */
+
+      /* ── Vivid palette (learning objects only; chrome stays warm neutrals) ── */
+      #kidMode {
+        --vivid-red:    #E8281C;
+        --vivid-blue:   #1C6AE8;
+        --vivid-green:  #16A34A;
+        --vivid-yellow: #FACC15;
+        --vivid-purple: #7C3AED;
+        --vivid-orange: #EA580C;
+      }
+
+      /* Overlay container — sky-gradient background replaces flat cream */
+      #kidMode {
+        display: none; position: fixed; inset: 0; z-index: 9999;
+        background: linear-gradient(175deg, #A8DCEF 0%, #C6E8F2 28%, #F5E8C8 70%, #F0D88A 100%);
+        flex-direction: column; overflow: hidden;
+        font-family: 'Fredoka', 'Nunito', sans-serif;
+        height: 100dvh; height: 100vh; /* dvh with vh fallback */
+      }
+      #kidMode.active { display: flex; }
+
+      /* ── World backdrop (absolute, behind all content) ── */
+      #kidBg {
+        position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+      }
+      #kidBgDrip {
+        position: absolute; top: 0; left: 0; right: 0; height: 36px; z-index: 2;
+      }
+      #kidBgDrip svg { display: block; width: 100%; height: 36px; }
+      #kidBgHive {
+        position: absolute; top: 54px; right: 14px; z-index: 2; opacity: .82;
+        line-height: 0;
+      }
+      .kid-bg-bee {
+        position: absolute; z-index: 2; line-height: 0;
+        will-change: transform;
+      }
+      .kid-bee-1 { top: 10%; left:  6%; animation: kid-bee-drift1 16s ease-in-out infinite; }
+      .kid-bee-2 { top: 22%; left: 52%; animation: kid-bee-drift2 21s ease-in-out infinite 3s; }
+      .kid-bee-3 { top:  7%; left: 28%; animation: kid-bee-drift3 13s ease-in-out infinite 7s; }
+      #kidBgGround {
+        position: absolute; bottom: 0; left: 0; right: 0; z-index: 1; line-height: 0;
+      }
+      #kidBgGround svg { display: block; width: 100%; }
+
+      /* ── Buzz the Bee character (lower corner) ── */
+      #kidBuzz {
+        position: absolute; bottom: 92px; right: 16px; z-index: 10;
+        font-size: clamp(40px, 9dvh, 60px); line-height: 1;
+        cursor: pointer; animation: kid-buzz-bob 2.8s ease-in-out infinite;
+        -webkit-user-select: none; user-select: none; touch-action: none;
+        will-change: transform;
+      }
+
+      /* ── ANIMATIONS ── */
+      @keyframes kid-bee-drift1 {
+        0%   { transform: translate(0,    0)     rotate(0deg);   }
+        20%  { transform: translate(22px,-18px)  rotate(-10deg); }
+        45%  { transform: translate(40px, 12px)  rotate(7deg);   }
+        70%  { transform: translate(18px,-24px)  rotate(-6deg);  }
+        100% { transform: translate(0,    0)     rotate(0deg);   }
+      }
+      @keyframes kid-bee-drift2 {
+        0%   { transform: translate(0,    0)     rotate(0deg); }
+        30%  { transform: translate(-28px,14px)  rotate(9deg); }
+        60%  { transform: translate(-12px,-20px) rotate(-7deg); }
+        100% { transform: translate(0,    0)     rotate(0deg); }
+      }
+      @keyframes kid-bee-drift3 {
+        0%   { transform: translate(0,    0)    rotate(0deg);   }
+        35%  { transform: translate(16px, 20px) rotate(12deg);  }
+        65%  { transform: translate(-10px, 8px) rotate(-5deg);  }
+        100% { transform: translate(0,    0)    rotate(0deg);   }
+      }
+      @keyframes kid-buzz-bob {
+        0%, 100% { transform: translateY(0);    }
+        50%       { transform: translateY(-8px); }
+      }
+      @keyframes kid-buzz-jump {
+        0%   { transform: translateY(0)     scale(1);    }
+        30%  { transform: translateY(-28px) scale(1.15); }
+        60%  { transform: translateY(-8px)  scale(1.05); }
+        100% { transform: translateY(0)     scale(1);    }
+      }
+      #kidBuzz.buzz-jump  { animation: kid-buzz-jump  .92s ease-out forwards; }
+      #kidBuzz.buzz-speak { animation: kid-buzz-jump  .55s ease-out forwards; }
+
+      @keyframes kid-card-wobble {
+        0%,100% { transform: rotate(0deg);  }
+        20%      { transform: rotate(-3deg); }
+        40%      { transform: rotate(3deg);  }
+        60%      { transform: rotate(-2deg); }
+        80%      { transform: rotate(2deg);  }
+      }
+      #kidActivityWrap .flashcard.kid-wobble {
+        animation: kid-card-wobble .7s ease-in-out;
+      }
+
+      /* Confetti particles */
+      .kid-confetti {
+        position: absolute; z-index: 20; pointer-events: none;
+        animation: kid-confetti-fall 1.8s ease-in forwards;
+        will-change: transform, opacity;
+      }
+      @keyframes kid-confetti-fall {
+        0%   { transform: translateY(0)     rotate(0deg);   opacity: 1; }
+        80%  { opacity: 0.8; }
+        100% { transform: translateY(150px) rotate(360deg); opacity: 0; }
+      }
+
+      /* ── Speaker button (card front, kid-layer only) ── */
+      #kidCardSpeaker {
+        display: none; /* hidden when flashcard is in parent view */
+        position: absolute; bottom: 10px; right: 10px; z-index: 10;
+        font-size: 20px; background: rgba(255,255,255,.78); border: none;
+        border-radius: 50%; width: 38px; height: 38px;
+        align-items: center; justify-content: center;
+        cursor: pointer; transition: background .15s;
+        -webkit-user-select: none; user-select: none;
+      }
+      #kidActivityWrap .flashcard-front #kidCardSpeaker { display: flex; }
+      #kidCardSpeaker:active { background: rgba(245,166,35,.3); }
+
+      /* ── Honeycomb texture on the flashcard area only ── */
+      #kidActivityWrap .flashcard-area {
+        background-image: url("data:image/svg+xml,${_hexSVG}");
+        background-size: 28px 24px;
+        background-repeat: repeat;
+        border-radius: 16px;
+      }
+
+      /* ── Vivid colors on learning content ── */
+      #kidActivityWrap .quiz-option.correct {
+        box-shadow: 0 0 0 3px var(--vivid-green), 0 4px 16px rgba(22,163,74,.22);
+      }
+      #kidActivityWrap .story-illustration {
+        filter: drop-shadow(0 0 12px rgba(245,195,35,.38));
+      }
+      #kidDoneScreen #kidDoneEmoji {
+        filter: drop-shadow(0 0 20px rgba(250,204,21,.52));
+      }
+
+      /* ── NO-WORDS: hide option text labels (emoji carries the meaning) ── */
+      #kidActivityWrap .quiz-option { font-size: 0 !important; }
+
+      /* ── REDUCED MOTION ── */
+      @media (prefers-reduced-motion: reduce) {
+        .kid-bg-bee, #kidBuzz,
+        #kidActivityWrap .flashcard.kid-wobble,
+        .kid-confetti { animation: none !important; }
+      }
+
+      /* Ensure flex content sits above the absolute #kidBg layer */
+      #kidHeader, #kidActivityWrap, #kidDoneScreen, #kidNavBar {
+        position: relative; z-index: 1;
+      }
+
+      /* ── Header row: lock + progress bar placeholder ── */
+      #kidHeader {
+        display: flex; align-items: center;
+        padding: 10px 14px; flex-shrink: 0; gap: 12px;
+      }
+      #kidLockBtn {
+        font-size: 24px; background: none; border: 2px solid transparent;
+        border-radius: 50%; width: 44px; height: 44px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: background .2s, border-color .2s;
+        -webkit-user-select: none; user-select: none; touch-action: none;
+        flex-shrink: 0;
+      }
+      #kidLockBtn.holding {
+        background: rgba(212,112,10,.15); border-color: var(--amber);
+        animation: kid-lock-pulse 3s linear forwards;
+      }
+      @keyframes kid-lock-pulse {
+        0%   { box-shadow: 0 0 0 0  rgba(212,112,10,.5); }
+        100% { box-shadow: 0 0 0 24px rgba(212,112,10,0); }
+      }
+      #kidProgressPlaceholder {
+        flex: 1; height: 8px; background: var(--comb); border-radius: 100px;
+        /* Phase 3: replace with bee + honey-jar SVG progress visualization */
+      }
+
+      /* ── Activity content host ── */
+      #kidActivityWrap {
+        flex: 1; min-height: 0; overflow: hidden;
+        display: flex; flex-direction: column;
+        padding: 0 14px;
+      }
+      /* Hide parent-only chrome that lives inside the moved tabs */
+      #kidMode .activity-tabs     { display: none !important; }
+      #kidMode .worksheet-preview { display: none !important; }
+      /* Tab divs become full-height flex columns inside the wrap */
+      #kidActivityWrap .activity-content {
+        display: flex !important; flex-direction: column;
+        flex: 1; min-height: 0; padding: 0;
+      }
+
+      /* ── Number combo card (parent view + kid mode) ── */
+      .num-combo {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 0.08em; width: 100%;
+      }
+      .num-big {
+        font-size: 1em; font-weight: 700;
+        color: var(--amber, #F5A623); line-height: 1;
+      }
+      .num-pots { font-size: 0.32em; line-height: 1.35; text-align: center; }
+
+      /* Quiz Q1 counting image (numbers lesson) */
+      .num-q1-img {
+        font-size: clamp(18px, 4dvh, 32px);
+        line-height: 1.4; text-align: center;
+      }
+
+      /* ── CARDS layout ── */
+      /* Definitively hide all text nav chrome — real class is .flashcard-nav */
+      #kidActivityWrap .flashcard-nav,
+      #kidActivityWrap .card-nav,
+      #kidActivityWrap .card-counter,
+      #kidActivityWrap .card-btn      { display: none !important; }
+      #kidActivityWrap .card-hint     { display: none !important; }
+
+      #kidActivityWrap .flashcard-area {
+        flex: 1; min-height: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 0;
+      }
+      /* Card sized to fill ~75 % of the viewport height */
+      #kidActivityWrap .flashcard {
+        width:  min(90vw, 56dvh);
+        height: min(72dvh, 112vw);
+        max-width: unset; aspect-ratio: unset;
+        border-radius: 24px;
+        /* override any inline width/height the HTML shell may set */
+      }
+      #kidActivityWrap .flashcard-inner {
+        height: 100%;
+      }
+      /* Force front absolute so it fills the enlarged card
+         (numbers / colors-shapes shells use position:relative for content-driven height;
+          in kid mode we always have a fixed card size) */
+      #kidActivityWrap .flashcard-front {
+        position: absolute !important; inset: 0 !important;
+        display: flex !important; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 10px; padding: 20px; overflow: hidden;
+      }
+      #kidActivityWrap .card-emoji {
+        font-size: clamp(80px, 24dvh, 180px);
+        line-height: 1; flex: 1;
+        display: flex; align-items: center; justify-content: center;
+        text-align: center; overflow: hidden;
+      }
+      /* Scale up inline SVGs (colors-shapes, numbers ten-frames) */
+      #kidActivityWrap .card-emoji svg {
+        width:  clamp(110px, 30dvh, 240px) !important;
+        height: clamp(110px, 30dvh, 240px) !important;
+      }
+      #kidActivityWrap .card-word {
+        font-size: clamp(22px, 5.5dvh, 44px); flex-shrink: 0;
+      }
+      #kidActivityWrap .flashcard-back {
+        display: flex; align-items: center; justify-content: center;
+        padding: 20px; overflow: hidden;
+      }
+      #kidActivityWrap .card-back-text {
+        font-size: clamp(12px, 2.8dvh, 22px);
+        line-height: 1.45; overflow: hidden; text-align: center;
+      }
+
+      /* ── QUIZ layout — three balanced zones ── */
+      #kidActivityWrap #tab-quiz {
+        gap: clamp(4px, 1dvh, 10px); padding: clamp(4px, 1dvh, 8px) 0 0;
+      }
+      /* ZONE 1: stage — counting objects / numeral / decorative emoji */
+      #kidActivityWrap .quiz-image {
+        flex: 0 0 auto;
+        font-size: clamp(36px, 9dvh, 64px); line-height: 1;
+        min-height: clamp(56px, 14dvh, 112px);
+        max-height: 28dvh; overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        flex-wrap: wrap; word-break: break-all;
+      }
+      #kidActivityWrap .quiz-image svg {
+        width:  clamp(52px, 12dvh, 92px) !important;
+        height: clamp(52px, 12dvh, 92px) !important;
+      }
+      /* ZONE 2: prompt — question + feedback */
+      #kidActivityWrap .quiz-question {
+        flex: 0 0 auto;
+        font-size: clamp(14px, 3dvh, 22px);
+        text-align: center; margin: 0;
+      }
+      #kidActivityWrap .quiz-feedback {
+        flex: 0 0 auto;
+        font-size: clamp(12px, 2.8dvh, 18px) !important;
+        min-height: clamp(18px, 3.5dvh, 28px);
+      }
+      /* ZONE 3: actions — 2×2 answer grid, content-sized (not flex-stretch) */
+      #kidActivityWrap .quiz-options {
+        flex: 0 0 auto;
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      #kidActivityWrap .quiz-option {
+        min-height: clamp(52px, 9dvh, 76px);
+        padding: 6px 4px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 4px;
+        border-radius: 14px;
+      }
+      #kidActivityWrap .opt-emoji {
+        font-size: clamp(22px, 5.5dvh, 42px) !important; line-height: 1; display: block;
+      }
+      #kidActivityWrap .opt-emoji svg {
+        width:  clamp(26px, 6dvh, 46px) !important;
+        height: clamp(26px, 6dvh, 46px) !important;
+      }
+      #kidActivityWrap #nextQBtn {
+        flex: 0 0 auto;
+        font-size: clamp(13px, 3dvh, 20px);
+        padding: clamp(8px, 1.6dvh, 14px) clamp(16px, 3vw, 26px);
+        margin-top: 2px; border-radius: 100px;
+      }
+
+      /* ── STORY layout — three balanced zones, no scroll ── */
+      #kidActivityWrap #tab-story {
+        align-items: center; justify-content: flex-start;
+        gap: clamp(6px, 1.5dvh, 14px);
+        text-align: center; padding: clamp(4px, 1dvh, 10px) 0 0;
+      }
+      /* ZONE 1: stage — story emoji, compact so text gets more room */
+      #kidActivityWrap .story-illustration {
+        flex: 0 0 auto;
+        font-size: clamp(36px, 9dvh, 68px); line-height: 1;
+      }
+      /* ZONE 2: prompt — auto-scales to fill remaining space, NO scroll ever */
+      #kidActivityWrap #storyText {
+        flex: 1; min-height: 0; overflow: hidden;
+        font-size: clamp(11px, 2.6dvh, 20px);
+        line-height: 1.45; text-align: center;
+        padding: 0 4px; width: 100%;
+      }
+      /* Strip any left-align or list-indent the subject config may have set */
+      #kidActivityWrap #storyText p,
+      #kidActivityWrap #storyText ul,
+      #kidActivityWrap #storyText li { text-align: center; list-style: none; padding: 0; margin: 0; }
+      /* ZONE 3: actions */
+      #kidActivityWrap .story-actions {
+        flex: 0 0 auto;
+        display: flex; gap: 12px;
+        flex-wrap: wrap; justify-content: center; align-items: center;
+        padding-bottom: clamp(4px, 1dvh, 10px);
+      }
+      #kidActivityWrap .story-actions button {
+        font-family: 'Fredoka', sans-serif;
+        font-size: clamp(14px, 3.2dvh, 22px); font-weight: 700;
+        padding: clamp(10px, 1.8dvh, 16px) clamp(18px, 4vw, 32px);
+        border-radius: 100px;
+      }
+
+      /* ── DONE / celebration screen ── */
+      #kidDoneScreen {
+        display: none; flex: 1; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: clamp(14px, 3dvh, 28px); padding: 28px; text-align: center;
+      }
+      .kid-done-emoji {
+        font-size: clamp(72px, 18dvh, 130px); line-height: 1;
+      }
+      .kid-done-label {
+        font-family: 'Fredoka', sans-serif;
+        font-size: clamp(20px, 4.5dvh, 34px);
+        font-weight: 700; color: var(--amber); margin: 0;
+      }
+      .kid-done-actions {
+        display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap;
+      }
+      /* Giant → for "next item" — thumb-reachable, honey-colored */
+      .kid-next-item-btn {
+        font-size: clamp(30px, 7dvh, 52px); font-weight: 700; line-height: 1;
+        background: var(--honey); border: none; border-radius: 50%; color: white;
+        width: clamp(70px, 15dvh, 104px); height: clamp(70px, 15dvh, 104px);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all .18s;
+        box-shadow: 0 6px 24px rgba(200,120,20,.4);
+        -webkit-user-select: none; user-select: none;
+      }
+      .kid-next-item-btn:active { transform: scale(0.93); }
+      /* Smaller exit button for last-item screen */
+      .kid-done-exit-btn {
+        font-family: 'Fredoka', sans-serif;
+        font-size: clamp(15px, 3.5dvh, 22px); font-weight: 700;
+        background: var(--honey-pale); color: var(--amber);
+        border: 2px solid var(--honey-light); border-radius: 100px;
+        padding: clamp(10px, 2dvh, 14px) clamp(22px, 4vw, 36px);
+        cursor: pointer; transition: all .18s;
+      }
+      .kid-done-exit-btn:hover { background: var(--honey-light); }
+
+      /* ── Nav bar: ← dots → (cards step only) ── */
+      #kidNavBar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 18px; flex-shrink: 0;
+        background: var(--cream); border-top: 2px solid var(--comb);
+      }
+      .kid-arrow {
+        font-size: clamp(24px, 6vw, 32px); font-weight: 700; line-height: 1;
+        background: var(--honey-pale); border: 3px solid var(--honey-light);
+        border-radius: 50%;
+        width:  clamp(54px, 13vw, 70px);
+        height: clamp(54px, 13vw, 70px);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all .18s; flex-shrink: 0;
+        -webkit-user-select: none; user-select: none;
+      }
+      .kid-arrow:disabled { opacity: .3; cursor: default; }
+      .kid-arrow:not(:disabled):active { transform: scale(0.91); background: var(--honey-light); }
+      .kid-step-dots { display: flex; gap: 10px; align-items: center; }
+      .kid-dot {
+        width: 12px; height: 12px; border-radius: 50%;
+        background: var(--comb); transition: all .3s;
+      }
+      .kid-dot.active { background: var(--honey); transform: scale(1.4); box-shadow: 0 0 0 3px rgba(245,166,35,.25); }
+      .kid-dot.done   { background: var(--leaf); }
+
+      /* ── Hint toast ── */
+      #kidHint {
+        position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
+        background: rgba(58,42,10,.88); color: white;
+        padding: 10px 22px; border-radius: 100px;
+        font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 700;
+        z-index: 10000; opacity: 0; transition: opacity .35s;
+        pointer-events: none; white-space: nowrap;
+      }
+      #kidHint.visible { opacity: 1; }
+
+      /* ── Hand-to-child button (parent nav, injected) ── */
+      .hand-to-child-btn {
+        display: flex; align-items: center; gap: 6px;
+        background: var(--honey); border: none; border-radius: 100px;
+        padding: 8px 16px;
+        font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 700;
+        color: white; cursor: pointer; transition: all .18s;
+        box-shadow: 0 3px 12px rgba(200,120,20,.25); white-space: nowrap;
+      }
+      .hand-to-child-btn:hover { background: var(--honey-deep); transform: translateY(-1px); }
+    `;
+    document.head.appendChild(style);
+
+    // ── KID MODE OVERLAY HTML ──
+    const km = document.createElement('div');
+    km.id = 'kidMode';
+    km.setAttribute('role', 'dialog');
+    km.setAttribute('aria-modal', 'true');
+    km.setAttribute('aria-label', 'Kid mode');
+    km.innerHTML = `
+      <div id="kidBg" aria-hidden="true">
+        <div id="kidBgDrip"></div>
+        <div id="kidBgHive"></div>
+        <div class="kid-bg-bee kid-bee-1"></div>
+        <div class="kid-bg-bee kid-bee-2"></div>
+        <div class="kid-bg-bee kid-bee-3"></div>
+        <div id="kidBgGround"></div>
+      </div>
+      <div id="kidHeader">
+        <button id="kidLockBtn" aria-label="Hold 3 seconds to exit kid mode">🔒</button>
+        <div id="kidProgressPlaceholder" aria-hidden="true"></div>
+      </div>
+      <div id="kidActivityWrap" aria-live="polite"></div>
+      <div id="kidDoneScreen">
+        <div class="kid-done-emoji" id="kidDoneEmoji">🎉</div>
+        <p class="kid-done-label" id="kidDoneLabel">Well done!</p>
+        <div class="kid-done-actions">
+          <button class="kid-next-item-btn" id="kidNextItemBtn" aria-label="Next">→</button>
+          <button class="kid-done-exit-btn" id="kidDoneExitBtn">✅ All done</button>
+        </div>
+      </div>
+      <div id="kidNavBar">
+        <button class="kid-arrow" id="kidBackBtn" aria-label="Previous card">←</button>
+        <div class="kid-step-dots" aria-hidden="true">
+          <span class="kid-dot" id="kidDot0"></span>
+          <span class="kid-dot" id="kidDot1"></span>
+          <span class="kid-dot" id="kidDot2"></span>
+        </div>
+        <button class="kid-arrow" id="kidFwdBtn" aria-label="Next card">→</button>
+      </div>
+      <div id="kidBuzz" role="button" tabindex="0" aria-label="Buzz says hi — tap me!">🐝</div>
+    `;
+    document.body.appendChild(km);
+
+    // ── WORLD SVGs ──
+    document.getElementById('kidBgDrip').innerHTML =
+      "<svg viewBox='0 0 400 32' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'>" +
+        "<rect x='0' y='0' width='400' height='10' fill='#F5A623'/>" +
+        "<path d='M76,10 L76,19 Q76,30 80,30 Q84,30 84,19 L84,10 Z' fill='#F5A623'/>" +
+        "<path d='M216,10 L216,22 Q216,32 220,32 Q224,32 224,22 L224,10 Z' fill='#F5A623'/>" +
+        "<path d='M336,10 L336,17 Q336,26 340,26 Q344,26 344,17 L344,10 Z' fill='#F5A623'/>" +
+      "</svg>";
+
+    document.getElementById('kidBgHive').innerHTML =
+      "<svg viewBox='0 0 88 112' width='68' height='86' xmlns='http://www.w3.org/2000/svg'>" +
+        "<rect x='40' y='0' width='8' height='22' rx='3' fill='#8B6A3E'/>" +
+        "<ellipse cx='26' cy='8' rx='14' ry='5' fill='#5A9A2A' transform='rotate(-25,26,8)'/>" +
+        "<ellipse cx='62' cy='13' rx='12' ry='4.5' fill='#4A8A20' transform='rotate(22,62,13)'/>" +
+        "<path d='M44,22 Q44,30 44,32' stroke='#C8901A' stroke-width='2' fill='none'/>" +
+        "<path d='M16,108 Q16,58 24,38 Q32,20 44,18 Q56,20 64,38 Q72,58 72,108 Z' fill='#F5A623'/>" +
+        "<ellipse cx='44' cy='100' rx='28' ry='5.5' fill='none' stroke='#B87010' stroke-width='1.2' opacity='.5'/>" +
+        "<ellipse cx='44' cy='90'  rx='26' ry='5'   fill='none' stroke='#B87010' stroke-width='1.2' opacity='.5'/>" +
+        "<ellipse cx='44' cy='80'  rx='23' ry='4.5' fill='none' stroke='#B87010' stroke-width='1.2' opacity='.5'/>" +
+        "<ellipse cx='44' cy='70'  rx='19' ry='4'   fill='none' stroke='#B87010' stroke-width='1.2' opacity='.5'/>" +
+        "<ellipse cx='44' cy='61'  rx='15' ry='3.5' fill='none' stroke='#B87010' stroke-width='1.2' opacity='.5'/>" +
+        "<ellipse cx='44' cy='53'  rx='11' ry='3'   fill='none' stroke='#B87010' stroke-width='1.2' opacity='.5'/>" +
+        "<ellipse cx='44' cy='46'  rx='7'  ry='2.5' fill='none' stroke='#B87010' stroke-width='1.2' opacity='.5'/>" +
+        "<ellipse cx='44' cy='107' rx='29' ry='6' fill='#D4780A'/>" +
+        "<ellipse cx='44' cy='95'  rx='10' ry='6' fill='#1A0A00'/>" +
+        "<ellipse cx='44' cy='95'  rx='13' ry='8' fill='none' stroke='#F5C823' stroke-width='1.5' opacity='.4'/>" +
+      "</svg>";
+
+    const _beeSVG =
+      "<svg viewBox='0 0 36 24' width='28' height='18' xmlns='http://www.w3.org/2000/svg' style='overflow:visible'>" +
+        "<ellipse cx='13' cy='8' rx='11' ry='5' fill='rgba(255,255,255,0.7)' stroke='#d4b040' stroke-width='0.6'/>" +
+        "<ellipse cx='23' cy='8' rx='11' ry='5' fill='rgba(255,255,255,0.7)' stroke='#d4b040' stroke-width='0.6'/>" +
+        "<ellipse cx='18' cy='16' rx='11' ry='7' fill='#F5C823'/>" +
+        "<path d='M8,16 Q18,14 28,16 M8,19 Q18,17 28,19' stroke='#2A1A05' stroke-width='2.5' fill='none'/>" +
+        "<circle cx='18' cy='7' r='5.5' fill='#F5C823'/>" +
+        "<circle cx='16' cy='6' r='1.3' fill='#2A1A05'/><circle cx='20' cy='6' r='1.3' fill='#2A1A05'/>" +
+        "<path d='M15,3 Q11,0 10,-1 M21,3 Q25,0 26,-1' stroke='#2A1A05' stroke-width='1.2' fill='none'/>" +
+        "<circle cx='10' cy='-1' r='1.3' fill='#2A1A05'/><circle cx='26' cy='-1' r='1.3' fill='#2A1A05'/>" +
+      "</svg>";
+    document.querySelectorAll('.kid-bg-bee').forEach(el => { el.innerHTML = _beeSVG; });
+
+    document.getElementById('kidBgGround').innerHTML =
+      "<svg viewBox='0 0 1000 80' width='100%' height='80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'>" +
+        "<path d='M0,45 C120,18 250,62 400,32 C540,8 660,55 800,28 C900,10 960,42 1000,22 L1000,80 L0,80 Z' fill='#88C03A'/>" +
+        "<path d='M0,62 C100,38 220,72 360,52 C480,34 600,68 740,50 C850,34 940,60 1000,44 L1000,80 L0,80 Z' fill='#5A9020'/>" +
+        "<g transform='translate(140,40)'>" +
+          "<line x1='0' y1='6' x2='0' y2='22' stroke='#3A8020' stroke-width='2.5'/>" +
+          "<circle cx='-5' cy='-3' r='4.5' fill='#FF8C00'/><circle cx='5' cy='-3' r='4.5' fill='#FF8C00'/>" +
+          "<circle cx='0' cy='-8' r='4.5' fill='#FF8C00'/><circle cx='-4' cy='5' r='4' fill='#FF8C00'/><circle cx='4' cy='5' r='4' fill='#FF8C00'/>" +
+          "<circle cx='0' cy='0' r='5.5' fill='#FFD700'/>" +
+        "</g>" +
+        "<g transform='translate(490,32)'>" +
+          "<line x1='0' y1='5' x2='-2' y2='20' stroke='#3A8020' stroke-width='2'/>" +
+          "<circle cx='-5' cy='-3' r='3.8' fill='#FF1493'/><circle cx='5' cy='-3' r='3.8' fill='#FF1493'/>" +
+          "<circle cx='0' cy='-7' r='3.8' fill='#FF1493'/><circle cx='-4' cy='4' r='3.5' fill='#FF1493'/><circle cx='4' cy='4' r='3.5' fill='#FF1493'/>" +
+          "<circle cx='0' cy='0' r='5' fill='#FF69B4'/>" +
+        "</g>" +
+        "<g transform='translate(810,44)'>" +
+          "<line x1='0' y1='5' x2='2' y2='18' stroke='#3A8020' stroke-width='2'/>" +
+          "<circle cx='-5' cy='-3' r='3.8' fill='#9B0090'/><circle cx='5' cy='-3' r='3.8' fill='#9B0090'/>" +
+          "<circle cx='0' cy='-7' r='3.8' fill='#9B0090'/><circle cx='-4' cy='4' r='3.5' fill='#9B0090'/><circle cx='4' cy='4' r='3.5' fill='#9B0090'/>" +
+          "<circle cx='0' cy='0' r='5' fill='#DA70D6'/>" +
+        "</g>" +
+      "</svg>";
+
+    // ── Buzz tap event ──
+    const _buzz = document.getElementById('kidBuzz');
+    _buzz.addEventListener('click', kidBuzzTap);
+    _buzz.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); kidBuzzTap(); } });
+
+    // ── HINT TOAST ──
+    const hint = document.createElement('div');
+    hint.id = 'kidHint';
+    hint.setAttribute('aria-live', 'assertive');
+    hint.setAttribute('aria-atomic', 'true');
+    document.body.appendChild(hint);
+
+    // ── HAND-TO-CHILD BUTTON in parent nav ──
+    const navRight = document.querySelector('.nav-right');
+    if (navRight) {
+      const htcBtn = document.createElement('button');
+      htcBtn.className = 'hand-to-child-btn';
+      htcBtn.textContent = '🧒 Hand to child';
+      htcBtn.onclick = enterKidMode;
+      navRight.insertBefore(htcBtn, navRight.firstChild);
+    }
+
+    // ── EVENT WIRING ──
+    document.getElementById('kidLockBtn').addEventListener('pointerdown',  kidLockStart);
+    document.getElementById('kidLockBtn').addEventListener('pointerup',    kidLockEnd);
+    document.getElementById('kidLockBtn').addEventListener('pointerleave', kidLockEnd);
+    document.getElementById('kidLockBtn').addEventListener('pointercancel',kidLockEnd);
+    document.getElementById('kidBackBtn').addEventListener('click', kidBack);
+    document.getElementById('kidFwdBtn').addEventListener('click',  kidAdvance);
+    document.getElementById('kidNextItemBtn').addEventListener('click', kidNextItem);
+    document.getElementById('kidDoneExitBtn').addEventListener('click', exitKidMode);
+  }
+
   // ── GLOBAL HANDLERS (inline onclick in HTML) ──
   window.setStage      = setStage;
   window.switchTab     = switchTab;
@@ -466,4 +1374,10 @@ export function startLesson(config) {
   window.sendMessage   = sendMessage;
   window.closeModal    = closeModal;
   window.nextItem      = nextItem;
+  // Kid mode (also wired via addEventListener in injectKidModeDom, exposed here for completeness)
+  window.enterKidMode  = enterKidMode;
+  window.exitKidMode   = exitKidMode;
+  window.kidAdvance    = kidAdvance;
+  window.kidBack       = kidBack;
+  window.kidNextItem   = kidNextItem;
 }
