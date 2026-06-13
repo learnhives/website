@@ -1135,6 +1135,12 @@ export function startLesson(config) {
         line-height: 1.4; text-align: center;
       }
 
+      /* Photo counting objects (e.g. honeypot.png) — parent view + kid mode */
+      .counting-obj {
+        width: clamp(28px, 5dvh, 44px); height: auto;
+        vertical-align: middle; margin: 2px;
+      }
+
       /* ── CARDS layout ── */
       /* Definitively hide all text nav chrome — real class is .flashcard-nav */
       #kidActivityWrap .flashcard-nav,

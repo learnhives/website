@@ -1,6 +1,11 @@
 const NUM_WORDS = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
   'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
 
+// Counting object: a real honeypot photo instead of the 🍯 emoji. Styled by `.counting-obj`
+// (defined in lesson-engine.js, applies in both parent view and Kid Mode). Because the
+// row builders use `.repeat()`, this string repeats cleanly into grouped rows.
+const HONEYPOT = '<img src="/assets/images/common/honeypot.png" alt="honeypot" class="counting-obj">';
+
 const NUM_EMOJI = {
   1:'🍎', 2:'🐝', 3:'🌸', 4:'🌟', 5:'🐸',
   6:'🍓', 7:'🦋', 8:'🦁', 9:'🌈', 10:'🍯',
@@ -106,8 +111,8 @@ export const LESSON_CONFIG = {
   renderCard(card, key, stageKey) {
     const n = parseInt(key);
     const d = this.numbers[key];
-    // Always 🍯 as the counting object — consistent mental model
-    const pots = makeGroupedRows('🍯', n).replace(/\n/g, '<br>');
+    // Always the honeypot photo as the counting object — consistent mental model
+    const pots = makeGroupedRows(HONEYPOT, n).replace(/\n/g, '<br>');
     // emoji area: big numeral + honey pots below (HTML composition)
     const emojiHtml =
       `<div class="num-combo">` +
@@ -143,7 +148,7 @@ export const LESSON_CONFIG = {
     const getDist = () => shuffle([...pool]).slice(0, 3);
 
     // Q1: count the objects → pick numeral (grouped rows, always honey pots)
-    const q1Rows = makeGroupedRows('🍯', n).replace(/\n/g, '<br>');
+    const q1Rows = makeGroupedRows(HONEYPOT, n).replace(/\n/g, '<br>');
     const dist1 = getDist();
     const q1 = {
       question: 'How many?',
@@ -165,11 +170,14 @@ export const LESSON_CONFIG = {
       ])
     };
 
-    // Q3: see word → find numeral
+    // Q3: see word + count the honeypots → find matching numeral.
+    // (Was a single per-number emoji — one 🐝 for "Two" — which taught the wrong count.
+    //  Now shows the correct quantity of honeypots using the same grouping as the cards.)
+    const q3Rows = makeGroupedRows(HONEYPOT, n).replace(/\n/g, '<br>');
     const dist3 = getDist();
     const q3 = {
       question: `Find the number "${d.word}"!`,
-      image: d.emoji,
+      image: `<div class="num-q1-img">${q3Rows}</div>`,
       options: shuffle([
         { e: String(n), l: String(n), c: true },
         ...dist3.map(x => ({ e: String(x), l: String(x), c: false }))
