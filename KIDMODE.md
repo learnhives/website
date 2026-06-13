@@ -7,9 +7,16 @@ full-screen, scroll-free, icon-driven learning surface. Kid Mode separates them.
 **Decision date:** Day 17 planning (Jun 2026). Build before remaining lessons —
 every lesson built after Kid Mode inherits it free.
 
+> **Status — Day 17:** Sections 1–6 built and live (alphabet + numbers verified).
+> - **Built:** engine kid-layer, guided flow (cards→quiz→story→celebration), hive
+>   world backdrop, real-AI Buzz tap-chip tutoring, pinch-zoom lockout, numbers
+>   single-card model.
+> - **Remaining:** quiz zone distribution (tiles fill top, void below — one layout
+>   fix), colors-shapes verification in kid frame.
+
 ---
 
-## 1. Architecture
+## 1. Architecture ✅ BUILT
 
 **One page, two views, one engine state.**
 - The lesson page keeps a **parent view** (current layout, decluttered).
@@ -20,7 +27,7 @@ every lesson built after Kid Mode inherits it free.
   functions receive it (or engine swaps layouts) — content identical, chrome
   differs.
 
-## 2. Entry & exit
+## 2. Entry & exit ✅ BUILT
 
 - **Entry:** big button on parent view — **🧒 "Hand to child"** → requests
   fullscreen, shows kid layer, starts the guided flow.
@@ -30,7 +37,7 @@ every lesson built after Kid Mode inherits it free.
   acceptable for web; the future app can harden this.
 - Exiting never loses progress (state is shared).
 
-## 3. Kid screen — guided flow (no tabs)
+## 3. Kid screen — guided flow (no tabs) ✅ BUILT
 
 **DECIDED:** flow-driven, completion-based. Tabs removed in Kid Mode.
 
@@ -46,7 +53,7 @@ Cards (all items or today's set) → Quiz → Story → 🎉 Celebration
 - Parent-settable flow preferences (skip story, free-explore mode) = later
   (`#backlog`).
 
-## 4. No-words policy (kid layer)
+## 4. No-words policy (kid layer) ✅ BUILT
 
 The only readable text on the kid screen is **the learning content itself**
 ("Ten", "B is for Ball"). All UI is symbolic + spoken:
@@ -60,7 +67,7 @@ The only readable text on the kid screen is **the learning content itself**
 | Header badges (stage, age, "10 of 10") | Removed entirely |
 | Print / worksheet / dashboard | Removed entirely (parent view only) |
 
-## 5. Card rules (fixes current bugs)
+## 5. Card rules (fixes current bugs) ✅ BUILT
 
 - **Fixed card size** at every stage and number — content scales inside, card
   doesn't grow/shrink (kills the layout-jump bug).
@@ -76,7 +83,7 @@ The only readable text on the kid screen is **the learning content itself**
     18 parrots teaches "the parrot number," not quantity.)
 - Quiz "How many?" images follow the same grouping rule.
 
-## 6. Palette — calm chrome, vivid objects
+## 6. Palette — calm chrome, vivid objects ✅ BUILT
 
 - **Chrome** (background, frames, buttons): stays honey-warm neutrals. Calm.
 - **Learning objects** (counting items, swatches, shapes, celebration): a

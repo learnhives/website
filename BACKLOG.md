@@ -8,7 +8,7 @@ items are easy to scan and group. Update freely as things get added or done.
 relevant section into the chat. Move finished items to the bottom under
 `## ✅ Done`.
 
-_Last updated: Day 16 (Jun 2026)_
+_Last updated: Day 17 (Jun 2026)_
 
 ---
 
@@ -29,8 +29,13 @@ _Real structural work — higher priority than polish._
 ## #product-next
 _Building the product forward._
 
-- [ ] Remaining subjects: Colors & Shapes, Nature & Animals, Music & Emotions,
-      Motion & Movement.
+- [ ] **Quiz zone distribution** — kid quiz screen: answer tiles crammed at top, empty
+      void below the Next Question button. One layout fix in `lesson-engine.js` (make
+      `.quiz-options` fill remaining height, same pattern as cards/story already use).
+- [ ] **Colors & Shapes verification** — config + HTML shell exist
+      (`js/lessons/colors-shapes.js`, `app/lesson-colors-shapes.html`) but have not
+      been tested in the kid frame. Review pass + link to dashboard.
+- [ ] Remaining subjects: Nature & Animals, Music & Emotions, Motion & Movement.
 - [ ] Dashboard: show overall progress across all lessons.
 
 ## #content-depth
@@ -63,13 +68,19 @@ _Small setup items, when convenient._
 
 - [ ] `vercel dev` local setup — full local testing including Buzz (ES modules +
       serverless functions together, not just `file://` / Live Server).
+- [ ] **iOS mobile-chrome** — Safari address bar can't be fully hidden on the web
+      (platform limit). `apple-mobile-web-app-capable` meta tags + scroll trick are in
+      place. Best fix is PWA add-to-home-screen. Known limitation, not a bug.
 
 ## #vision
 _Long-horizon north-star items._
 
 - [ ] **Longitudinal personalization** — "championing the individual child."
-      Capture clean structured interaction events starting ~Day 18. Framing =
+      Capture clean structured interaction events starting ~Day 19. Framing =
       strengths / next-steps, NOT global ranking. COPPA/GDPR-compliant by design.
+- [ ] **Kid-Buzz voice mic** — open-mic voice input for children in Kid Mode.
+      Deferred: requires a child-safety system prompt design + parent consent flow
+      (COPPA). Not a simple UI addition.
 - [ ] **Grade-school expansion** — Standard 1–6, block-based coding, STEM
       (the "Later" half of the stage/lesson grid).
 
@@ -78,6 +89,19 @@ _Long-horizon north-star items._
 ## ✅ Done
 _Move completed items here with the day they landed._
 
+- [x] **Day 17** — **Kid Mode** built into `lesson-engine.js`; every future lesson inherits it for free:
+  - Full-screen child layer (`<div id="kidMode">`, `position:fixed`). Parent view is
+    `display:none` while Kid Mode is active.
+  - Guided flow: Cards → Quiz → Story → Celebration. No tabs; giant ← → arrows; dot
+    progress indicators; hold-🔒-3s toddler-proof exit.
+  - Hive world backdrop: gradient sky, SVG honeycomb hive, drifting bees, honey-drip
+    top border, grass strip — all original CSS/SVG, `prefers-reduced-motion` respected.
+  - Real-AI Buzz: front-facing SVG bee, idle hover + 5s wiggle hint. Tap → 3 chips
+    (🔢 🔊 ⭐) → each chip calls `/api/claude-proxy` with per-stage system prompt +
+    speaks Claude's 1-sentence reply via TTS. Graceful spoken fallback on failure.
+  - Pinch-zoom + double-tap-zoom disabled on lesson pages.
+  - Numbers lesson: single combo card per number (numeral + honey-pot count grouped
+    10+remainder). Fixes the 2-card split that showed "1 honey pot = Ten".
 - [x] **Day 16** — Extracted shared lesson engine into `js/lesson-engine.js` (single export
       `startLesson(config)`). `lesson-alphabet.html` is now a 4-line shell. Engine is
       subject-agnostic: `config.items` / `config.getItems(stage)` for item sets,

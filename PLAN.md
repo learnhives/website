@@ -17,7 +17,7 @@ should now be faster because the template + seams exist. The plan is a guide, no
 a contract — lessons can ship post-launch too (the catalog supports adding them
 independently per stage).
 
-_Last updated: end of Day 16 (Jun 2026)_
+_Last updated: end of Day 17 (Jun 2026). Day 17 was used for Kid Mode (one unplanned but high-leverage session — all future lessons inherit it free). Phase 4 lesson builds are now ~1 day behind the original numbering._
 
 ---
 
@@ -31,6 +31,7 @@ _Last updated: end of Day 16 (Jun 2026)_
 | 13 | **Secure the API:** Anthropic calls moved to Vercel serverless proxy (`api/claude-proxy.js`); rate limiting, JWT verification, RLS policies. |
 | 14–15 | **Alphabet lesson + architecture:** full A–Z `lesson-alphabet.html` (Cards/Quiz/Story, Buzz AI chat, voice input, TTS, age-differentiated single-page worksheets + A–Z pack). Teaching-correct quiz (2-try reveal, emoji + spoken feedback). State-based progress. **Config split into ES module `js/lessons/alphabet.js`.** **Three profile-driven seams (stage / lang / theme) via one settings helper**, `?preview=1` dev flag, Supabase wiring TODO-marked. Lesson catalog designed (`catalog.js`). `BACKLOG.md` + `HANDOFF.md` created. |
 | **16** | **Shared engine + Numbers lesson** *(not in the original plan — emerged from building the 2nd lesson)*: Extracted inline engine to `js/lesson-engine.js` (`startLesson(config)` — single export). Each lesson is now **engine + config module + 4-line HTML shell**. Built `lesson-numbers.html`: 1–20, four stages, stage-scaled item sets (Seedling/Sprout 1–10, Blossom/Bloom 1–20), ten-frame layout, Bloom +1 peek. **Days 17–20 lesson builds are now config-only — significantly faster.** |
+| **17** | **Kid Mode** *(not in the original plan — triggered by testing numbers with a child)*: Full-screen child-facing layer in `lesson-engine.js`. Guided flow (cards→quiz→story→celebration), hive world backdrop (gradient sky, SVG hive, drifting bees, honey-drip border), real-AI Buzz tap-chip tutoring (🔢🔊⭐ → `/api/claude-proxy` → TTS), pinch-zoom lockout, numbers single-card model fix. Alphabet + numbers verified. `lesson-colors-shapes.html` shell exists but unverified. **Every future lesson inherits Kid Mode for free.** |
 
 ---
 
@@ -39,10 +40,10 @@ _Last updated: end of Day 16 (Jun 2026)_
 ### Phase 4 (cont.) — Core lessons & data
 | Day | Task | Goal |
 | --- | --- | --- |
-| **17** | **`lesson-colors-shapes.html`** — same template, colors & shapes content per stage. | 3rd subject live |
-| **18** | **Progress tracking → Supabase + structured event logging.** Swap localStorage progress for Supabase; design the **events table** with the longitudinal "champion the child" vision in mind (clean structured events, stage as flexible string, COPPA/GDPR-aware). | Progress persisted; data foundation laid |
-| **19** | **`lesson-nature-animals.html`** | 4th subject live |
-| **20** | **`lesson-music-emotions.html`** (and/or **Motion & Movement** — movement games with Buzz). | 5th/6th subject live |
+| **18** | **`lesson-colors-shapes.html`** — verify in kid frame + link to dashboard. Lessons now drop straight into the finished Kid Mode. | 3rd subject live |
+| **19** | **Progress tracking → Supabase + structured event logging.** Swap localStorage progress for Supabase; design the **events table** with the longitudinal "champion the child" vision in mind (clean structured events, stage as flexible string, COPPA/GDPR-aware). | Progress persisted; data foundation laid |
+| **20** | **`lesson-nature-animals.html`** | 4th subject live |
+| **21** | **`lesson-music-emotions.html`** (and/or **Motion & Movement** — movement games with Buzz). | 5th/6th subject live |
 
 ### Phase 5 — Dashboard, profile wiring, legal, polish
 | Day | Task | Goal |

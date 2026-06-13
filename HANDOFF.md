@@ -5,7 +5,7 @@ oriented. Pair it with `BACKLOG.md` (current task list) and, if useful, the
 project plan docx + Gantt. Keep this file updated as the project's "stable facts"
 change; use `BACKLOG.md` for the moving task list.
 
-_Last updated: Day 16 (Jun 2026)_
+_Last updated: Day 17 (Jun 2026)_
 
 ---
 
@@ -56,7 +56,7 @@ Bloom (5–6). Core subjects are shared across all stages; higher stages get
 **additional, independently-counted** lessons (no fixed pattern). AI tutor =
 **Buzz the Bee** (bee/honey theme; other characters: Honey, Flora, Petal).
 
-## Current state — Day 16 of 28
+## Current state — Day 17 of 28
 
 Phases 1–3 done: dev setup, auth/Supabase, Stripe payments/webhooks/welcome
 email, security hardening (rate limiting, JWT verification, RLS).
@@ -107,6 +107,46 @@ shell. No engine changes needed.**
   Seedling/Sprout: items 1–10 (🍯 objects, ten-frame for 6–10, no word for Seedling).
   Blossom/Bloom: items 1–20 (per-number emoji, number word; Bloom adds a "+1 peek").
 
+### Kid Mode (built Day 17 — every future lesson inherits it free)
+
+`js/lesson-engine.js` now drives **two views from one page**:
+
+- **Parent view** — tabs (Cards / Quiz / Story), Buzz chat, worksheet, print.
+  "Hand to child" button in the nav triggers Kid Mode.
+- **Kid layer** — `<div id="kidMode">` full-screen takeover (`position:fixed; z-index:9999`).
+  Parent view is `display:none` while Kid Mode is active, not merely covered.
+
+**Architecture:** engine state is shared; no duplication. Kid Mode is injected entirely
+by `injectKidModeDom()` in `lesson-engine.js`. New lessons get Kid Mode automatically —
+zero extra work per lesson.
+
+**Guided flow:** Cards → Quiz → Story → Celebration. No tabs; giant ← → arrows;
+dot progress. Hold 🔒 3s to exit (toddler-proof). Content scales to fit — no scrolling
+anywhere; all zones use `dvh` units.
+
+**Hive world backdrop:** gradient sky, SVG honeycomb hive, drifting bees, honey-drip
+border, grass strip — all original CSS/SVG (no image files), GPU-composited,
+`prefers-reduced-motion` respected.
+
+**Real-AI Buzz:** front-facing SVG bee in lower corner, idle hover + 5s wiggle hint.
+Tap → 3 chip bubbles (🔢 count, 🔊 sound, ⭐ fun fact) over a dimmed screen.
+Each chip calls `/api/claude-proxy` with `config.getBuzzPrompt()` as system prompt and
+speaks Claude's 1-sentence reply via TTS. Graceful spoken fallback on API failure.
+No free-text input in Kid Mode (deferred to `#vision` — needs COPPA consent).
+
+**Also built Day 17:**
+- Numbers lesson: one card per number (numeral + honey-pot count grouped 10+remainder).
+  Fixes the old 2-card split that showed "1 honey pot = Ten".
+- Pinch-zoom / double-tap-zoom disabled on lesson pages (toddlers were escaping).
+
+**Colors & Shapes:** config file and HTML shell exist (`js/lessons/colors-shapes.js`,
+`app/lesson-colors-shapes.html`) but have **not been verified** in the kid frame.
+First lesson built after Kid Mode; needs a test pass before being linked to the dashboard.
+
+**Still open from Day 17:**
+- Quiz zone distribution: tiles fill the top half, empty void below — one layout fix pending.
+- iOS Safari address bar can't be fully hidden on web (platform limit; meta tags + scroll trick added).
+
 **Settings seams** (applied inside the engine for every lesson):
 - `stage`, `lang` (default `en`), `theme` (default `honey`; `ocean` proof-of-concept built).
 - Read from URL params (`?stage=bloom`, `?theme=ocean`). `?preview=1` shows stage selector.
@@ -147,7 +187,8 @@ See **`BACKLOG.md`** (repo root) for the live task list, organized by hashtag:
 `#polish-feel`, `#infra`, `#vision`.
 
 Most likely next moves:
-- **#product-next** — `lesson-colors-shapes.html` (3rd subject; now just a config file + thin shell).
+- **Quiz zone fix** — kid quiz screen tile distribution (one layout change in `lesson-engine.js`).
+- **#product-next** — verify then link `lesson-colors-shapes.html` (drops straight into Kid Mode).
 - **#architecture-next** — build the dashboard lesson catalog (from `catalog.js`).
 
 ## Note on assistant memory
