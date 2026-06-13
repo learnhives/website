@@ -507,6 +507,7 @@ export function startLesson(config) {
     kidRestoreTab();
     stopCardWobble();
     KID.step = step;
+    document.getElementById('kidMode').dataset.step = step;
 
     const wrap = document.getElementById('kidActivityWrap');
     const done = document.getElementById('kidDoneScreen');
@@ -1061,6 +1062,10 @@ export function startLesson(config) {
         position: relative; z-index: 1;
       }
 
+      /* During the quiz, hide the drifting bees — they float over the counting
+         objects and make "How many?" ambiguous. */
+      #kidMode[data-step="quiz"] .kid-bg-bee { display: none !important; }
+
       /* ── Header row: lock + progress bar placeholder ── */
       #kidHeader {
         display: flex; align-items: center;
@@ -1182,18 +1187,21 @@ export function startLesson(config) {
       #kidActivityWrap #tab-quiz {
         gap: clamp(4px, 1dvh, 10px); padding: clamp(4px, 1dvh, 8px) 0 0;
       }
-      /* ZONE 1: stage — counting objects / numeral / decorative emoji */
+      /* ZONE 1: stage — counting objects / numeral / decorative emoji.
+         Grows to ~50-55% of the quiz zone so objects display large & countable. */
       #kidActivityWrap .quiz-image {
-        flex: 0 0 auto;
-        font-size: clamp(36px, 9dvh, 64px); line-height: 1;
-        min-height: clamp(56px, 14dvh, 112px);
-        max-height: 28dvh; overflow: hidden;
+        flex: 1.3 1 0; min-height: 0; overflow: hidden;
+        font-size: clamp(44px, 13dvh, 88px); line-height: 1.05;
         display: flex; align-items: center; justify-content: center;
         flex-wrap: wrap; word-break: break-all;
       }
       #kidActivityWrap .quiz-image svg {
-        width:  clamp(52px, 12dvh, 92px) !important;
-        height: clamp(52px, 12dvh, 92px) !important;
+        width:  clamp(64px, 16dvh, 120px) !important;
+        height: clamp(64px, 16dvh, 120px) !important;
+      }
+      /* Numbers lesson "How many?" counting image — scale honeypots up & let them grow */
+      #kidActivityWrap .quiz-image .num-q1-img {
+        font-size: clamp(34px, 9dvh, 64px); line-height: 1.25;
       }
       /* ZONE 2: prompt — question + feedback */
       #kidActivityWrap .quiz-question {
@@ -1206,13 +1214,14 @@ export function startLesson(config) {
         font-size: clamp(12px, 2.8dvh, 18px) !important;
         min-height: clamp(18px, 3.5dvh, 28px);
       }
-      /* ZONE 3: actions — 2×2 grid that fills the remaining height */
+      /* ZONE 3: actions — 2×2 grid, ~45% share; tiles stay tappable but not oversized */
       #kidActivityWrap .quiz-options {
-        flex: 1; min-height: 0;
+        flex: 1 1 0; min-height: 0; max-height: 42dvh;
         display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
         gap: 8px;
       }
       #kidActivityWrap .quiz-option {
+        min-height: clamp(60px, 9dvh, 84px);
         padding: 6px 4px;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center; gap: 4px;
