@@ -63,7 +63,7 @@ export function startLesson(config) {
   let seenCards = new Set(), answeredQuestions = new Set(), storyDone = false, completionShown = false;
 
   // ── KID MODE STATE ──
-  const KID = { active: false, step: 'cards', lastMoved: null, holdTimer: null, buzzLineIdx: 0, wobbleTimer: null };
+  const KID = { active: false, step: 'cards', lastMoved: null, holdTimer: null, buzzLineIdx: 0, wobbleTimer: null, wiggleTimer: null, isThinking: false };
 
   // ── INIT ──
   document.addEventListener('DOMContentLoaded', () => {
@@ -483,11 +483,16 @@ export function startLesson(config) {
     // Request fullscreen on the overlay element; graceful fallback if unsupported (e.g. iOS Safari)
     const rfs = km.requestFullscreen || km.webkitRequestFullscreen || km.mozRequestFullScreen || km.msRequestFullscreen;
     rfs?.call(km).catch(() => {});
+    document.body.classList.add('kid-active');
+    startBuzzWiggle();
     kidShowStep('cards');
     showKidHint('Hold 🔒 to exit');
   }
 
   function exitKidMode() {
+    kidDismissChips();
+    stopBuzzWiggle();
+    document.body.classList.remove('kid-active');
     kidRestoreTab();
     document.getElementById('kidMode').classList.remove('active');
     KID.active = false;
@@ -593,24 +598,8 @@ export function startLesson(config) {
   }
 
   function kidBuzzTap() {
-    const LINES = [
-      "You're doing great!",
-      "Bzzz! Keep going!",
-      "You're so clever!",
-      "Almost there!",
-      "Buzz is so proud of you!"
-    ];
-    const line = LINES[KID.buzzLineIdx % LINES.length];
-    KID.buzzLineIdx++;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(line);
-    u.lang = 'en-US'; u.rate = 0.92; u.pitch = 1.1;
-    window.speechSynthesis.speak(u);
-    const buzz = document.getElementById('kidBuzz');
-    if (buzz && !prefersReducedMotion()) {
-      buzz.classList.add('buzz-speak');
-      setTimeout(() => buzz.classList.remove('buzz-speak'), 600);
-    }
+    if (KID.isThinking) return;
+    kidShowChips();
   }
 
   function kidBuzzJump() {
@@ -619,6 +608,101 @@ export function startLesson(config) {
     if (!buzz) return;
     buzz.classList.add('buzz-jump');
     setTimeout(() => buzz.classList.remove('buzz-jump'), 920);
+  }
+
+  function startBuzzWiggle() {
+    stopBuzzWiggle();
+    if (prefersReducedMotion()) return;
+    KID.wiggleTimer = setInterval(() => {
+      if (!KID.active) { stopBuzzWiggle(); return; }
+      const buzz = document.getElementById('kidBuzz');
+      if (!buzz || document.getElementById('kidChipOverlay')) return;
+      buzz.classList.add('buzz-wiggle');
+      setTimeout(() => buzz?.classList.remove('buzz-wiggle'), 900);
+    }, 5000);
+  }
+
+  function stopBuzzWiggle() {
+    clearInterval(KID.wiggleTimer);
+    KID.wiggleTimer = null;
+    document.getElementById('kidBuzz')?.classList.remove('buzz-wiggle');
+  }
+
+  function kidShowChips() {
+    if (document.getElementById('kidChipOverlay')) { kidDismissChips(); return; }
+    const CHIPS = [
+      { type: 'count', icon: '🔢' },
+      { type: 'sound', icon: '🔊' },
+      { type: 'fact',  icon: '⭐' }
+    ];
+    const overlay = document.createElement('div');
+    overlay.id = 'kidChipOverlay';
+    overlay.innerHTML =
+      '<div class="kid-chips-container">' +
+      CHIPS.map(c => `<button class="kid-chip" data-type="${c.type}">${c.icon}</button>`).join('') +
+      '</div>';
+    overlay.addEventListener('click', e => { if (e.target === overlay) kidDismissChips(); });
+    overlay.querySelectorAll('.kid-chip').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); kidChipAction(btn.dataset.type); });
+    });
+    document.getElementById('kidMode').appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+  }
+
+  function kidDismissChips() {
+    const overlay = document.getElementById('kidChipOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('visible');
+    setTimeout(() => overlay.remove(), 260);
+  }
+
+  async function kidChipAction(type) {
+    if (KID.isThinking) return;
+    KID.isThinking = true;
+    kidDismissChips();
+    const buzz = document.getElementById('kidBuzz');
+    buzz?.classList.add('buzz-thinking');
+    const PROMPTS = {
+      count: `In 1 short sentence, help this child understand the quantity or meaning of "${currentKey}". Be playful and encouraging.`,
+      sound: `In 1 short sentence, say the sound or name of "${currentKey}" and give one example for a young child.`,
+      fact:  `Share one amazing fun fact about "${currentKey}" in 1 short sentence. Be excited and playful.`
+    };
+    const FALLBACKS = {
+      count: "Let's count together — you're amazing! 🍯",
+      sound: "Great listening! You're a superstar! 🌟",
+      fact:  "Bzzz! Learning is so fun! 🐝"
+    };
+    try {
+      const sys = (config.getBuzzPrompt?.(currentKey, currentStage) ??
+        'You are Buzz, a friendly bee teaching young children. Be warm and playful.') +
+        ' Reply in exactly 1 sentence. No markdown. Speak directly to the child.';
+      const res = await fetch('/api/claude-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system: sys,
+          messages: [{ role: 'user', content: PROMPTS[type] }],
+          max_tokens: 80
+        })
+      });
+      if (!res.ok) throw new Error('proxy ' + res.status);
+      const data = await res.json();
+      const reply = data?.content?.[0]?.text?.trim() || FALLBACKS[type];
+      kidBuzzSpeak(reply);
+    } catch (_) {
+      kidBuzzSpeak(FALLBACKS[type]);
+    } finally {
+      KID.isThinking = false;
+      buzz?.classList.remove('buzz-thinking');
+    }
+  }
+
+  function kidBuzzSpeak(text) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.9; u.pitch = 1.05;
+    window.speechSynthesis.speak(u);
+    kidBuzzJump();
   }
 
   function spawnConfetti() {
@@ -852,6 +936,48 @@ export function startLesson(config) {
       }
       #kidBuzz.buzz-jump  { animation: kid-buzz-jump  .92s ease-out forwards; }
       #kidBuzz.buzz-speak { animation: kid-buzz-jump  .55s ease-out forwards; }
+      @keyframes kid-buzz-wiggle {
+        0%, 100% { transform: translateY(0)    rotate(0deg);   }
+        20%      { transform: translateY(-5px) rotate(-10deg); }
+        45%      { transform: translateY(-3px) rotate(8deg);   }
+        70%      { transform: translateY(-6px) rotate(-5deg);  }
+      }
+      #kidBuzz.buzz-wiggle { animation: kid-buzz-wiggle .9s ease-in-out; }
+      @keyframes kid-buzz-thinking {
+        0%, 100% { transform: translateY(0)    scale(1);    }
+        50%      { transform: translateY(-7px) scale(1.12); }
+      }
+      #kidBuzz.buzz-thinking { animation: kid-buzz-thinking .65s ease-in-out infinite; }
+
+      /* ── Buzz chip overlay ── */
+      #kidChipOverlay {
+        position: absolute; inset: 0; z-index: 15;
+        background: rgba(0,0,0,.2);
+        opacity: 0; transition: opacity .22s;
+      }
+      #kidChipOverlay.visible { opacity: 1; }
+      .kid-chips-container {
+        position: absolute; bottom: 170px; right: 14px;
+        display: flex; flex-direction: column; align-items: center; gap: 12px;
+      }
+      .kid-chip {
+        display: flex; align-items: center; justify-content: center;
+        width: 72px; height: 72px;
+        background: white; border: none; border-radius: 50%;
+        font-size: clamp(28px, 6dvh, 40px);
+        box-shadow: 0 6px 22px rgba(0,0,0,.22);
+        cursor: pointer; touch-action: manipulation;
+        animation: kid-chip-pop .24s cubic-bezier(.34,1.56,.64,1) both;
+        -webkit-user-select: none; user-select: none;
+      }
+      .kid-chip:nth-child(1) { animation-delay: .04s; }
+      .kid-chip:nth-child(2) { animation-delay: .10s; }
+      .kid-chip:nth-child(3) { animation-delay: .16s; }
+      .kid-chip:active { transform: scale(.88); }
+      @keyframes kid-chip-pop {
+        from { opacity: 0; transform: translateY(16px) scale(.82); }
+        to   { opacity: 1; transform: translateY(0)    scale(1);   }
+      }
 
       @keyframes kid-card-wobble {
         0%,100% { transform: rotate(0deg);  }
@@ -915,7 +1041,8 @@ export function startLesson(config) {
       @media (prefers-reduced-motion: reduce) {
         .kid-bg-bee, #kidBuzz,
         #kidActivityWrap .flashcard.kid-wobble,
-        .kid-confetti { animation: none !important; }
+        .kid-confetti, .kid-chip { animation: none !important; }
+        #kidChipOverlay { transition: none; }
       }
 
       /* Ensure flex content sits above the absolute #kidBg layer */
@@ -963,6 +1090,8 @@ export function startLesson(config) {
         display: flex !important; flex-direction: column;
         flex: 1; min-height: 0; padding: 0;
       }
+      /* Hide parent chat panel while kid mode is active */
+      body.kid-active .buzz-panel { display: none !important; }
 
       /* ── Number combo card (parent view + kid mode) ── */
       .num-combo {
