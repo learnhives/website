@@ -480,9 +480,11 @@ export function startLesson(config) {
     KID.step   = 'cards';
     const km = document.getElementById('kidMode');
     km.classList.add('active');
-    // Request fullscreen on the overlay element; graceful fallback if unsupported (e.g. iOS Safari)
-    const rfs = km.requestFullscreen || km.webkitRequestFullscreen || km.mozRequestFullScreen || km.msRequestFullscreen;
-    rfs?.call(km).catch(() => {});
+    // Fullscreen on document root (broader support); scroll trick as iOS fallback for address bar
+    const fsEl = document.documentElement;
+    const rfs = fsEl.requestFullscreen || fsEl.webkitRequestFullscreen || fsEl.mozRequestFullScreen || fsEl.msRequestFullscreen;
+    rfs?.call(fsEl).catch(() => {});
+    setTimeout(() => window.scrollTo(0, 1), 80);
     document.body.classList.add('kid-active');
     startBuzzWiggle();
     kidShowStep('cards');
@@ -835,6 +837,14 @@ export function startLesson(config) {
   document.addEventListener('webkitfullscreenchange', () => { if (!document.fullscreenElement && !document.webkitFullscreenElement && KID.active) exitKidMode(); });
 
   function injectKidModeDom() {
+    // ── PWA meta: minimize browser chrome on mobile ──
+    [['apple-mobile-web-app-capable','yes'],['mobile-web-app-capable','yes']].forEach(([n,v]) => {
+      if (!document.querySelector(`meta[name="${n}"]`)) {
+        const m = document.createElement('meta'); m.name = n; m.content = v;
+        document.head.appendChild(m);
+      }
+    });
+
     // ── CSS ──
     // Pre-compute the encoded honeycomb SVG for the data-URI background
     const _hexSVG = encodeURIComponent(
@@ -898,11 +908,12 @@ export function startLesson(config) {
       /* ── Buzz the Bee character (lower corner) ── */
       #kidBuzz {
         position: absolute; bottom: 92px; right: 16px; z-index: 10;
-        font-size: clamp(40px, 9dvh, 60px); line-height: 1;
+        width: clamp(44px, 10dvh, 62px); height: auto; line-height: 0;
         cursor: pointer; animation: kid-buzz-bob 2.8s ease-in-out infinite;
         -webkit-user-select: none; user-select: none; touch-action: none;
         will-change: transform;
       }
+      #kidBuzz svg { display: block; width: 100%; height: auto; }
 
       /* ── ANIMATIONS ── */
       @keyframes kid-bee-drift1 {
@@ -957,7 +968,7 @@ export function startLesson(config) {
       }
       #kidChipOverlay.visible { opacity: 1; }
       .kid-chips-container {
-        position: absolute; bottom: 170px; right: 14px;
+        position: absolute; bottom: 196px; right: 14px;
         display: flex; flex-direction: column; align-items: center; gap: 12px;
       }
       .kid-chip {
@@ -1195,14 +1206,13 @@ export function startLesson(config) {
         font-size: clamp(12px, 2.8dvh, 18px) !important;
         min-height: clamp(18px, 3.5dvh, 28px);
       }
-      /* ZONE 3: actions — 2×2 answer grid, content-sized (not flex-stretch) */
+      /* ZONE 3: actions — 2×2 grid that fills the remaining height */
       #kidActivityWrap .quiz-options {
-        flex: 0 0 auto;
-        display: grid; grid-template-columns: 1fr 1fr;
+        flex: 1; min-height: 0;
+        display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
         gap: 8px;
       }
       #kidActivityWrap .quiz-option {
-        min-height: clamp(52px, 9dvh, 76px);
         padding: 6px 4px;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center; gap: 4px;
@@ -1384,9 +1394,40 @@ export function startLesson(config) {
         </div>
         <button class="kid-arrow" id="kidFwdBtn" aria-label="Next card">→</button>
       </div>
-      <div id="kidBuzz" role="button" tabindex="0" aria-label="Buzz says hi — tap me!">🐝</div>
+      <div id="kidBuzz" role="button" tabindex="0" aria-label="Buzz says hi — tap me!"></div>
     `;
     document.body.appendChild(km);
+
+    // ── Buzz — front-facing bee SVG ──
+    document.getElementById('kidBuzz').innerHTML =
+      "<svg viewBox='0 0 58 66' xmlns='http://www.w3.org/2000/svg'>" +
+        // Wings (behind body, slight transparency)
+        "<ellipse cx='12' cy='34' rx='12' ry='7.5' transform='rotate(-22 12 34)' fill='rgba(235,248,255,.88)' stroke='#C8A820' stroke-width='.7'/>" +
+        "<ellipse cx='46' cy='34' rx='12' ry='7.5' transform='rotate(22 46 34)' fill='rgba(235,248,255,.88)' stroke='#C8A820' stroke-width='.7'/>" +
+        // Body
+        "<ellipse cx='29' cy='48' rx='12' ry='16' fill='#F5C823'/>" +
+        "<path d='M17.5,44 Q29,47 40.5,44 L40.5,51 Q29,54 17.5,51 Z' fill='#2A1A05'/>" +
+        "<path d='M18.5,55 Q29,58 39.5,55 L39,61 Q29,64 19,61 Z' fill='#2A1A05'/>" +
+        // Head
+        "<circle cx='29' cy='22' r='15' fill='#F5C823'/>" +
+        // Antennae
+        "<line x1='24' y1='10' x2='17' y2='3' stroke='#2A1A05' stroke-width='1.6' stroke-linecap='round'/>" +
+        "<line x1='34' y1='10' x2='41' y2='3' stroke='#2A1A05' stroke-width='1.6' stroke-linecap='round'/>" +
+        "<circle cx='16.5' cy='2.5' r='2.6' fill='#F5C823' stroke='#2A1A05' stroke-width='1.2'/>" +
+        "<circle cx='41.5' cy='2.5' r='2.6' fill='#F5C823' stroke='#2A1A05' stroke-width='1.2'/>" +
+        // Eyes
+        "<circle cx='22' cy='20' r='5.5' fill='white'/>" +
+        "<circle cx='36' cy='20' r='5.5' fill='white'/>" +
+        "<circle cx='23' cy='20' r='3.2' fill='#1A0A00'/>" +
+        "<circle cx='37' cy='20' r='3.2' fill='#1A0A00'/>" +
+        "<circle cx='23.8' cy='18.8' r='1.1' fill='white'/>" +
+        "<circle cx='37.8' cy='18.8' r='1.1' fill='white'/>" +
+        // Smile
+        "<path d='M23,28 Q29,33.5 35,28' stroke='#2A1A05' stroke-width='2' fill='none' stroke-linecap='round'/>" +
+        // Cheek blush
+        "<ellipse cx='16' cy='26' rx='4' ry='2.5' fill='rgba(255,110,110,.22)'/>" +
+        "<ellipse cx='42' cy='26' rx='4' ry='2.5' fill='rgba(255,110,110,.22)'/>" +
+      "</svg>";
 
     // ── WORLD SVGs ──
     document.getElementById('kidBgDrip').innerHTML =
