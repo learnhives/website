@@ -12,31 +12,72 @@ _Last updated: Day 17 (Jun 2026)_
 
 ---
 
+## #bug-fix
+_Correctness issues — fix before building more lessons._
+
+- [ ] **Numbers quiz: wrong object count** — "Find the number 'Two'" quiz shows a
+      single per-number emoji (one bee) instead of 2 honeypots. Child sees one
+      object and picks "1." Fix is in `numbers.js` `buildQuiz`: replace single
+      emoji with correct quantity of 🍯 using same grouping logic as cards.
+
+## #engine-next
+_Engine changes needed before mass lesson production._
+
+- [ ] **Image support in renderCard** — engine currently returns emoji from
+      `renderCard`. Needs to also support `<img src="...">` so photo-based
+      subjects (animals, fruits, vegetables, transport) can display AI-generated
+      photos. One small change; all photo configs benefit.
+- [ ] **Scrap old colors-shapes** — delete `js/lessons/colors-shapes.js` and
+      `app/lesson-colors-shapes.html`. Replace with separate `colors.js` and
+      `shapes.js` configs.
+
+## #lesson-production
+_Building the 12 remaining configs. Build in batches of 3–4, test each batch._
+
+**Batch 1 (emoji-based, no photos needed):**
+- [ ] `colors.js` + `app/lesson-colors.html` — color swatches + example objects
+- [ ] `shapes.js` + `app/lesson-shapes.html` — geometric shapes + real-world matches
+
+**Batch 2 (photo-based — needs images generated first):**
+- [ ] `farm-animals.js` + `app/lesson-farm-animals.html`
+- [ ] `wild-animals.js` + `app/lesson-wild-animals.html`
+- [ ] `birds.js` + `app/lesson-birds.html`
+
+**Batch 3 (photo-based):**
+- [ ] `fruits.js` + `app/lesson-fruits.html`
+- [ ] `vegetables.js` + `app/lesson-vegetables.html`
+- [ ] `transport.js` + `app/lesson-transport.html`
+
+**Batch 4 (emoji-based):**
+- [ ] `music.js` + `app/lesson-music.html` — instruments, sound on card flip
+- [ ] `emotions.js` + `app/lesson-emotions.html` — emoji faces + scenarios
+
+**Batch 5 (Blossom/Bloom only, emoji-based):**
+- [ ] `occupations.js` + `app/lesson-occupations.html`
+- [ ] `my-world.js` + `app/lesson-my-world.html` — places + daily objects
+
+## #images
+_AI-generated photo assets for 6 visual-recognition subjects._
+
+- [ ] **Generate 91 images via DALL-E** — see `LearnHives_Image_List.xlsx` for
+      full checklist with filenames. 5 test images done (cow, lion, eagle, apple,
+      carrot). Style locked: square 1:1, white background, studio lighting.
+- [ ] **Add images to repo** — `assets/images/{subject-folder}/{item}.png`.
+      Commute-time work; can be done in parallel with config writing.
+
 ## #architecture-next
 _Real structural work — higher priority than polish._
 
 - [ ] **Dashboard lesson catalog** — make the stage-tagged grid real (from the
       `catalog.js` design artifact) so each child sees the right lessons for
-      their stage. Lessons are tagged with the stages they appear in; counts per
-      stage are independent/unlimited.
+      their stage. Must now handle 12 subjects for Seedling/Sprout and 14 for
+      Blossom/Bloom.
 - [ ] **Wire Supabase child-profile into the settings seam** — swap the
       URL/default fallback for `child.stage` / `lang` / `theme`. TODO comments
-      already mark the exact spots in `lesson-alphabet.html`.
+      already mark the exact spots in lesson pages.
 - [ ] **Migrate lesson configs + catalog to Supabase** (post-launch) — lessons as
       data rows; stage-specific / independent lesson counts become DB inserts,
       not code changes.
-
-## #product-next
-_Building the product forward._
-
-- [ ] **Quiz zone distribution** — kid quiz screen: answer tiles crammed at top, empty
-      void below the Next Question button. One layout fix in `lesson-engine.js` (make
-      `.quiz-options` fill remaining height, same pattern as cards/story already use).
-- [ ] **Colors & Shapes verification** — config + HTML shell exist
-      (`js/lessons/colors-shapes.js`, `app/lesson-colors-shapes.html`) but have not
-      been tested in the kid frame. Review pass + link to dashboard.
-- [ ] Remaining subjects: Nature & Animals, Music & Emotions, Motion & Movement.
-- [ ] Dashboard: show overall progress across all lessons.
 
 ## #content-depth
 _Richer lesson content._
@@ -52,78 +93,57 @@ _Minor worksheet layout/spacing tweaks (anytime)._
       should read "1 to 10" for Seedling/Sprout and "1 to 20" for Blossom/Bloom.
 
 ## #polish-feel
-_One combined "make it feel alive" session — best done after a few more lessons
-exist, so it can be judged across the whole app. All lightweight, kid-appropriate,
-and must respect `prefers-reduced-motion`._
+_One combined "make it feel alive" session — best done after most lessons exist._
 
 - [ ] **Ambient animation** — buzzing bee, blossoming flowers, gentle seasonal
-      touches (rain / wind). Purposeful, not constant; off-by-default-able.
+      touches. Purposeful, not constant; off-by-default-able.
 - [ ] **Themed backgrounds** — replace the geometric honeycomb with soft per-theme
-      "worlds" (ocean → beach, forest → trees). Approach: gradient sky + simple
-      silhouette strip at the bottom, all CSS/SVG (lightweight), NOT photographic
-      scenes. Design together with animation so they're coherent.
+      "worlds." Gradient sky + simple silhouette strip, all CSS/SVG.
 
 ## #infra
 _Small setup items, when convenient._
 
-- [ ] `vercel dev` local setup — full local testing including Buzz (ES modules +
-      serverless functions together, not just `file://` / Live Server).
-- [ ] **iOS mobile-chrome** — Safari address bar can't be fully hidden on the web
-      (platform limit). `apple-mobile-web-app-capable` meta tags + scroll trick are in
-      place. Best fix is PWA add-to-home-screen. Known limitation, not a bug.
+- [ ] `vercel dev` local setup — full local testing including Buzz.
+- [ ] **iOS mobile-chrome** — Safari address bar platform limit. PWA
+      add-to-home-screen is the best fix. Known limitation, not a bug.
 
 ## #vision
 _Long-horizon north-star items._
 
+- [ ] **Hive world gamification** — persistent world per child (forest/hive),
+      earn honeypots → grow bees → build hive. Township/Garden Escape inspired.
+      3–6 month build; post-launch differentiator, not a launch feature.
+- [ ] **Pronunciation checking** — mic input + API comparison for letter/word
+      pronunciation. Web Speech API recognition is already in Buzz chat;
+      extending to "say this letter" is doable post-launch.
 - [ ] **Longitudinal personalization** — "championing the individual child."
-      Capture clean structured interaction events starting ~Day 19. Framing =
-      strengths / next-steps, NOT global ranking. COPPA/GDPR-compliant by design.
+      Clean structured interaction events. Strengths / next-steps, NOT global
+      ranking. COPPA/GDPR-compliant by design.
 - [ ] **Kid-Buzz voice mic** — open-mic voice input for children in Kid Mode.
-      Deferred: requires a child-safety system prompt design + parent consent flow
-      (COPPA). Not a simple UI addition.
-- [ ] **Grade-school expansion** — Standard 1–6, block-based coding, STEM
-      (the "Later" half of the stage/lesson grid).
+      Needs child-safety system prompt + parent consent flow (COPPA).
+- [ ] **Grade-school expansion** — Standard 1–6, block-based coding, STEM.
 
 ---
 
 ## ✅ Done
 _Move completed items here with the day they landed._
 
-- [x] **Day 17** — **Kid Mode** built into `lesson-engine.js`; every future lesson inherits it for free:
-  - Full-screen child layer (`<div id="kidMode">`, `position:fixed`). Parent view is
-    `display:none` while Kid Mode is active.
-  - Guided flow: Cards → Quiz → Story → Celebration. No tabs; giant ← → arrows; dot
-    progress indicators; hold-🔒-3s toddler-proof exit.
-  - Hive world backdrop: gradient sky, SVG honeycomb hive, drifting bees, honey-drip
-    top border, grass strip — all original CSS/SVG, `prefers-reduced-motion` respected.
-  - Real-AI Buzz: front-facing SVG bee, idle hover + 5s wiggle hint. Tap → 3 chips
-    (🔢 🔊 ⭐) → each chip calls `/api/claude-proxy` with per-stage system prompt +
-    speaks Claude's 1-sentence reply via TTS. Graceful spoken fallback on failure.
-  - Pinch-zoom + double-tap-zoom disabled on lesson pages.
-  - Numbers lesson: single combo card per number (numeral + honey-pot count grouped
-    10+remainder). Fixes the 2-card split that showed "1 honey pot = Ten".
-- [x] **Day 16** — Extracted shared lesson engine into `js/lesson-engine.js` (single export
-      `startLesson(config)`). `lesson-alphabet.html` is now a 4-line shell. Engine is
-      subject-agnostic: `config.items` / `config.getItems(stage)` for item sets,
-      `config.renderCard` / `config.renderWorksheet` for rendering, `config.uiStrings`
-      for per-subject label overrides.
-- [x] **Day 16** — `lesson-numbers.html` built: 1–20, four stages. Seedling/Sprout show
-      1–10 (🍯 objects, ten-frame for 6–10, no word for Seedling); Blossom/Bloom show
-      1–20 (per-number emoji, number word; Bloom adds a +1 peek). Config-only build on
-      the engine — no engine changes needed.
-- [x] **Day 15** — `lesson-alphabet.html` full build: A–Z data-driven lesson,
-      flashcards, story (with Listen TTS), Buzz AI tutor, voice input.
-- [x] **Day 15** — Quiz that teaches: correct-answer-required, 2-try reveal,
-      no reward for guessing; emoji + spoken feedback for non-readers; pulse-glow
-      on correct answer.
-- [x] **Day 15** — Age-differentiated single-page worksheets (all 4 stages) +
-      A–Z pack with print confirmation. Fixed print bugs (pseudo-element overlay,
-      2nd blank page).
-- [x] **Day 15** — Separated lesson config into ES module `js/lessons/alphabet.js`
-      (engine / content decoupled).
-- [x] **Day 15** — Stage locked to profile via settings seam; `?preview=1` dev
-      flag; Supabase profile wiring marked with TODO.
-- [x] **Day 15** — Language (i18n) + theme seams via one consolidated settings
-      helper (stage / lang / theme). English + honey default; ocean theme proven.
-- [x] **Day 15** — Designed lesson catalog (`catalog.js` artifact) — stage-tagged
-      grid; added Motion & Movement as a core subject.
+- [x] **Day 17** — Quiz layout partially fixed: rebalanced image-to-options ratio,
+      drifting bees hidden during quiz, counting emoji size increased.
+- [x] **Day 17** — Landing page updated from 6 subjects to 14 subjects.
+- [x] **Day 17** — Subject list finalized: 14 subjects (12 all-stage + 2
+      Blossom/Bloom only). Colors & Shapes split. Nature & Animals split into
+      Farm Animals, Wild Animals, Birds. Added Fruits, Vegetables, Transport,
+      Occupations, My World. Music & Emotions confirmed as flashcard subjects.
+      Fine Motor & Motion parked post-launch.
+- [x] **Day 17** — Image strategy decided: DALL-E photos for 6 visual subjects,
+      emoji for 8 abstract subjects. Hosted in repo. 5 test images generated and
+      approved (cow, lion, eagle, apple, carrot). Style prompt locked.
+- [x] **Day 17** — **Kid Mode** built into `lesson-engine.js`; every future lesson
+      inherits it for free. Full-screen child layer, guided flow, hive world
+      backdrop, real-AI Buzz tap-chip tutoring, pinch-zoom lockout, numbers
+      single-card model fix.
+- [x] **Day 16** — Extracted shared lesson engine into `js/lesson-engine.js`.
+      Built `lesson-numbers.html`: 1–20, four stages.
+- [x] **Day 15** — `lesson-alphabet.html` full build. Quiz, worksheets, Buzz AI,
+      voice input, TTS, stage-from-profile, i18n/theme seams, catalog design.

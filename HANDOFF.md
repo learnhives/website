@@ -49,14 +49,48 @@ auth, DB, RLS) · **Stripe** (UAE; Free / Family $9.99 / Family Plus $14.99, 30-
 trial) · **Anthropic Claude API** via a secured Vercel proxy `api/claude-proxy.js`
 · **Resend** (Tokyo, email). All secrets are Vercel env vars.
 
-## Curriculum model
+## Curriculum model — 14 subjects
 
-Subjects × **4 preschool stages**: Seedling (2–3), Sprout (3–4), Blossom (4–5),
-Bloom (5–6). Core subjects are shared across all stages; higher stages get
-**additional, independently-counted** lessons (no fixed pattern). AI tutor =
-**Buzz the Bee** (bee/honey theme; other characters: Honey, Flora, Petal).
+**4 preschool stages:** Seedling (2–3), Sprout (3–4), Blossom (4–5), Bloom (5–6).
 
-## Current state — Day 17 of 28
+**12 subjects across all stages:**
+Alphabet & Words, Numbers & Counting, Colors, Shapes, Farm Animals, Wild Animals,
+Birds, Fruits, Vegetables, Transport, Music, Emotions.
+
+**2 subjects for Blossom & Bloom only:**
+Occupations, My World (places + daily objects).
+
+**2 subjects parked post-launch (need non-flashcard engine):**
+Fine Motor & Creativity (needs canvas/tracing), Motion & Movement (needs
+video/animation).
+
+Items per stage scale up: Seedling gets ~5 items, Sprout ~8, Blossom ~12,
+Bloom ~16. Each stage includes all items from the previous stage plus new ones.
+
+AI tutor = **Buzz the Bee** (bee/honey theme; other characters: Honey, Flora,
+Petal).
+
+### Image strategy (decided Day 17)
+
+**Hybrid approach:** emoji/SVG for abstract subjects (Alphabet, Numbers, Colors,
+Shapes, Emotions, Music, Occupations, My World). AI-generated photographs
+(DALL-E) for visual-recognition subjects (Farm Animals, Wild Animals, Birds,
+Fruits, Vegetables, Transport).
+
+- **91 unique images** needed across 6 photo subjects.
+- DALL-E prompt: *"Realistic photograph of a [item], full body, centered on a
+  pure white background, soft natural studio lighting, no shadows on background,
+  high detail, clean and simple, children's educational book style"*
+- Square 1:1 aspect ratio. For elongated items, add "slight diagonal angle."
+- File naming: lowercase, hyphens. e.g. `cow.png`, `bell-pepper.png`.
+- **Hosted in repo:** `assets/images/{subject-folder}/{item}.png` — zero cost on
+  Vercel's free tier (~18MB total). Migrate to CDN post-launch if needed.
+- Engine change needed: `renderCard` must support returning `<img>` tags
+  alongside emoji. One small engine update, then all photo configs benefit.
+
+Full image list with per-stage breakdown: see `LearnHives_Image_List.xlsx`.
+
+## Current state — Day 17 of ~35
 
 Phases 1–3 done: dev setup, auth/Supabase, Stripe payments/webhooks/welcome
 email, security hardening (rate limiting, JWT verification, RLS).
@@ -107,6 +141,9 @@ shell. No engine changes needed.**
   Seedling/Sprout: items 1–10 (🍯 objects, ten-frame for 6–10, no word for Seedling).
   Blossom/Bloom: items 1–20 (per-number emoji, number word; Bloom adds a "+1 peek").
 
+**To be scrapped:** `js/lessons/colors-shapes.js` and `app/lesson-colors-shapes.html`
+— will be replaced by separate `colors.js` and `shapes.js` configs.
+
 ### Kid Mode (built Day 17 — every future lesson inherits it free)
 
 `js/lesson-engine.js` now drives **two views from one page**:
@@ -139,13 +176,13 @@ No free-text input in Kid Mode (deferred to `#vision` — needs COPPA consent).
   Fixes the old 2-card split that showed "1 honey pot = Ten".
 - Pinch-zoom / double-tap-zoom disabled on lesson pages (toddlers were escaping).
 
-**Colors & Shapes:** config file and HTML shell exist (`js/lessons/colors-shapes.js`,
-`app/lesson-colors-shapes.html`) but have **not been verified** in the kid frame.
-First lesson built after Kid Mode; needs a test pass before being linked to the dashboard.
-
-**Still open from Day 17:**
-- Quiz zone distribution: tiles fill the top half, empty void below — one layout fix pending.
-- iOS Safari address bar can't be fully hidden on web (platform limit; meta tags + scroll trick added).
+**Quiz layout fixes (partially done Day 17):**
+- ✅ Rebalanced quiz image-to-options ratio (image area ~55%, options shrink to fill rest).
+- ✅ Drifting backdrop bees hidden during quiz phase (CSS rule via `data-step`).
+- ✅ Counting object emoji size increased.
+- ❌ BUG OPEN: "Find the number" quiz shows a single per-number emoji (one bee for
+  number 2) instead of the correct quantity of counting objects. Fix is in `numbers.js`
+  `buildQuiz` function.
 
 **Settings seams** (applied inside the engine for every lesson):
 - `stage`, `lang` (default `en`), `theme` (default `honey`; `ocean` proof-of-concept built).
@@ -160,36 +197,37 @@ First lesson built after Kid Mode; needs a test pass before being linked to the 
 - Buzz AI chat via `/api/claude-proxy`; voice input (Web Speech API).
 - Worksheets: age-differentiated single-page + full pack with print-count confirmation.
 
-A **lesson catalog** was designed (artifact `catalog.js`, not yet committed):
-stage-tagged list for the dashboard to filter by child stage. Added **Motion &
-Movement** as a core subject across all stages.
+**Landing page** updated Day 17 to show all 14 subjects (was 6). Section heading:
+"Fourteen Honeycombs of Knowledge."
 
 ## Design principles I care about
 
 - **Separate content from engine** (done — keep doing it).
 - **"Cheap now, costly later"** — provision architectural seams early
   (i18n, themes, event logging) even before filling them in.
+- **Stupid simple** — designing for kids, not researchers. No complexity.
 - **Age-appropriate; no gendered themes** — use vibe/character themes
   (honey / ocean / forest / berry / sunset…), never "boy/girl".
+- **Hybrid visuals** — AI-generated photos for visual-recognition subjects,
+  emoji/SVG for abstract subjects. Consistent DALL-E prompt for uniform style.
 - **Animations & backgrounds**: must be lightweight, *purposeful* (celebrate,
   not constant ambient distraction), respect `prefers-reduced-motion`. Themed
   backgrounds idea = gradient sky + simple silhouette strip (CSS/SVG), not heavy
   photographic scenes. Parked for a dedicated "make it feel alive" session.
 - **Future personalization** = "championing the individual child" — strengths &
   next-steps framing, **NOT** global percentile ranking. COPPA/GDPR by design;
-  start logging clean structured interaction events ~Day 18.
+  start logging clean structured interaction events after lesson production.
 - Push back honestly; don't just agree.
 
 ## Where to look next
 
-See **`BACKLOG.md`** (repo root) for the live task list, organized by hashtag:
-`#architecture-next`, `#product-next`, `#content-depth`, `#worksheet-tuning`,
-`#polish-feel`, `#infra`, `#vision`.
+See **`BACKLOG.md`** (repo root) for the live task list, organized by hashtag.
 
 Most likely next moves:
-- **Quiz zone fix** — kid quiz screen tile distribution (one layout change in `lesson-engine.js`).
-- **#product-next** — verify then link `lesson-colors-shapes.html` (drops straight into Kid Mode).
-- **#architecture-next** — build the dashboard lesson catalog (from `catalog.js`).
+- **Fix numbers quiz bug** — "Find the number" shows wrong quantity of objects.
+- **Engine image support** — small `renderCard` change to support `<img>` tags.
+- **Build configs in batches of 3–4** — Colors, Shapes, Farm Animals first.
+- **Dashboard lesson catalog** — make the stage-tagged grid real.
 
 ## Note on assistant memory
 

@@ -165,7 +165,16 @@ export function startLesson(config) {
     const cards = config.getCards(currentKey);
     currentCard = Math.min(currentCard, cards.length - 1);
     const rendered = config.renderCard(cards[currentCard], currentKey, currentStage);
-    document.getElementById('cardEmoji').innerHTML      = rendered.emoji;
+    // Card visual: prefer an <img> when the config supplies `image`, else fall back to `emoji`.
+    // Shared by parent view and Kid Mode (Kid Mode reuses this same #cardEmoji element).
+    if (rendered.image) {
+      const altText = (rendered.label || '').replace(/"/g, '&quot;');
+      document.getElementById('cardEmoji').innerHTML =
+        `<img class="card-img" src="${rendered.image}" alt="${altText}" loading="lazy" ` +
+        `style="max-width:80%;max-height:60%;object-fit:contain;">`;
+    } else {
+      document.getElementById('cardEmoji').innerHTML = rendered.emoji;
+    }
     document.getElementById('cardWord').textContent    = rendered.label;
     document.getElementById('cardBackText').innerHTML  = rendered.backHtml;
     document.getElementById('cardCounter').textContent = (currentCard + 1) + ' / ' + cards.length;
