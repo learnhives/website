@@ -137,9 +137,11 @@
 
   /* SUBJECTS — hexagonal cards */
   .subjects-grid {
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:1.5rem; max-width:1100px; margin:0 auto;
+    display:grid; grid-template-columns:repeat(2,1fr);
+    gap:1.5rem; max-width:1180px; margin:0 auto;
   }
+  @media (min-width:600px){ .subjects-grid{ grid-template-columns:repeat(3,1fr); } }
+  @media (min-width:1000px){ .subjects-grid{ grid-template-columns:repeat(5,1fr); } }
   .subject-card {
     border-radius:var(--radius); padding:2rem 1.5rem; text-align:center;
     cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;
@@ -152,7 +154,7 @@
   .subject-card:hover { transform:translateY(-8px) rotate(-1deg); box-shadow:0 12px 30px rgba(0,0,0,0.12); }
   .subject-card.s1{background:#FFF3D0} .subject-card.s2{background:#D9F0FF}
   .subject-card.s3{background:#D9FFE7} .subject-card.s4{background:#FFE5CC}
-  .subject-card.s5{background:#EDD9FF} .subject-card.s6{background:#D9FFF5}
+  .subject-card.s5{background:#EDD9FF} .subject-card.s6{background:#FFE0EC}
   .subject-emoji { font-size:2.8rem; display:block; margin-bottom:0.75rem; }
   .subject-name { font-weight:800; font-size:1rem; color:var(--dark); margin-bottom:0.25rem; }
   .subject-count { font-size:0.8rem; color:var(--brown); }
@@ -373,16 +375,24 @@
 <section id="subjects" class="hive-section">
   <div class="center">
     <span class="section-label">⬡ The Learning Hive</span>
-    <h2 class="section-title">Six Honeycombs of Knowledge</h2>
+    <h2 class="section-title">Fourteen Honeycombs of Knowledge</h2>
     <p class="section-sub">Every hexagon in our hive holds a world of wonder — carefully crafted for early childhood development, made sweet with AI stories, songs, and games.</p>
   </div>
   <div class="subjects-grid">
-    <div class="subject-card s1"><span class="subject-emoji">🔤</span><div class="subject-name">Alphabet &amp; Reading</div><div class="subject-count">120+ activities</div></div>
+    <div class="subject-card s1"><span class="subject-emoji">🔤</span><div class="subject-name">Alphabet &amp; Words</div><div class="subject-count">120+ activities</div></div>
     <div class="subject-card s2"><span class="subject-emoji">🔢</span><div class="subject-name">Numbers &amp; Counting</div><div class="subject-count">95+ activities</div></div>
-    <div class="subject-card s3"><span class="subject-emoji">🎨</span><div class="subject-name">Colors &amp; Shapes</div><div class="subject-count">80+ activities</div></div>
-    <div class="subject-card s4"><span class="subject-emoji">🌿</span><div class="subject-name">Nature &amp; Animals</div><div class="subject-count">110+ activities</div></div>
-    <div class="subject-card s5"><span class="subject-emoji">🎵</span><div class="subject-name">Music &amp; Rhythm</div><div class="subject-count">60+ activities</div></div>
-    <div class="subject-card s6"><span class="subject-emoji">🤝</span><div class="subject-name">Social &amp; Emotions</div><div class="subject-count">75+ activities</div></div>
+    <div class="subject-card s3"><span class="subject-emoji">🎨</span><div class="subject-name">Colors</div><div class="subject-count">50+ activities</div></div>
+    <div class="subject-card s4"><span class="subject-emoji">🔷</span><div class="subject-name">Shapes</div><div class="subject-count">50+ activities</div></div>
+    <div class="subject-card s5"><span class="subject-emoji">🐄</span><div class="subject-name">Farm Animals</div><div class="subject-count">60+ activities</div></div>
+    <div class="subject-card s6"><span class="subject-emoji">🦁</span><div class="subject-name">Wild Animals</div><div class="subject-count">60+ activities</div></div>
+    <div class="subject-card s1"><span class="subject-emoji">🦅</span><div class="subject-name">Birds</div><div class="subject-count">50+ activities</div></div>
+    <div class="subject-card s2"><span class="subject-emoji">🍎</span><div class="subject-name">Fruits</div><div class="subject-count">50+ activities</div></div>
+    <div class="subject-card s3"><span class="subject-emoji">🥕</span><div class="subject-name">Vegetables</div><div class="subject-count">50+ activities</div></div>
+    <div class="subject-card s4"><span class="subject-emoji">🚗</span><div class="subject-name">Transport</div><div class="subject-count">60+ activities</div></div>
+    <div class="subject-card s5"><span class="subject-emoji">🎵</span><div class="subject-name">Music</div><div class="subject-count">50+ activities</div></div>
+    <div class="subject-card s6"><span class="subject-emoji">😊</span><div class="subject-name">Emotions</div><div class="subject-count">50+ activities</div></div>
+    <div class="subject-card s1"><span class="subject-emoji">👨‍⚕️</span><div class="subject-name">Occupations</div><div class="subject-count">40+ activities</div></div>
+    <div class="subject-card s2"><span class="subject-emoji">🏠</span><div class="subject-name">My World</div><div class="subject-count">40+ activities</div></div>
   </div>
 </section>
 
