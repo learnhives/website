@@ -1239,9 +1239,9 @@ export function startLesson(config) {
         object-fit: contain; background: transparent; border: none;
         vertical-align: middle; display: inline-block; max-height: 100%;
       }
-      .num-photo-hero .num-photo { max-width: 95%; max-height: 85%; }
+      .num-photo-hero .num-photo { max-width: 100%; max-height: 90%; }
       .num-photo-lg   .num-photo { width: clamp(160px, 30dvh, 280px); height: auto; }
-      .num-photo-md   .num-photo { width: clamp(120px, 22dvh, 200px); height: auto; }
+      .num-photo-md   .num-photo { width: clamp(110px, 20dvh, 180px); height: auto; }
       .num-photo-sm   .num-photo { width: clamp(90px,  16dvh, 140px); height: auto; }
       .num-photo-xs   .num-photo { width: clamp(65px,  12dvh, 100px); height: auto; }
       .num-photo-xxs  .num-photo { width: clamp(50px,   9dvh,  75px); height: auto; }

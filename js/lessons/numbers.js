@@ -83,12 +83,12 @@ function buildGrid(count, itemHtml, sizeClass = '') {
 
 // Card-BACK photo size tier (engine CSS sizes `.num-photo` per tier). Bigger for low counts.
 function getBackPhotoSize(n) {
-  if (n === 1) return 'num-photo-hero'; // single hero, ~70% of the card
-  if (n <= 3)  return 'num-photo-lg';   // 2–3
-  if (n <= 6)  return 'num-photo-md';   // 4–6
-  if (n <= 10) return 'num-photo-sm';   // 7–10
-  if (n <= 15) return 'num-photo-xs';   // 11–15
-  return 'num-photo-xxs';               // 16–20
+  if (n === 1) return 'num-photo-hero'; // single hero
+  if (n <= 4)  return 'num-photo-lg';   // 2–4
+  if (n <= 6)  return 'num-photo-md';   // 5–6
+  if (n <= 9)  return 'num-photo-sm';   // 7–9
+  if (n <= 16) return 'num-photo-xs';   // 10–16
+  return 'num-photo-xxs';               // 17–20
 }
 
 // Rows of 5; for n>10 inserts a blank line after position 10 so "ten block + remainder" reads
