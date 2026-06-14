@@ -1157,14 +1157,15 @@ export function startLesson(config) {
       /* Double-digit numerals (10–20): smaller so the tall glyph never clips off the top. */
       .num-big-2d { font-size: 0.58em; }
 
-      /* ── Shared count grid: honeypots (front) + photos (back), centered rows of 5 ── */
+      /* ── Shared count grid: honeypots (front) + photos (back), centered adaptive rows ── */
+      /* width:100% gives a definite reference so each photo's per-card max-width cap resolves. */
       .num-grid {
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 4px; max-width: 100%;
+        gap: 4px; width: 100%;
       }
       .num-grid-row {
         display: flex; flex-direction: row; align-items: center; justify-content: center;
-        gap: 4px; max-width: 100%;
+        gap: 4px; width: 100%;
       }
       .num-grid img { margin: 0; }
 
@@ -1228,19 +1229,21 @@ export function startLesson(config) {
         object-fit: contain; background: transparent; border: none;
         vertical-align: middle; display: inline-block;
       }
-      .num-photo-hero .num-photo { max-width: 70%;  max-height: 100%; }
-      .num-photo-lg   .num-photo { width: clamp(100px, 18dvh, 180px); height: auto; }
-      .num-photo-md   .num-photo { width: clamp(70px,  12dvh, 120px); height: auto; }
-      .num-photo-sm   .num-photo { width: clamp(50px,   9dvh,  80px); height: auto; }
-      .num-photo-xs   .num-photo { width: clamp(36px,   6dvh,  56px); height: auto; }
-      .num-photo-xxs  .num-photo { width: clamp(28px,   5dvh,  44px); height: auto; }
-      /* Number word — small subtle label, top-right corner (not centered). */
-      .num-back-word {
-        position: absolute; top: 4px; right: 8px; z-index: 2;
-        font-family: 'Fredoka', 'Nunito', sans-serif; font-weight: 600;
-        font-size: clamp(11px, 1.8dvh, 15px); color: rgba(120, 92, 30, .55);
-        pointer-events: none;
+      .num-photo-hero .num-photo { max-width: 80%; max-height: 70%; }
+      .num-photo-lg   .num-photo { width: clamp(130px, 24dvh, 220px); height: auto; }
+      .num-photo-md   .num-photo { width: clamp(100px, 18dvh, 160px); height: auto; }
+      .num-photo-sm   .num-photo { width: clamp(70px,  13dvh, 110px); height: auto; }
+      .num-photo-xs   .num-photo { width: clamp(50px,   9dvh,  80px); height: auto; }
+      .num-photo-xxs  .num-photo { width: clamp(40px,   7dvh,  60px); height: auto; }
+      /* Header labels — numeral top-left, number word top-right. Same bold amber style. */
+      .num-back-numeral, .num-back-word {
+        position: absolute; top: 4px; z-index: 2; pointer-events: none;
+        font-family: 'Fredoka One', 'Fredoka', sans-serif;
+        font-size: clamp(18px, 3dvh, 28px); line-height: 1;
+        color: var(--amber, #E8850A);
       }
+      .num-back-numeral { left: 10px; }
+      .num-back-word    { right: 10px; }
       /* Fun fact — compact, centered, just below the photo grid. Padded clear of the corners. */
       .num-back-fact {
         flex: 0 0 auto; max-width: 100%; padding: 0 46px 2px;

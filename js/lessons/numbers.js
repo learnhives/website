@@ -57,18 +57,27 @@ const NUM_FACTS = {
   20:'20 = 2 groups of 10!'
 };
 
+// ── Row layout: how many items go in each (centered) row, per number ──
+// Adaptive balanced rows (not fixed rows-of-5) so the grid reads like dice/domino pips.
+// Each entry sums to its key. Used by BOTH the front honeypots and the back photos.
+const ROW_LAYOUTS = {
+  1:[1],          2:[2],          3:[2,1],        4:[2,2],        5:[2,2,1],
+  6:[2,2,2],      7:[3,2,2],      8:[3,3,2],      9:[3,3,3],      10:[3,3,3,1],
+  11:[3,3,3,2],   12:[3,3,3,3],   13:[4,3,3,3],   14:[4,4,3,3],   15:[4,4,4,3],
+  16:[4,4,4,4],   17:[4,4,4,4,1], 18:[4,4,4,4,2], 19:[4,4,4,4,3], 20:[4,4,4,4,4]
+};
+function getRowLayout(n) {
+  return ROW_LAYOUTS[n] || [n];
+}
+
 // ── Shared grid builder (card FRONT honeypots + card BACK photos) ──
-// Lays out exactly `count` copies of `itemHtml` in centered rows of 5:
-//   7  → row of 5 + row of 2 (centered)
-//   13 → row of 5 + row of 5 + row of 3 (centered)
+// Lays out exactly `count` copies of `itemHtml` using getRowLayout(count) — each row centered.
 // `sizeClass` is added to the grid container so engine CSS can size the items inside.
 // Row/item spacing (4px) and item sizing live in lesson-engine.js (.num-grid / .num-grid-row).
 function buildGrid(count, itemHtml, sizeClass = '') {
-  let rows = '';
-  for (let i = 0; i < count; i += 5) {
-    const inRow = Math.min(5, count - i);
-    rows += `<div class="num-grid-row">${itemHtml.repeat(inRow)}</div>`;
-  }
+  const rows = getRowLayout(count)
+    .map(r => `<div class="num-grid-row">${itemHtml.repeat(r)}</div>`)
+    .join('');
   return `<div class="num-grid${sizeClass ? ' ' + sizeClass : ''}">${rows}</div>`;
 }
 
@@ -157,20 +166,21 @@ export const LESSON_CONFIG = {
       `</div>`;
 
     // ── Card BACK ── children's-book page (white bg). Layout (positioned via engine CSS):
-    //   word top-right (small label) · photo grid center (fills) · fun fact below · speaker bottom-left.
-    // Exactly N photos, no text labels. Each photo is capped to its column share so rows of 5
-    // never overflow; the tier class sets the target size (large for low counts).
+    //   numeral top-left · word top-right · photo grid center (fills) · fact below · speaker bottom-left.
+    // Exactly N photos, ALL the same size (one tier per card). A single per-card cap (from the
+    // widest row) reins the tier size in on narrow cards so the widest row never overflows.
     const photo = IMAGE_MAP[key];
     let photoGrid = '';
     if (photo) {
-      const cols = Math.min(n, 5);
-      const cap  = n > 1 ? ` style="max-width: calc((100% - ${(cols - 1) * 4}px) / ${cols})"` : '';
-      const img  = `<img src="${photo}" alt="" loading="lazy" class="num-photo"${cap}>`;
-      photoGrid  = buildGrid(n, img, getBackPhotoSize(n));
+      const maxCols = Math.max(...getRowLayout(n));
+      const cap = n > 1 ? ` style="max-width: calc((100% - ${(maxCols - 1) * 4}px) / ${maxCols})"` : '';
+      const img = `<img src="${photo}" alt="" loading="lazy" class="num-photo"${cap}>`;
+      photoGrid = buildGrid(n, img, getBackPhotoSize(n));
     }
     const speakText = (d.fact || '').replace(/"/g, '&quot;');
     const backHtml =
       `<div class="num-back">` +
+        `<div class="num-back-numeral">${n}</div>` +
         `<div class="num-back-word">${d.word}</div>` +
         `<div class="num-photo-zone">${photoGrid}</div>` +
         `<div class="num-back-fact">${d.fact}</div>` +
