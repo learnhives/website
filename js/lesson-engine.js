@@ -1171,9 +1171,14 @@ export function startLesson(config) {
         width: clamp(36px, 7dvh, 56px); height: auto;
         vertical-align: middle; margin: 2px;
       }
-      /* Smaller variant for high counts (11–20) so the grid stays inside the card */
+      /* Smaller variant for high counts (11–15) so the grid stays inside the card */
       .counting-obj-sm {
         width: clamp(24px, 4dvh, 36px); height: auto;
+        vertical-align: middle; margin: 1px;
+      }
+      /* Smallest variant for 16–20 so all pots + the number word fit without overflow */
+      .counting-obj-xs {
+        width: clamp(24px, 4dvh, 32px); height: auto;
         vertical-align: middle; margin: 1px;
       }
       /* Tighten honeypot rows when there are many (>10): pull rows closer together */
@@ -1204,20 +1209,22 @@ export function startLesson(config) {
         align-items: center; justify-content: center;
         gap: clamp(4px, 1.2dvh, 10px); text-align: center; overflow: hidden;
       }
-      /* Photo grid zone — ~60% of the card height, contents vertically centered. */
+      /* Photo grid zone — a DEFINITE 55%-height region (flex-basis off .num-back's
+         definite height) so each photo's percentage max-height resolves. overflow:hidden
+         is a final safety net; the per-cell sizing below already guarantees no spill. */
       .num-photo-zone {
-        flex: 0 1 60%; min-height: 0; width: 100%;
-        display: flex; align-items: center; justify-content: center;
-        overflow: hidden;
+        flex: 0 0 55%; min-height: 0; width: 100%; overflow: hidden;
       }
-      /* Inner grid is plain inline flow (imgs + <br>) so rows-of-5 grouping renders. */
-      .num-photo-grid { line-height: 1.05; max-width: 100%; text-align: center; }
-      .num-photo { object-fit: contain; margin: 2px; vertical-align: middle; }
-      .num-photo-xl { width: clamp(100px, 15dvh, 160px); height: auto; }
-      .num-photo-lg { width: clamp(70px,  11dvh, 110px); height: auto; }
-      .num-photo-md { width: clamp(50px,   8dvh,  80px); height: auto; }
-      .num-photo-sm { width: clamp(36px,   6dvh,  56px); height: auto; }
-      .num-photo-xs { width: clamp(28px,   5dvh,  44px); height: auto; }
+      /* Inner grid is plain inline flow (imgs + <br>) so rows-of-5 render; height:100%
+         gives the images a definite box to size their max-height against. */
+      .num-photo-grid {
+        height: 100%; max-width: 100%; text-align: center; line-height: 1.05;
+      }
+      /* Each photo is capped by its cell (inline max-width per column + max-height per row,
+         set in renderCard). object-fit:contain preserves aspect within that cell. */
+      .num-photo {
+        object-fit: contain; margin: 4px; vertical-align: middle; max-width: 100%;
+      }
       /* Word → fact → speaker, below the photo grid. */
       .num-back-word {
         flex: 0 0 auto; font-family: 'Fredoka', 'Nunito', sans-serif; font-weight: 700;
@@ -1275,7 +1282,7 @@ export function startLesson(config) {
       }
       #kidActivityWrap .card-emoji {
         font-size: clamp(80px, 24dvh, 180px);
-        line-height: 1; flex: 1;
+        line-height: 1; flex: 1; min-height: 0;
         display: flex; align-items: center; justify-content: center;
         text-align: center; overflow: hidden;
       }

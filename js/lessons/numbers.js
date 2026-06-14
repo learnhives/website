@@ -2,35 +2,27 @@ const NUM_WORDS = ['','One','Two','Three','Four','Five','Six','Seven','Eight','N
   'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
 
 // Counting object: a real honeypot photo instead of the 🍯 emoji. Styled by `.counting-obj`
-// (and the smaller `.counting-obj-sm` for high counts), defined in lesson-engine.js so they
-// apply in both parent view and Kid Mode. Because the row builders use `.repeat()`, the
-// returned string repeats cleanly into grouped rows.
-// `small` (used for numbers >10) shrinks each pot so all 20 fit inside the card.
-const honeypot = (small = false) =>
-  `<img src="/assets/images/common/honeypot.png" alt="honeypot" class="${small ? 'counting-obj-sm' : 'counting-obj'}">`;
-
-// Photo size class for the card-back grid: scales inversely with the count so 1 photo is
-// large and 20 photos still fit. Classes are defined in lesson-engine.js (parent + Kid Mode).
-function getPhotoSize(n) {
-  if (n <= 3)  return 'num-photo-xl'; // 1–3:  large
-  if (n <= 6)  return 'num-photo-lg'; // 4–6:  medium-large
-  if (n <= 10) return 'num-photo-md'; // 7–10: medium
-  if (n <= 15) return 'num-photo-sm'; // 11–15: small
-  return 'num-photo-xs';              // 16–20: extra small
-}
+// (and the smaller `.counting-obj-sm` / `.counting-obj-xs` for high counts), defined in
+// lesson-engine.js so they apply in both parent view and Kid Mode. Because the row builders
+// use `.repeat()`, the returned string repeats cleanly into grouped rows.
+// The pot shrinks as the count rises so all 20 plus the number word fit inside the card.
+const honeypot = (n) => {
+  const cls = n <= 10 ? 'counting-obj' : n <= 15 ? 'counting-obj-sm' : 'counting-obj-xs';
+  return `<img src="/assets/images/common/honeypot.png" alt="honeypot" class="${cls}">`;
+};
 
 // Decorative real photo shown on the back of each number card (1–20).
 const IMAGE_MAP = {
-  '1':'/assets/images/farm-animals/dog.png',      '2':'/assets/images/farm-animals/cat.png',
-  '3':'/assets/images/fruits/strawberry.png',     '4':'/assets/images/birds/parrot.png',
-  '5':'/assets/images/fruits/banana.png',         '6':'/assets/images/farm-animals/rabbit.png',
-  '7':'/assets/images/fruits/orange.png',         '8':'/assets/images/birds/eagle.png',
-  '9':'/assets/images/fruits/watermelon.png',     '10':'/assets/images/wild-animals/lion.png',
-  '11':'/assets/images/wild-animals/elephant.png','12':'/assets/images/wild-animals/monkey.png',
-  '13':'/assets/images/wild-animals/tiger.png',   '14':'/assets/images/wild-animals/giraffe.png',
-  '15':'/assets/images/birds/peacock.png',        '16':'/assets/images/wild-animals/zebra.png',
-  '17':'/assets/images/wild-animals/bear.png',    '18':'/assets/images/birds/flamingo.png',
-  '19':'/assets/images/farm-animals/horse.png',   '20':'/assets/images/wild-animals/hippo.png'
+  '1':'/assets/images/wild-animals/elephant.png', '2':'/assets/images/farm-animals/cat.png',
+  '3':'/assets/images/farm-animals/horse.png',    '4':'/assets/images/birds/parrot.png',
+  '5':'/assets/images/farm-animals/dog.png',      '6':'/assets/images/fruits/banana.png',
+  '7':'/assets/images/fruits/apple.png',          '8':'/assets/images/fruits/strawberry.png',
+  '9':'/assets/images/fruits/orange.png',         '10':'/assets/images/fruits/mango.png',
+  '11':'/assets/images/vegetables/tomato.png',    '12':'/assets/images/vegetables/potato.png',
+  '13':'/assets/images/fruits/peach.png',         '14':'/assets/images/vegetables/onion.png',
+  '15':'/assets/images/fruits/kiwi.png',          '16':'/assets/images/fruits/pear.png',
+  '17':'/assets/images/vegetables/broccoli.png',  '18':'/assets/images/fruits/coconut.png',
+  '19':'/assets/images/vegetables/beetroot.png',  '20':'/assets/images/fruits/watermelon.png'
 };
 
 const NUM_EMOJI = {
@@ -139,9 +131,9 @@ export const LESSON_CONFIG = {
     const n = parseInt(key);
     const d = this.numbers[key];
     // Always the honeypot photo as the counting object — consistent mental model.
-    // Numbers >10 use the smaller pot + a tighter row spacing so all 20 fit in the card.
+    // Numbers >10 use a smaller pot + a tighter row spacing so all 20 fit in the card.
     const dense = n > 10;
-    const pots = makeGroupedRows(honeypot(dense), n).replace(/\n/g, '<br>');
+    const pots = makeGroupedRows(honeypot(n), n).replace(/\n/g, '<br>');
     // emoji area: big numeral + honey pots below (HTML composition)
     const emojiHtml =
       `<div class="num-combo">` +
@@ -149,15 +141,21 @@ export const LESSON_CONFIG = {
         `<div class="num-pots${dense ? ' num-pots-dense' : ''}">${pots}</div>` +
       `</div>`;
     // ── Card BACK ── (white-bg face built entirely in this markup; layout/sizing via engine CSS)
-    // Top→bottom: photo grid (≈60% of card) → number word → fun fact → single speaker button.
-    // The photo is repeated N times using the same rows-of-5 / 10+remainder grouping as the front,
-    // sized inversely to the count via getPhotoSize so 1 looks big and 20 still fit.
+    // Top→bottom: photo grid (≈55% of card) → number word → fun fact → single speaker button.
+    // The photo is repeated N times in plain rows of 5. Each photo is capped by BOTH its
+    // column width and its row height (relative to the definite-height .num-photo-zone), so
+    // low counts fill the zone (large hero) and high counts pack into a 5-wide grid that
+    // mathematically cannot overflow. Card-relative %, so it adapts to desktop + Kid Mode.
     const photo = IMAGE_MAP[key];
     let photoGridHtml = '';
     if (photo) {
+      const cols = Math.min(n, 5);
+      const rows = Math.ceil(n / 5);
+      const cell = `max-width: calc((100% - ${cols * 8}px) / ${cols}); ` +
+                   `max-height: calc((100% - ${rows * 8}px) / ${rows});`;
       const photoImg =
-        `<img src="${photo}" alt="${d.word}" loading="lazy" class="num-photo ${getPhotoSize(n)}">`;
-      const grid = makeGroupedRows(photoImg, n).replace(/\n/g, '<br>');
+        `<img src="${photo}" alt="${d.word}" loading="lazy" class="num-photo" style="${cell}">`;
+      const grid = makeObjRows(photoImg, n).replace(/\n/g, '<br>');
       photoGridHtml = `<div class="num-photo-zone"><div class="num-photo-grid">${grid}</div></div>`;
     }
     const bloomBonus = (stageKey === 'bloom' && n < 20)
@@ -193,7 +191,7 @@ export const LESSON_CONFIG = {
 
     // Q1: count the objects → pick numeral (grouped rows, always honey pots)
     const dense  = n > 10;
-    const q1Rows = makeGroupedRows(honeypot(dense), n).replace(/\n/g, '<br>');
+    const q1Rows = makeGroupedRows(honeypot(n), n).replace(/\n/g, '<br>');
     const dist1 = getDist();
     const q1 = {
       question: 'How many?',
@@ -218,7 +216,7 @@ export const LESSON_CONFIG = {
     // Q3: see word + count the honeypots → find matching numeral.
     // (Was a single per-number emoji — one 🐝 for "Two" — which taught the wrong count.
     //  Now shows the correct quantity of honeypots using the same grouping as the cards.)
-    const q3Rows = makeGroupedRows(honeypot(dense), n).replace(/\n/g, '<br>');
+    const q3Rows = makeGroupedRows(honeypot(n), n).replace(/\n/g, '<br>');
     const dist3 = getDist();
     const q3 = {
       question: `Find the number "${d.word}"!`,
