@@ -1220,15 +1220,16 @@ export function startLesson(config) {
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         background: #FFFFFF; overflow: hidden; padding: 0;
       }
-      /* Photo grid zone — fills the center (the word + speaker are out of flow in corners). */
+      /* Photo grid zone — fills the center (the word + speaker are out of flow in corners).
+         margin-top clears the absolute header labels so the first photo row never overlaps them. */
       .num-photo-zone {
-        flex: 1; min-height: 0; width: 100%;
+        flex: 1; min-height: 0; width: 100%; margin-top: clamp(36px, 5dvh, 48px);
         display: flex; align-items: stretch; justify-content: center; overflow: hidden;
       }
       .num-photo-zone .num-grid { height: 100%; }
-      /* Rows share the zone height equally → each row is a definite box the photo fits inside,
-         so photos grow to fill the card (no big whitespace) and never clip vertically. */
-      .num-photo-zone .num-grid-row { flex: 1 1 0; min-height: 0; }
+      /* Content-height rows (not stretched) so the vertical gap between rows is the real 4px
+         grid gap — equal to the horizontal gap — instead of tall rows with centered photos. */
+      .num-photo-zone .num-grid-row { flex: 0 0 auto; }
       /* Photos: transparent + no border (no white squares). Capped by the tier width, by the
          per-card column cap (inline max-width), and by their row height (max-height:100%). */
       .num-photo {
@@ -1245,7 +1246,7 @@ export function startLesson(config) {
       .num-back-numeral, .num-back-word {
         position: absolute; top: 4px; z-index: 2; pointer-events: none;
         font-family: 'Fredoka One', 'Fredoka', cursive; font-weight: bold;
-        font-size: clamp(24px, 4dvh, 36px); line-height: 1;
+        font-size: clamp(28px, 5dvh, 42px); line-height: 1;
         color: var(--amber, #E8850A);
       }
       .num-back-numeral { left: 10px; }
