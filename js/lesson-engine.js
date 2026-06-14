@@ -142,7 +142,14 @@ export function startLesson(config) {
     document.getElementById('childAvatarNav').textContent   = s.avatar;
     document.getElementById('lessonTitle').textContent      = config.getItemTitle(currentKey);
     document.getElementById('subjectIcon').textContent      = config.getItemEmoji(currentKey);
-    document.getElementById('storyIllustration').textContent = config.getItemEmoji(currentKey);
+    // Story illustration: use a real photo (HTML) when the config provides one,
+    // else fall back to the emoji glyph. Keeps emoji-only lessons working unchanged.
+    const storyIll = document.getElementById('storyIllustration');
+    if (config.getStoryIllustration) {
+      storyIll.innerHTML = config.getStoryIllustration(currentKey, stage);
+    } else {
+      storyIll.textContent = config.getItemEmoji(currentKey);
+    }
     document.getElementById('storyText').innerHTML          = config.getStory(currentKey, stage);
     document.getElementById('wsTitle').textContent          = config.getWorksheetTitle(currentKey);
     document.getElementById('wsStage').textContent          = s.label.replace(/^[^\s]+\s/, '');
@@ -290,8 +297,12 @@ export function startLesson(config) {
   function nextQuestion() {
     currentQuestion++;
     if (KID.active && currentQuestion >= quizSet.length) {
-      renderQuiz(); // shows 🏆 state briefly
-      setTimeout(() => kidShowStep('story'), 700);
+      // Brief mini-celebration: show the 🏆 "quiz complete" state + a Buzz hop, then
+      // AUTO-advance to the story after 1.5s. No tap required — only the final
+      // post-story celebration (kidShowDone) blocks and waits for the child.
+      renderQuiz();
+      kidBuzzJump();
+      setTimeout(() => kidShowStep('story'), 1500);
       return;
     }
     renderQuiz();
@@ -1047,6 +1058,10 @@ export function startLesson(config) {
       }
       #kidActivityWrap .flashcard-front #kidCardSpeaker { display: flex; }
       #kidCardSpeaker:active { background: rgba(245,166,35,.3); }
+      /* When flipped to the back, hide the front speaker — some mobile browsers leak
+         an absolutely-positioned child through backface-visibility, showing it as a
+         second speaker over the card back. The back has its own .card-back-speak. */
+      #kidActivityWrap .flashcard.flipped #kidCardSpeaker { display: none !important; }
 
       /* ── Honeycomb texture on the flashcard area only ── */
       #kidActivityWrap .flashcard-area {
@@ -1167,9 +1182,12 @@ export function startLesson(config) {
       }
 
       /* ═══ Number card BACK (numbers lesson only) — parent view + Kid Mode ═══ */
-      /* White face so white-background photos blend seamlessly. */
-      body[data-lesson="numbers"] .flashcard-back {
-        background: #FFFFFF; overflow: hidden;
+      /* White face + white border so white-background photos blend seamlessly.
+         Two selectors: the plain one wins in parent view; the #kidActivityWrap one
+         is needed in Kid Mode to out-specify "#kidActivityWrap .flashcard-back". */
+      body[data-lesson="numbers"] .flashcard-back,
+      body[data-lesson="numbers"] #kidActivityWrap .flashcard-back {
+        background: #FFFFFF; border-color: #FFFFFF; overflow: hidden;
       }
       /* Remove the shell's static decorative speaker — keep only #cardBackText. */
       body[data-lesson="numbers"] .flashcard-back > div:not(#cardBackText) {
@@ -1195,11 +1213,11 @@ export function startLesson(config) {
       /* Inner grid is plain inline flow (imgs + <br>) so rows-of-5 grouping renders. */
       .num-photo-grid { line-height: 1.05; max-width: 100%; text-align: center; }
       .num-photo { object-fit: contain; margin: 2px; vertical-align: middle; }
-      .num-photo-xl { width: clamp(80px, 12dvh, 120px); height: auto; }
-      .num-photo-lg { width: clamp(56px,  9dvh,  80px); height: auto; }
-      .num-photo-md { width: clamp(40px,  7dvh,  60px); height: auto; }
-      .num-photo-sm { width: clamp(30px,  5dvh,  44px); height: auto; }
-      .num-photo-xs { width: clamp(24px,  4dvh,  36px); height: auto; }
+      .num-photo-xl { width: clamp(100px, 15dvh, 160px); height: auto; }
+      .num-photo-lg { width: clamp(70px,  11dvh, 110px); height: auto; }
+      .num-photo-md { width: clamp(50px,   8dvh,  80px); height: auto; }
+      .num-photo-sm { width: clamp(36px,   6dvh,  56px); height: auto; }
+      .num-photo-xs { width: clamp(28px,   5dvh,  44px); height: auto; }
       /* Word → fact → speaker, below the photo grid. */
       .num-back-word {
         flex: 0 0 auto; font-family: 'Fredoka', 'Nunito', sans-serif; font-weight: 700;
@@ -1342,9 +1360,10 @@ export function startLesson(config) {
         gap: clamp(6px, 1.5dvh, 14px);
         text-align: center; padding: clamp(4px, 1dvh, 10px) 0 0;
       }
-      /* ZONE 1: stage — story emoji, compact so text gets more room */
+      /* ZONE 1: stage — story emoji/photo, compact so text gets more room.
+         width:100% gives a stable reference for a percentage-width <img> child. */
       #kidActivityWrap .story-illustration {
-        flex: 0 0 auto;
+        flex: 0 0 auto; width: 100%;
         font-size: clamp(36px, 9dvh, 68px); line-height: 1;
       }
       /* ZONE 2: prompt — auto-scales to fill remaining space, NO scroll ever */

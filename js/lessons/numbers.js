@@ -264,6 +264,14 @@ export const LESSON_CONFIG = {
   },
   getWorksheetTitle(key)       { return `Number ${key} Worksheet`; },
   getItemEmoji(key)            { return NUM_EMOJI[parseInt(key)]; },
+  // Story illustration = the real photo (same asset the card back uses), not an emoji.
+  // Falls back to the emoji glyph if no photo is mapped.
+  getStoryIllustration(key) {
+    const photo = IMAGE_MAP[key];
+    if (!photo) return NUM_EMOJI[parseInt(key)];
+    return `<img src="${photo}" alt="${this.numbers[key].word}" loading="lazy" ` +
+      `style="max-width:40%;max-height:30dvh;object-fit:contain;display:block;margin:0 auto;">`;
+  },
   getStory(key, stageKey)      { return this.stages[stageKey].story(parseInt(key), this.numbers[key]); },
   getBuzzPrompt(key, stageKey) { return this.stages[stageKey].prompt(parseInt(key), this.numbers[key]); },
 
