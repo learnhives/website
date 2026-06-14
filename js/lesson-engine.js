@@ -1171,31 +1171,25 @@ export function startLesson(config) {
       }
       .num-grid img { margin: 0; }
 
-      /* Quiz Q1 counting image (numbers lesson) */
-      .num-q1-img {
-        font-size: clamp(18px, 4dvh, 32px);
-        line-height: 1.4; text-align: center;
-        overflow: hidden; max-width: 100%;
+      /* Quiz image — big bold numeral / number word (no counting objects). */
+      .num-quiz-big {
+        font-family: 'Fredoka One', 'Fredoka', cursive; font-weight: bold;
+        font-size: clamp(48px, 10dvh, 80px); line-height: 1;
+        color: var(--amber, #E8850A);
       }
 
-      /* Photo counting objects (honeypot.png) — parent view + kid mode. Transparent, no
-         border so the PNG never shows a white square. */
-      .counting-obj {
-        width: clamp(44px, 8dvh, 64px); height: auto;
-        vertical-align: middle; margin: 2px; background: transparent; border: none;
+      /* Honeypot size tiers (card front) — mirror the back photo tiers (getBackPhotoSize).
+         Transparent, no border so the PNG never shows a white square. */
+      .counting-obj-hero, .counting-obj-lg, .counting-obj-md,
+      .counting-obj-sm, .counting-obj-xs, .counting-obj-xxs {
+        height: auto; vertical-align: middle; background: transparent; border: none;
       }
-      /* Smaller variant for high counts (11–15) so the grid stays inside the card */
-      .counting-obj-sm {
-        width: clamp(34px, 6dvh, 50px); height: auto;
-        vertical-align: middle; margin: 1px; background: transparent; border: none;
-      }
-      /* Smallest variant for 16–20 so all pots + the number word fit without overflow */
-      .counting-obj-xs {
-        width: clamp(28px, 5dvh, 40px); height: auto;
-        vertical-align: middle; margin: 1px; background: transparent; border: none;
-      }
-      /* Tighten quiz "How many?" rows when there are many (>10) */
-      .num-q1-img.num-q1-img-dense { line-height: 1.05; }
+      .counting-obj-hero { width: clamp(100px, 14dvh, 100px); }
+      .counting-obj-lg   { width: clamp(80px,  12dvh,  80px); }
+      .counting-obj-md   { width: clamp(70px,  10dvh,  70px); }
+      .counting-obj-sm   { width: clamp(65px,   9dvh,  65px); }
+      .counting-obj-xs   { width: clamp(60px,   8dvh,  60px); }
+      .counting-obj-xxs  { width: clamp(50px,   7dvh,  50px); }
 
       /* ═══ Number card BACK (numbers lesson only) — parent view + Kid Mode ═══ */
       /* White face + white border so white-background photos blend seamlessly.
@@ -1344,10 +1338,6 @@ export function startLesson(config) {
       #kidActivityWrap .quiz-image svg {
         width:  clamp(64px, 16dvh, 120px) !important;
         height: clamp(64px, 16dvh, 120px) !important;
-      }
-      /* Numbers lesson "How many?" counting image — scale honeypots up & let them grow */
-      #kidActivityWrap .quiz-image .num-q1-img {
-        font-size: clamp(34px, 9dvh, 64px); line-height: 1.25;
       }
       /* ZONE 2: prompt — question + feedback */
       #kidActivityWrap .quiz-question {

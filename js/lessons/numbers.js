@@ -1,13 +1,17 @@
 const NUM_WORDS = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
   'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
 
-// Counting object: a real honeypot photo instead of the 🍯 emoji. Styled by `.counting-obj`
-// (and the smaller `.counting-obj-sm` / `.counting-obj-xs` for high counts), defined in
-// lesson-engine.js so they apply in both parent view and Kid Mode. Because the row builders
-// use `.repeat()`, the returned string repeats cleanly into grouped rows.
-// The pot shrinks as the count rises so all 20 plus the number word fit inside the card.
+// Counting object: a real honeypot photo (card front). Size tier mirrors the back photo
+// tiers (getBackPhotoSize) so front and back scale identically. Classes are defined in
+// lesson-engine.js (parent view + Kid Mode); the pot shrinks as the count rises.
 const honeypot = (n) => {
-  const cls = n <= 10 ? 'counting-obj' : n <= 15 ? 'counting-obj-sm' : 'counting-obj-xs';
+  const cls =
+    n === 1 ? 'counting-obj-hero' :
+    n <= 4  ? 'counting-obj-lg'   :
+    n <= 6  ? 'counting-obj-md'   :
+    n <= 9  ? 'counting-obj-sm'   :
+    n <= 16 ? 'counting-obj-xs'   :
+              'counting-obj-xxs';
   return `<img src="/assets/images/common/honeypot.png" alt="honeypot" class="${cls}">`;
 };
 
@@ -210,13 +214,11 @@ export const LESSON_CONFIG = {
     for (let x = 1; pool.size < 3; x++) { if (x !== n) pool.add(x); }
     const getDist = () => shuffle([...pool]).slice(0, 3);
 
-    // Q1: count the objects → pick numeral (grouped rows, always honey pots)
-    const dense  = n > 10;
-    const q1Rows = makeGroupedRows(honeypot(n), n).replace(/\n/g, '<br>');
+    // Q1: see the numeral → pick the matching numeral. Text only, no counting objects.
     const dist1 = getDist();
     const q1 = {
-      question: 'How many?',
-      image: `<div class="num-q1-img${dense ? ' num-q1-img-dense' : ''}">${q1Rows}</div>`,
+      question: 'What number is this?',
+      image: `<span class="num-quiz-big">${n}</span>`,
       options: shuffle([
         { e: String(n), l: String(n), c: true },
         ...dist1.map(x => ({ e: String(x), l: String(x), c: false }))
@@ -234,14 +236,11 @@ export const LESSON_CONFIG = {
       ])
     };
 
-    // Q3: see word + count the honeypots → find matching numeral.
-    // (Was a single per-number emoji — one 🐝 for "Two" — which taught the wrong count.
-    //  Now shows the correct quantity of honeypots using the same grouping as the cards.)
-    const q3Rows = makeGroupedRows(honeypot(n), n).replace(/\n/g, '<br>');
+    // Q3: see the number word → find the matching numeral. Text only, no counting objects.
     const dist3 = getDist();
     const q3 = {
       question: `Find the number "${d.word}"!`,
-      image: `<div class="num-q1-img${dense ? ' num-q1-img-dense' : ''}">${q3Rows}</div>`,
+      image: `<span class="num-quiz-big">${d.word}</span>`,
       options: shuffle([
         { e: String(n), l: String(n), c: true },
         ...dist3.map(x => ({ e: String(x), l: String(x), c: false }))
