@@ -1244,7 +1244,7 @@ export function startLesson(config) {
       .num-photo-md   .num-photo { width: clamp(110px, 20dvh, 180px); height: auto; }
       .num-photo-sm   .num-photo { width: clamp(90px,  16dvh, 140px); height: auto; }
       .num-photo-xs   .num-photo { width: clamp(65px,  12dvh, 100px); height: auto; }
-      .num-photo-xxs  .num-photo { width: clamp(50px,   9dvh,  75px); height: auto; }
+      .num-photo-xxs  .num-photo { width: clamp(60px,  10dvh,  85px); height: auto; }
       /* Header labels — numeral top-left, number word top-right. Big, bold, amber. */
       .num-back-numeral, .num-back-word {
         position: absolute; top: 4px; z-index: 2; pointer-events: none;
