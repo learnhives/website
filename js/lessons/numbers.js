@@ -2,9 +2,26 @@ const NUM_WORDS = ['','One','Two','Three','Four','Five','Six','Seven','Eight','N
   'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
 
 // Counting object: a real honeypot photo instead of the 🍯 emoji. Styled by `.counting-obj`
-// (defined in lesson-engine.js, applies in both parent view and Kid Mode). Because the
-// row builders use `.repeat()`, this string repeats cleanly into grouped rows.
-const HONEYPOT = '<img src="/assets/images/common/honeypot.png" alt="honeypot" class="counting-obj">';
+// (and the smaller `.counting-obj-sm` for high counts), defined in lesson-engine.js so they
+// apply in both parent view and Kid Mode. Because the row builders use `.repeat()`, the
+// returned string repeats cleanly into grouped rows.
+// `small` (used for numbers >10) shrinks each pot so all 20 fit inside the card.
+const honeypot = (small = false) =>
+  `<img src="/assets/images/common/honeypot.png" alt="honeypot" class="${small ? 'counting-obj-sm' : 'counting-obj'}">`;
+
+// Decorative real photo shown on the back of each number card (1–20).
+const IMAGE_MAP = {
+  '1':'/assets/images/farm-animals/dog.png',      '2':'/assets/images/farm-animals/cat.png',
+  '3':'/assets/images/fruits/strawberry.png',     '4':'/assets/images/birds/parrot.png',
+  '5':'/assets/images/fruits/banana.png',         '6':'/assets/images/farm-animals/rabbit.png',
+  '7':'/assets/images/fruits/orange.png',         '8':'/assets/images/birds/eagle.png',
+  '9':'/assets/images/fruits/watermelon.png',     '10':'/assets/images/wild-animals/lion.png',
+  '11':'/assets/images/wild-animals/elephant.png','12':'/assets/images/wild-animals/monkey.png',
+  '13':'/assets/images/wild-animals/tiger.png',   '14':'/assets/images/wild-animals/giraffe.png',
+  '15':'/assets/images/birds/peacock.png',        '16':'/assets/images/wild-animals/zebra.png',
+  '17':'/assets/images/wild-animals/bear.png',    '18':'/assets/images/birds/flamingo.png',
+  '19':'/assets/images/farm-animals/horse.png',   '20':'/assets/images/wild-animals/hippo.png'
+};
 
 const NUM_EMOJI = {
   1:'🍎', 2:'🐝', 3:'🌸', 4:'🌟', 5:'🐸',
@@ -111,16 +128,23 @@ export const LESSON_CONFIG = {
   renderCard(card, key, stageKey) {
     const n = parseInt(key);
     const d = this.numbers[key];
-    // Always the honeypot photo as the counting object — consistent mental model
-    const pots = makeGroupedRows(HONEYPOT, n).replace(/\n/g, '<br>');
+    // Always the honeypot photo as the counting object — consistent mental model.
+    // Numbers >10 use the smaller pot + a tighter row spacing so all 20 fit in the card.
+    const dense = n > 10;
+    const pots = makeGroupedRows(honeypot(dense), n).replace(/\n/g, '<br>');
     // emoji area: big numeral + honey pots below (HTML composition)
     const emojiHtml =
       `<div class="num-combo">` +
         `<span class="num-big">${n}</span>` +
-        `<div class="num-pots">${pots}</div>` +
+        `<div class="num-pots${dense ? ' num-pots-dense' : ''}">${pots}</div>` +
       `</div>`;
-    // Back: word name + fact + bloom bonus
+    // Back: decorative photo, then the number word, then the fun fact (+ bloom bonus).
+    const photo = IMAGE_MAP[key];
     let backHtml =
+      (photo
+        ? `<img src="${photo}" alt="${d.word}" loading="lazy" ` +
+          `style="max-width:60%;max-height:40%;object-fit:contain;display:block;margin:0 auto 0.4em;"><br>`
+        : '') +
       `<strong style="color:var(--amber);font-size:1.15em">${d.word}</strong>` +
       `<br><em style="color:var(--moss)">${d.fact}</em>`;
     if (stageKey === 'bloom' && n < 20) {
@@ -148,11 +172,12 @@ export const LESSON_CONFIG = {
     const getDist = () => shuffle([...pool]).slice(0, 3);
 
     // Q1: count the objects → pick numeral (grouped rows, always honey pots)
-    const q1Rows = makeGroupedRows(HONEYPOT, n).replace(/\n/g, '<br>');
+    const dense  = n > 10;
+    const q1Rows = makeGroupedRows(honeypot(dense), n).replace(/\n/g, '<br>');
     const dist1 = getDist();
     const q1 = {
       question: 'How many?',
-      image: `<div class="num-q1-img">${q1Rows}</div>`,
+      image: `<div class="num-q1-img${dense ? ' num-q1-img-dense' : ''}">${q1Rows}</div>`,
       options: shuffle([
         { e: String(n), l: String(n), c: true },
         ...dist1.map(x => ({ e: String(x), l: String(x), c: false }))
@@ -173,11 +198,11 @@ export const LESSON_CONFIG = {
     // Q3: see word + count the honeypots → find matching numeral.
     // (Was a single per-number emoji — one 🐝 for "Two" — which taught the wrong count.
     //  Now shows the correct quantity of honeypots using the same grouping as the cards.)
-    const q3Rows = makeGroupedRows(HONEYPOT, n).replace(/\n/g, '<br>');
+    const q3Rows = makeGroupedRows(honeypot(dense), n).replace(/\n/g, '<br>');
     const dist3 = getDist();
     const q3 = {
       question: `Find the number "${d.word}"!`,
-      image: `<div class="num-q1-img">${q3Rows}</div>`,
+      image: `<div class="num-q1-img${dense ? ' num-q1-img-dense' : ''}">${q3Rows}</div>`,
       options: shuffle([
         { e: String(n), l: String(n), c: true },
         ...dist3.map(x => ({ e: String(x), l: String(x), c: false }))

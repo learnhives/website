@@ -1127,18 +1127,31 @@ export function startLesson(config) {
         font-size: 1em; font-weight: 700;
         color: var(--amber, #F5A623); line-height: 1;
       }
-      .num-pots { font-size: 0.32em; line-height: 1.35; text-align: center; }
+      .num-pots {
+        font-size: 0.32em; line-height: 1.35; text-align: center;
+        overflow: hidden; max-width: 100%;
+      }
 
       /* Quiz Q1 counting image (numbers lesson) */
       .num-q1-img {
         font-size: clamp(18px, 4dvh, 32px);
         line-height: 1.4; text-align: center;
+        overflow: hidden; max-width: 100%;
       }
 
       /* Photo counting objects (e.g. honeypot.png) — parent view + kid mode */
       .counting-obj {
-        width: clamp(28px, 5dvh, 44px); height: auto;
+        width: clamp(36px, 7dvh, 56px); height: auto;
         vertical-align: middle; margin: 2px;
+      }
+      /* Smaller variant for high counts (11–20) so the grid stays inside the card */
+      .counting-obj-sm {
+        width: clamp(24px, 4dvh, 36px); height: auto;
+        vertical-align: middle; margin: 1px;
+      }
+      /* Tighten honeypot rows when there are many (>10): pull rows closer together */
+      .num-pots.num-pots-dense, .num-q1-img.num-q1-img-dense {
+        line-height: 1.05;
       }
 
       /* ── CARDS layout ── */
