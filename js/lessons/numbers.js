@@ -9,6 +9,16 @@ const NUM_WORDS = ['','One','Two','Three','Four','Five','Six','Seven','Eight','N
 const honeypot = (small = false) =>
   `<img src="/assets/images/common/honeypot.png" alt="honeypot" class="${small ? 'counting-obj-sm' : 'counting-obj'}">`;
 
+// Photo size class for the card-back grid: scales inversely with the count so 1 photo is
+// large and 20 photos still fit. Classes are defined in lesson-engine.js (parent + Kid Mode).
+function getPhotoSize(n) {
+  if (n <= 3)  return 'num-photo-xl'; // 1–3:  large
+  if (n <= 6)  return 'num-photo-lg'; // 4–6:  medium-large
+  if (n <= 10) return 'num-photo-md'; // 7–10: medium
+  if (n <= 15) return 'num-photo-sm'; // 11–15: small
+  return 'num-photo-xs';              // 16–20: extra small
+}
+
 // Decorative real photo shown on the back of each number card (1–20).
 const IMAGE_MAP = {
   '1':'/assets/images/farm-animals/dog.png',      '2':'/assets/images/farm-animals/cat.png',
@@ -138,18 +148,28 @@ export const LESSON_CONFIG = {
         `<span class="num-big">${n}</span>` +
         `<div class="num-pots${dense ? ' num-pots-dense' : ''}">${pots}</div>` +
       `</div>`;
-    // Back: decorative photo, then the number word, then the fun fact (+ bloom bonus).
+    // ── Card BACK ── (white-bg face built entirely in this markup; layout/sizing via engine CSS)
+    // Top→bottom: photo grid (≈60% of card) → number word → fun fact → single speaker button.
+    // The photo is repeated N times using the same rows-of-5 / 10+remainder grouping as the front,
+    // sized inversely to the count via getPhotoSize so 1 looks big and 20 still fit.
     const photo = IMAGE_MAP[key];
-    let backHtml =
-      (photo
-        ? `<img src="${photo}" alt="${d.word}" loading="lazy" ` +
-          `style="max-width:60%;max-height:40%;object-fit:contain;display:block;margin:0 auto 0.4em;"><br>`
-        : '') +
-      `<strong style="color:var(--amber);font-size:1.15em">${d.word}</strong>` +
-      `<br><em style="color:var(--moss)">${d.fact}</em>`;
-    if (stageKey === 'bloom' && n < 20) {
-      backHtml += `<br><br><strong style="color:var(--amber)">${n} + 1 = ${n+1} 🌟</strong>`;
+    let photoGridHtml = '';
+    if (photo) {
+      const photoImg =
+        `<img src="${photo}" alt="${d.word}" loading="lazy" class="num-photo ${getPhotoSize(n)}">`;
+      const grid = makeGroupedRows(photoImg, n).replace(/\n/g, '<br>');
+      photoGridHtml = `<div class="num-photo-zone"><div class="num-photo-grid">${grid}</div></div>`;
     }
+    const bloomBonus = (stageKey === 'bloom' && n < 20)
+      ? `<br><span class="num-bloom">${n} + 1 = ${n + 1} 🌟</span>` : '';
+    const speakText = (d.fact || '').replace(/"/g, '&quot;');
+    const backHtml =
+      `<div class="num-back">` +
+        photoGridHtml +
+        `<div class="num-back-word">${d.word}</div>` +
+        `<div class="num-back-fact">${d.fact}${bloomBonus}</div>` +
+        `<button class="card-back-speak" type="button" data-speak="${speakText}" aria-label="Listen to the fun fact">🔊</button>` +
+      `</div>`;
     return { emoji: emojiHtml, label: d.word, backHtml };
   },
 

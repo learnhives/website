@@ -68,6 +68,7 @@ export function startLesson(config) {
   // ── INIT ──
   document.addEventListener('DOMContentLoaded', () => {
     document.body.dataset.theme = currentTheme;
+    document.body.dataset.lesson = config.lessonKey; // lets CSS target per-lesson chrome (e.g. numbers card back)
     document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
     document.getElementById('chatInput').placeholder = t('chatPlaceholder');
     if (_params.get('preview') === '1') {
@@ -176,7 +177,18 @@ export function startLesson(config) {
       document.getElementById('cardEmoji').innerHTML = rendered.emoji;
     }
     document.getElementById('cardWord').textContent    = rendered.label;
-    document.getElementById('cardBackText').innerHTML  = rendered.backHtml;
+    const backText = document.getElementById('cardBackText');
+    backText.innerHTML = rendered.backHtml;
+    // Wire any in-back speaker button (e.g. numbers card back) — reads its `data-speak` text aloud.
+    // stopPropagation so tapping it doesn't flip the card. Shared by parent view + Kid Mode.
+    const backSpeak = backText.querySelector('.card-back-speak');
+    if (backSpeak) {
+      backSpeak.addEventListener('click', e => {
+        e.stopPropagation();
+        const txt = backSpeak.getAttribute('data-speak');
+        if (txt) speakQuiz(txt);
+      });
+    }
     document.getElementById('cardCounter').textContent = (currentCard + 1) + ' / ' + cards.length;
     document.getElementById('flashcard').classList.remove('flipped');
   }
@@ -1153,6 +1165,61 @@ export function startLesson(config) {
       .num-pots.num-pots-dense, .num-q1-img.num-q1-img-dense {
         line-height: 1.05;
       }
+
+      /* ═══ Number card BACK (numbers lesson only) — parent view + Kid Mode ═══ */
+      /* White face so white-background photos blend seamlessly. */
+      body[data-lesson="numbers"] .flashcard-back {
+        background: #FFFFFF; overflow: hidden;
+      }
+      /* Remove the shell's static decorative speaker — keep only #cardBackText. */
+      body[data-lesson="numbers"] .flashcard-back > div:not(#cardBackText) {
+        display: none !important;
+      }
+      /* Let the back text host fill the card so the column can distribute top→bottom. */
+      body[data-lesson="numbers"] #cardBackText {
+        width: 100%; height: 100%;
+        display: flex; align-items: stretch;
+      }
+      .num-back {
+        flex: 1; width: 100%; min-height: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: clamp(4px, 1.2dvh, 10px); text-align: center; overflow: hidden;
+      }
+      /* Photo grid zone — ~60% of the card height, contents vertically centered. */
+      .num-photo-zone {
+        flex: 0 1 60%; min-height: 0; width: 100%;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+      /* Inner grid is plain inline flow (imgs + <br>) so rows-of-5 grouping renders. */
+      .num-photo-grid { line-height: 1.05; max-width: 100%; text-align: center; }
+      .num-photo { object-fit: contain; margin: 2px; vertical-align: middle; }
+      .num-photo-xl { width: clamp(80px, 12dvh, 120px); height: auto; }
+      .num-photo-lg { width: clamp(56px,  9dvh,  80px); height: auto; }
+      .num-photo-md { width: clamp(40px,  7dvh,  60px); height: auto; }
+      .num-photo-sm { width: clamp(30px,  5dvh,  44px); height: auto; }
+      .num-photo-xs { width: clamp(24px,  4dvh,  36px); height: auto; }
+      /* Word → fact → speaker, below the photo grid. */
+      .num-back-word {
+        flex: 0 0 auto; font-family: 'Fredoka', 'Nunito', sans-serif; font-weight: 700;
+        color: var(--amber, #D4700A); font-size: clamp(18px, 3.4dvh, 30px); line-height: 1.1;
+      }
+      .num-back-fact {
+        flex: 0 0 auto; color: var(--moss, #6B8F3E); max-width: 92%;
+        font-size: clamp(11px, 2.2dvh, 17px); line-height: 1.35;
+      }
+      .num-back-fact .num-bloom { color: var(--amber, #D4700A); font-weight: 700; }
+      .card-back-speak {
+        flex: 0 0 auto; margin-top: 2px;
+        width: clamp(40px, 6dvh, 52px); height: clamp(40px, 6dvh, 52px);
+        font-size: clamp(18px, 3.4dvh, 28px); line-height: 1;
+        background: rgba(245,166,35,.14); border: none; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        cursor: pointer; -webkit-user-select: none; user-select: none;
+        transition: background .15s;
+      }
+      .card-back-speak:active { background: rgba(245,166,35,.32); }
 
       /* ── CARDS layout ── */
       /* Definitively hide all text nav chrome — real class is .flashcard-nav */
