@@ -18,9 +18,9 @@ const IMAGE_MAP = {
   '5':'/assets/images/farm-animals/dog.png',      '6':'/assets/images/fruits/banana.png',
   '7':'/assets/images/fruits/apple.png',          '8':'/assets/images/fruits/strawberry.png',
   '9':'/assets/images/fruits/orange.png',         '10':'/assets/images/fruits/mango.png',
-  '11':'/assets/images/vegetables/pumpkin.png',   '12':'/assets/images/vegetables/potato.png',
+  '11':'/assets/images/vegetables/pumpkin.png',   '12':'/assets/images/vegetables/tomato.png',
   '13':'/assets/images/fruits/peach.png',         '14':'/assets/images/vegetables/onion.png',
-  '15':'/assets/images/fruits/pomegranate.png',   '16':'/assets/images/fruits/pear.png',
+  '15':'/assets/images/fruits/kiwi.png',          '16':'/assets/images/vegetables/cabbage.png',
   '17':'/assets/images/vegetables/broccoli.png',  '18':'/assets/images/fruits/coconut.png',
   '19':'/assets/images/vegetables/beetroot.png',  '20':'/assets/images/fruits/watermelon.png'
 };

@@ -1049,7 +1049,7 @@ export function startLesson(config) {
       /* ── Speaker button (card front, kid-layer only) ── */
       #kidCardSpeaker {
         display: none; /* hidden when flashcard is in parent view */
-        position: absolute; bottom: 10px; right: 10px; z-index: 10;
+        position: absolute; bottom: 6px; left: 6px; z-index: 10; /* bottom-left, matches the card back */
         font-size: 20px; background: rgba(255,255,255,.78); border: none;
         border-radius: 50%; width: 38px; height: 38px;
         align-items: center; justify-content: center;
@@ -1146,9 +1146,11 @@ export function startLesson(config) {
       body.kid-active .buzz-panel { display: none !important; }
 
       /* ── Number card FRONT: big numeral + honeypot grid (parent view + kid mode) ── */
+      /* space-evenly + height:100% spreads the numeral and honeypots down the whole emoji
+         area so the front fills the card (the word sits just below, via .card-word). */
       .num-combo {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 0.12em; width: 100%; max-height: 100%; overflow: hidden;
+        display: flex; flex-direction: column; align-items: center; justify-content: space-evenly;
+        gap: 4px; width: 100%; height: 100%; max-height: 100%; overflow: hidden;
       }
       .num-big {
         font-size: 1em; font-weight: 700;
@@ -1179,17 +1181,17 @@ export function startLesson(config) {
       /* Photo counting objects (honeypot.png) — parent view + kid mode. Transparent, no
          border so the PNG never shows a white square. */
       .counting-obj {
-        width: clamp(36px, 7dvh, 56px); height: auto;
+        width: clamp(44px, 8dvh, 64px); height: auto;
         vertical-align: middle; margin: 2px; background: transparent; border: none;
       }
       /* Smaller variant for high counts (11–15) so the grid stays inside the card */
       .counting-obj-sm {
-        width: clamp(24px, 4dvh, 36px); height: auto;
+        width: clamp(34px, 6dvh, 50px); height: auto;
         vertical-align: middle; margin: 1px; background: transparent; border: none;
       }
       /* Smallest variant for 16–20 so all pots + the number word fit without overflow */
       .counting-obj-xs {
-        width: clamp(24px, 4dvh, 32px); height: auto;
+        width: clamp(28px, 5dvh, 40px); height: auto;
         vertical-align: middle; margin: 1px; background: transparent; border: none;
       }
       /* Tighten quiz "How many?" rows when there are many (>10) */
@@ -1224,22 +1226,26 @@ export function startLesson(config) {
         display: flex; align-items: stretch; justify-content: center; overflow: hidden;
       }
       .num-photo-zone .num-grid { height: 100%; }
-      /* Photos: transparent + no border (no white squares). Size set by the tier class. */
+      /* Rows share the zone height equally → each row is a definite box the photo fits inside,
+         so photos grow to fill the card (no big whitespace) and never clip vertically. */
+      .num-photo-zone .num-grid-row { flex: 1 1 0; min-height: 0; }
+      /* Photos: transparent + no border (no white squares). Capped by the tier width, by the
+         per-card column cap (inline max-width), and by their row height (max-height:100%). */
       .num-photo {
         object-fit: contain; background: transparent; border: none;
-        vertical-align: middle; display: inline-block;
+        vertical-align: middle; display: inline-block; max-height: 100%;
       }
-      .num-photo-hero .num-photo { max-width: 80%; max-height: 70%; }
-      .num-photo-lg   .num-photo { width: clamp(130px, 24dvh, 220px); height: auto; }
-      .num-photo-md   .num-photo { width: clamp(100px, 18dvh, 160px); height: auto; }
-      .num-photo-sm   .num-photo { width: clamp(70px,  13dvh, 110px); height: auto; }
-      .num-photo-xs   .num-photo { width: clamp(50px,   9dvh,  80px); height: auto; }
-      .num-photo-xxs  .num-photo { width: clamp(40px,   7dvh,  60px); height: auto; }
-      /* Header labels — numeral top-left, number word top-right. Same bold amber style. */
+      .num-photo-hero .num-photo { max-width: 90%; max-height: 80%; }
+      .num-photo-lg   .num-photo { width: clamp(160px, 30dvh, 280px); height: auto; }
+      .num-photo-md   .num-photo { width: clamp(120px, 22dvh, 200px); height: auto; }
+      .num-photo-sm   .num-photo { width: clamp(90px,  16dvh, 140px); height: auto; }
+      .num-photo-xs   .num-photo { width: clamp(65px,  12dvh, 100px); height: auto; }
+      .num-photo-xxs  .num-photo { width: clamp(50px,   9dvh,  75px); height: auto; }
+      /* Header labels — numeral top-left, number word top-right. Big, bold, amber. */
       .num-back-numeral, .num-back-word {
         position: absolute; top: 4px; z-index: 2; pointer-events: none;
-        font-family: 'Fredoka One', 'Fredoka', sans-serif;
-        font-size: clamp(18px, 3dvh, 28px); line-height: 1;
+        font-family: 'Fredoka One', 'Fredoka', cursive; font-weight: bold;
+        font-size: clamp(24px, 4dvh, 36px); line-height: 1;
         color: var(--amber, #E8850A);
       }
       .num-back-numeral { left: 10px; }
@@ -1293,12 +1299,12 @@ export function startLesson(config) {
       #kidActivityWrap .flashcard-front {
         position: absolute !important; inset: 0 !important;
         display: flex !important; flex-direction: column;
-        align-items: center; justify-content: center;
-        gap: 10px; padding: 20px; overflow: hidden;
+        align-items: center; justify-content: space-evenly;
+        gap: 2px; padding: 10px; overflow: hidden;
       }
       #kidActivityWrap .card-emoji {
         font-size: clamp(80px, 24dvh, 180px);
-        line-height: 1; flex: 1; min-height: 0;
+        line-height: 1; flex: 1; min-height: 0; margin: 0;
         display: flex; align-items: center; justify-content: center;
         text-align: center; overflow: hidden;
       }
