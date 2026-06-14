@@ -13,9 +13,9 @@ const honeypot = (n) => {
 
 // Decorative real photo shown on the back of each number card (1–20).
 const IMAGE_MAP = {
-  '1':'/assets/images/wild-animals/elephant.png', '2':'/assets/images/farm-animals/cat.png',
-  '3':'/assets/images/farm-animals/horse.png',    '4':'/assets/images/birds/parrot.png',
-  '5':'/assets/images/farm-animals/dog.png',      '6':'/assets/images/fruits/banana.png',
+  '1':'/assets/images/wild-animals/elephant.png', '2':'/assets/images/farm-animals/horse.png',
+  '3':'/assets/images/farm-animals/dog.png',      '4':'/assets/images/farm-animals/cat.png',
+  '5':'/assets/images/birds/parrot.png',          '6':'/assets/images/fruits/banana.png',
   '7':'/assets/images/fruits/apple.png',          '8':'/assets/images/fruits/strawberry.png',
   '9':'/assets/images/fruits/orange.png',         '10':'/assets/images/fruits/mango.png',
   '11':'/assets/images/vegetables/pumpkin.png',   '12':'/assets/images/vegetables/tomato.png',
@@ -178,11 +178,13 @@ export const LESSON_CONFIG = {
       photoGrid = buildGrid(n, img, getBackPhotoSize(n));
     }
     const speakText = (d.fact || '').replace(/"/g, '&quot;');
+    // Hero card (count 1) gets a reduced top margin so the lone elephant gets more room.
+    const zoneClass = 'num-photo-zone' + (n === 1 ? ' num-photo-zone-hero' : '');
     const backHtml =
       `<div class="num-back">` +
         `<div class="num-back-numeral">${n}</div>` +
         `<div class="num-back-word">${d.word}</div>` +
-        `<div class="num-photo-zone">${photoGrid}</div>` +
+        `<div class="${zoneClass}">${photoGrid}</div>` +
         `<div class="num-back-fact">${d.fact}</div>` +
         `<button class="card-back-speak" type="button" data-speak="${speakText}" aria-label="Listen to the fun fact">🔊</button>` +
       `</div>`;

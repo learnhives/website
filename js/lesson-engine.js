@@ -1223,10 +1223,13 @@ export function startLesson(config) {
       /* Photo grid zone — fills the center (the word + speaker are out of flow in corners).
          margin-top clears the absolute header labels so the first photo row never overlaps them. */
       .num-photo-zone {
-        flex: 1; min-height: 0; width: 100%; margin-top: clamp(36px, 5dvh, 48px);
+        flex: 1; min-height: 0; width: 100%; margin-top: clamp(40px, 6dvh, 56px);
         display: flex; align-items: stretch; justify-content: center; overflow: hidden;
       }
-      .num-photo-zone .num-grid { height: 100%; }
+      /* Hero card (single elephant): less top margin → more vertical room for the lone image. */
+      .num-photo-zone-hero { margin-top: clamp(28px, 4dvh, 36px); }
+      /* padding-top keeps the first row off the very top edge below the labels. */
+      .num-photo-zone .num-grid { height: 100%; padding-top: 4px; }
       /* Content-height rows (not stretched) so the vertical gap between rows is the real 4px
          grid gap — equal to the horizontal gap — instead of tall rows with centered photos. */
       .num-photo-zone .num-grid-row { flex: 0 0 auto; }
@@ -1236,7 +1239,7 @@ export function startLesson(config) {
         object-fit: contain; background: transparent; border: none;
         vertical-align: middle; display: inline-block; max-height: 100%;
       }
-      .num-photo-hero .num-photo { max-width: 90%; max-height: 80%; }
+      .num-photo-hero .num-photo { max-width: 95%; max-height: 85%; }
       .num-photo-lg   .num-photo { width: clamp(160px, 30dvh, 280px); height: auto; }
       .num-photo-md   .num-photo { width: clamp(120px, 22dvh, 200px); height: auto; }
       .num-photo-sm   .num-photo { width: clamp(90px,  16dvh, 140px); height: auto; }
