@@ -1145,19 +1145,28 @@ export function startLesson(config) {
       /* Hide parent chat panel while kid mode is active */
       body.kid-active .buzz-panel { display: none !important; }
 
-      /* ── Number combo card (parent view + kid mode) ── */
+      /* ── Number card FRONT: big numeral + honeypot grid (parent view + kid mode) ── */
       .num-combo {
-        display: flex; flex-direction: column; align-items: center;
-        gap: 0.08em; width: 100%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 0.12em; width: 100%; max-height: 100%; overflow: hidden;
       }
       .num-big {
         font-size: 1em; font-weight: 700;
         color: var(--amber, #F5A623); line-height: 1;
       }
-      .num-pots {
-        font-size: 0.32em; line-height: 1.35; text-align: center;
-        overflow: hidden; max-width: 100%;
+      /* Double-digit numerals (10–20): smaller so the tall glyph never clips off the top. */
+      .num-big-2d { font-size: 0.58em; }
+
+      /* ── Shared count grid: honeypots (front) + photos (back), centered rows of 5 ── */
+      .num-grid {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 4px; max-width: 100%;
       }
+      .num-grid-row {
+        display: flex; flex-direction: row; align-items: center; justify-content: center;
+        gap: 4px; max-width: 100%;
+      }
+      .num-grid img { margin: 0; }
 
       /* Quiz Q1 counting image (numbers lesson) */
       .num-q1-img {
@@ -1166,25 +1175,24 @@ export function startLesson(config) {
         overflow: hidden; max-width: 100%;
       }
 
-      /* Photo counting objects (e.g. honeypot.png) — parent view + kid mode */
+      /* Photo counting objects (honeypot.png) — parent view + kid mode. Transparent, no
+         border so the PNG never shows a white square. */
       .counting-obj {
         width: clamp(36px, 7dvh, 56px); height: auto;
-        vertical-align: middle; margin: 2px;
+        vertical-align: middle; margin: 2px; background: transparent; border: none;
       }
       /* Smaller variant for high counts (11–15) so the grid stays inside the card */
       .counting-obj-sm {
         width: clamp(24px, 4dvh, 36px); height: auto;
-        vertical-align: middle; margin: 1px;
+        vertical-align: middle; margin: 1px; background: transparent; border: none;
       }
       /* Smallest variant for 16–20 so all pots + the number word fit without overflow */
       .counting-obj-xs {
         width: clamp(24px, 4dvh, 32px); height: auto;
-        vertical-align: middle; margin: 1px;
+        vertical-align: middle; margin: 1px; background: transparent; border: none;
       }
-      /* Tighten honeypot rows when there are many (>10): pull rows closer together */
-      .num-pots.num-pots-dense, .num-q1-img.num-q1-img-dense {
-        line-height: 1.05;
-      }
+      /* Tighten quiz "How many?" rows when there are many (>10) */
+      .num-q1-img.num-q1-img-dense { line-height: 1.05; }
 
       /* ═══ Number card BACK (numbers lesson only) — parent view + Kid Mode ═══ */
       /* White face + white border so white-background photos blend seamlessly.
@@ -1192,7 +1200,7 @@ export function startLesson(config) {
          is needed in Kid Mode to out-specify "#kidActivityWrap .flashcard-back". */
       body[data-lesson="numbers"] .flashcard-back,
       body[data-lesson="numbers"] #kidActivityWrap .flashcard-back {
-        background: #FFFFFF; border-color: #FFFFFF; overflow: hidden;
+        background: #FFFFFF; border-color: #FFFFFF; overflow: hidden; padding: 8px;
       }
       /* Remove the shell's static decorative speaker — keep only #cardBackText. */
       body[data-lesson="numbers"] .flashcard-back > div:not(#cardBackText) {
@@ -1203,42 +1211,47 @@ export function startLesson(config) {
         width: 100%; height: 100%;
         display: flex; align-items: stretch;
       }
+      /* Back = a children's-book page: photo grid is the hero; word + speaker sit in corners. */
       .num-back {
-        flex: 1; width: 100%; min-height: 0;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        gap: clamp(4px, 1.2dvh, 10px); text-align: center; overflow: hidden;
+        position: relative; flex: 1; width: 100%; min-height: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: #FFFFFF; overflow: hidden; padding: 0;
       }
-      /* Photo grid zone — a DEFINITE 55%-height region (flex-basis off .num-back's
-         definite height) so each photo's percentage max-height resolves. overflow:hidden
-         is a final safety net; the per-cell sizing below already guarantees no spill. */
+      /* Photo grid zone — fills the center (the word + speaker are out of flow in corners). */
       .num-photo-zone {
-        flex: 0 0 55%; min-height: 0; width: 100%; overflow: hidden;
+        flex: 1; min-height: 0; width: 100%;
+        display: flex; align-items: stretch; justify-content: center; overflow: hidden;
       }
-      /* Inner grid is plain inline flow (imgs + <br>) so rows-of-5 render; height:100%
-         gives the images a definite box to size their max-height against. */
-      .num-photo-grid {
-        height: 100%; max-width: 100%; text-align: center; line-height: 1.05;
-      }
-      /* Each photo is capped by its cell (inline max-width per column + max-height per row,
-         set in renderCard). object-fit:contain preserves aspect within that cell. */
+      .num-photo-zone .num-grid { height: 100%; }
+      /* Photos: transparent + no border (no white squares). Size set by the tier class. */
       .num-photo {
-        object-fit: contain; margin: 4px; vertical-align: middle; max-width: 100%;
+        object-fit: contain; background: transparent; border: none;
+        vertical-align: middle; display: inline-block;
       }
-      /* Word → fact → speaker, below the photo grid. */
+      .num-photo-hero .num-photo { max-width: 70%;  max-height: 100%; }
+      .num-photo-lg   .num-photo { width: clamp(100px, 18dvh, 180px); height: auto; }
+      .num-photo-md   .num-photo { width: clamp(70px,  12dvh, 120px); height: auto; }
+      .num-photo-sm   .num-photo { width: clamp(50px,   9dvh,  80px); height: auto; }
+      .num-photo-xs   .num-photo { width: clamp(36px,   6dvh,  56px); height: auto; }
+      .num-photo-xxs  .num-photo { width: clamp(28px,   5dvh,  44px); height: auto; }
+      /* Number word — small subtle label, top-right corner (not centered). */
       .num-back-word {
-        flex: 0 0 auto; font-family: 'Fredoka', 'Nunito', sans-serif; font-weight: 700;
-        color: var(--amber, #D4700A); font-size: clamp(18px, 3.4dvh, 30px); line-height: 1.1;
+        position: absolute; top: 4px; right: 8px; z-index: 2;
+        font-family: 'Fredoka', 'Nunito', sans-serif; font-weight: 600;
+        font-size: clamp(11px, 1.8dvh, 15px); color: rgba(120, 92, 30, .55);
+        pointer-events: none;
       }
+      /* Fun fact — compact, centered, just below the photo grid. Padded clear of the corners. */
       .num-back-fact {
-        flex: 0 0 auto; color: var(--moss, #6B8F3E); max-width: 92%;
-        font-size: clamp(11px, 2.2dvh, 17px); line-height: 1.35;
+        flex: 0 0 auto; max-width: 100%; padding: 0 46px 2px;
+        font-size: clamp(11px, 2dvh, 16px); line-height: 1.3;
+        color: var(--moss, #6B8F3E); text-align: center;
       }
-      .num-back-fact .num-bloom { color: var(--amber, #D4700A); font-weight: 700; }
+      /* Single speaker — small, bottom-left corner, out of the way (not centered). */
       .card-back-speak {
-        flex: 0 0 auto; margin-top: 2px;
-        width: clamp(40px, 6dvh, 52px); height: clamp(40px, 6dvh, 52px);
-        font-size: clamp(18px, 3.4dvh, 28px); line-height: 1;
+        position: absolute; bottom: 6px; left: 6px; z-index: 2;
+        width: clamp(34px, 5dvh, 44px); height: clamp(34px, 5dvh, 44px);
+        font-size: clamp(16px, 3dvh, 24px); line-height: 1;
         background: rgba(245,166,35,.14); border: none; border-radius: 50%;
         display: inline-flex; align-items: center; justify-content: center;
         cursor: pointer; -webkit-user-select: none; user-select: none;

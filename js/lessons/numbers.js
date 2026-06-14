@@ -18,9 +18,9 @@ const IMAGE_MAP = {
   '5':'/assets/images/farm-animals/dog.png',      '6':'/assets/images/fruits/banana.png',
   '7':'/assets/images/fruits/apple.png',          '8':'/assets/images/fruits/strawberry.png',
   '9':'/assets/images/fruits/orange.png',         '10':'/assets/images/fruits/mango.png',
-  '11':'/assets/images/vegetables/tomato.png',    '12':'/assets/images/vegetables/potato.png',
+  '11':'/assets/images/vegetables/pumpkin.png',   '12':'/assets/images/vegetables/potato.png',
   '13':'/assets/images/fruits/peach.png',         '14':'/assets/images/vegetables/onion.png',
-  '15':'/assets/images/fruits/kiwi.png',          '16':'/assets/images/fruits/pear.png',
+  '15':'/assets/images/fruits/pomegranate.png',   '16':'/assets/images/fruits/pear.png',
   '17':'/assets/images/vegetables/broccoli.png',  '18':'/assets/images/fruits/coconut.png',
   '19':'/assets/images/vegetables/beetroot.png',  '20':'/assets/images/fruits/watermelon.png'
 };
@@ -32,38 +32,59 @@ const NUM_EMOJI = {
   16:'🐬', 17:'🍕', 18:'🦜', 19:'🌙', 20:'🏆'
 };
 
+// Generic number facts — deliberately NOT tied to the IMAGE_MAP photo (the photo is just
+// a decorative count, never "3 horses"). Keeps the spoken/written fact honest.
 const NUM_FACTS = {
   1:'1 is the first counting number!',
   2:'You have 2 eyes, 2 ears, and 2 hands!',
   3:'A triangle has 3 sides!',
-  4:'A car has 4 wheels!',
+  4:'A square has 4 sides!',
   5:'You have 5 fingers on one hand!',
   6:'Insects have 6 legs!',
   7:'There are 7 days in a week!',
   8:'An octopus has 8 arms!',
-  9:'A cat has 9 lives — so they say!',
+  9:'A cat has 9 lives!',
   10:'We have 10 fingers and 10 toes!',
-  11:'11 looks like two 1s standing side by side!',
-  12:'A dozen means 12 — like 12 eggs!',
-  13:'13 is called a baker\'s dozen!',
-  14:'14 days = 2 weeks = 1 fortnight!',
-  15:'15 minutes is a quarter of an hour!',
+  11:'A football team has 11 players!',
+  12:'A dozen means 12!',
+  13:'13 is a teenager number!',
+  14:'Two weeks have 14 days!',
+  15:'A quarter hour is 15 minutes!',
   16:'16 = 4 groups of 4!',
   17:'17 is a prime number!',
-  18:'18 = 10 + 8!',
-  19:'19 is just one step away from 20!',
+  18:'18 = 3 groups of 6!',
+  19:'19 is the last teen number!',
   20:'20 = 2 groups of 10!'
 };
 
-// Render n copies of emoji in rows of 5 (ten-frame style for 6–10; natural rows for larger)
-function makeObjRows(emoji, n) {
-  const rows = [];
-  for (let i = 0; i < n; i += 5) rows.push(emoji.repeat(Math.min(5, n - i)));
-  return rows.join('\n');
+// ── Shared grid builder (card FRONT honeypots + card BACK photos) ──
+// Lays out exactly `count` copies of `itemHtml` in centered rows of 5:
+//   7  → row of 5 + row of 2 (centered)
+//   13 → row of 5 + row of 5 + row of 3 (centered)
+// `sizeClass` is added to the grid container so engine CSS can size the items inside.
+// Row/item spacing (4px) and item sizing live in lesson-engine.js (.num-grid / .num-grid-row).
+function buildGrid(count, itemHtml, sizeClass = '') {
+  let rows = '';
+  for (let i = 0; i < count; i += 5) {
+    const inRow = Math.min(5, count - i);
+    rows += `<div class="num-grid-row">${itemHtml.repeat(inRow)}</div>`;
+  }
+  return `<div class="num-grid${sizeClass ? ' ' + sizeClass : ''}">${rows}</div>`;
 }
 
-// Rows of 5; for n>10 inserts a blank line after position 10 so "ten block + remainder" reads clearly.
-// Returns \n-joined string → use white-space:pre-line for textContent, .replace(/\n/g,'<br>') for innerHTML.
+// Card-BACK photo size tier (engine CSS sizes `.num-photo` per tier). Bigger for low counts.
+function getBackPhotoSize(n) {
+  if (n === 1) return 'num-photo-hero'; // single hero, ~70% of the card
+  if (n <= 3)  return 'num-photo-lg';   // 2–3
+  if (n <= 6)  return 'num-photo-md';   // 4–6
+  if (n <= 10) return 'num-photo-sm';   // 7–10
+  if (n <= 15) return 'num-photo-xs';   // 11–15
+  return 'num-photo-xxs';               // 16–20
+}
+
+// Rows of 5; for n>10 inserts a blank line after position 10 so "ten block + remainder" reads
+// clearly. Used by the quiz "How many?" image and the printable worksheet (NOT the cards).
+// Returns \n-joined string → .replace(/\n/g,'<br>') for innerHTML.
 function makeGroupedRows(emoji, n) {
   const rows = [];
   for (let i = 0; i < n; i += 5) {
@@ -71,12 +92,6 @@ function makeGroupedRows(emoji, n) {
     if (n > 10 && i + 5 === 10) rows.push(''); // blank separator after the 10th object
   }
   return rows.join('\n');
-}
-
-// Front label for the count card (textContent, so \n works with white-space:pre-line)
-function countLabel(n, word, objEmoji, stageKey) {
-  const objPart = makeGroupedRows(objEmoji, n);
-  return stageKey === 'seedling' ? objPart : word + '\n' + objPart;
 }
 
 export const LESSON_CONFIG = {
@@ -130,44 +145,38 @@ export const LESSON_CONFIG = {
   renderCard(card, key, stageKey) {
     const n = parseInt(key);
     const d = this.numbers[key];
-    // Always the honeypot photo as the counting object — consistent mental model.
-    // Numbers >10 use a smaller pot + a tighter row spacing so all 20 fit in the card.
-    const dense = n > 10;
-    const pots = makeGroupedRows(honeypot(n), n).replace(/\n/g, '<br>');
-    // emoji area: big numeral + honey pots below (HTML composition)
+
+    // ── Card FRONT ── big numeral + the EXACT count of honeypots in centered rows of 5.
+    // Double-digit numerals get a smaller class so the tall glyph doesn't clip off the top.
+    // The number word ("Twenty") is rendered by the engine (cardWord) below this, always visible.
+    const numClass = 'num-big' + (n >= 10 ? ' num-big-2d' : '');
     const emojiHtml =
       `<div class="num-combo">` +
-        `<span class="num-big">${n}</span>` +
-        `<div class="num-pots${dense ? ' num-pots-dense' : ''}">${pots}</div>` +
+        `<span class="${numClass}">${n}</span>` +
+        buildGrid(n, honeypot(n)) +
       `</div>`;
-    // ── Card BACK ── (white-bg face built entirely in this markup; layout/sizing via engine CSS)
-    // Top→bottom: photo grid (≈55% of card) → number word → fun fact → single speaker button.
-    // The photo is repeated N times in plain rows of 5. Each photo is capped by BOTH its
-    // column width and its row height (relative to the definite-height .num-photo-zone), so
-    // low counts fill the zone (large hero) and high counts pack into a 5-wide grid that
-    // mathematically cannot overflow. Card-relative %, so it adapts to desktop + Kid Mode.
+
+    // ── Card BACK ── children's-book page (white bg). Layout (positioned via engine CSS):
+    //   word top-right (small label) · photo grid center (fills) · fun fact below · speaker bottom-left.
+    // Exactly N photos, no text labels. Each photo is capped to its column share so rows of 5
+    // never overflow; the tier class sets the target size (large for low counts).
     const photo = IMAGE_MAP[key];
-    let photoGridHtml = '';
+    let photoGrid = '';
     if (photo) {
       const cols = Math.min(n, 5);
-      const rows = Math.ceil(n / 5);
-      const cell = `max-width: calc((100% - ${cols * 8}px) / ${cols}); ` +
-                   `max-height: calc((100% - ${rows * 8}px) / ${rows});`;
-      const photoImg =
-        `<img src="${photo}" alt="${d.word}" loading="lazy" class="num-photo" style="${cell}">`;
-      const grid = makeObjRows(photoImg, n).replace(/\n/g, '<br>');
-      photoGridHtml = `<div class="num-photo-zone"><div class="num-photo-grid">${grid}</div></div>`;
+      const cap  = n > 1 ? ` style="max-width: calc((100% - ${(cols - 1) * 4}px) / ${cols})"` : '';
+      const img  = `<img src="${photo}" alt="" loading="lazy" class="num-photo"${cap}>`;
+      photoGrid  = buildGrid(n, img, getBackPhotoSize(n));
     }
-    const bloomBonus = (stageKey === 'bloom' && n < 20)
-      ? `<br><span class="num-bloom">${n} + 1 = ${n + 1} 🌟</span>` : '';
     const speakText = (d.fact || '').replace(/"/g, '&quot;');
     const backHtml =
       `<div class="num-back">` +
-        photoGridHtml +
         `<div class="num-back-word">${d.word}</div>` +
-        `<div class="num-back-fact">${d.fact}${bloomBonus}</div>` +
+        `<div class="num-photo-zone">${photoGrid}</div>` +
+        `<div class="num-back-fact">${d.fact}</div>` +
         `<button class="card-back-speak" type="button" data-speak="${speakText}" aria-label="Listen to the fun fact">🔊</button>` +
       `</div>`;
+
     return { emoji: emojiHtml, label: d.word, backHtml };
   },
 
@@ -268,7 +277,7 @@ export const LESSON_CONFIG = {
     const photo = IMAGE_MAP[key];
     if (!photo) return NUM_EMOJI[parseInt(key)];
     return `<img src="${photo}" alt="${this.numbers[key].word}" loading="lazy" ` +
-      `style="max-width:40%;max-height:30dvh;object-fit:contain;display:block;margin:0 auto;">`;
+      `style="max-width:50%;max-height:30dvh;object-fit:contain;background:transparent;border:none;display:block;margin:0 auto;">`;
   },
   getStory(key, stageKey)      { return this.stages[stageKey].story(parseInt(key), this.numbers[key]); },
   getBuzzPrompt(key, stageKey) { return this.stages[stageKey].prompt(parseInt(key), this.numbers[key]); },
