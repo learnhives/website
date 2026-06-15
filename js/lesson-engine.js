@@ -1347,14 +1347,26 @@ export function startLesson(config) {
         line-height: 1.45; overflow: hidden; text-align: center;
       }
 
-      /* ── Quiz options: keep the 2×2 grid but cap its width and center it so it doesn't
-         stretch across a wide desktop. margin-bottom guarantees clearance above the
-         "Next Question" button. (Neutralized inside #kidActivityWrap above.) ── */
-      .quiz-options {
+      /* ── Parent/desktop quiz layout. Scoped to body:not(.kid-active) so none of it leaks
+         into the same #tab-quiz element after it's relocated into #kidActivityWrap in Kid
+         Mode. The body+id+class chain also out-specifies the shell's .quiz-* rules, so the
+         centering can't be lost to source order. ── */
+      /* Cap the 2×2 grid width and center it; small gap to the Next Question button. */
+      body:not(.kid-active) #tab-quiz .quiz-options {
         max-width: min(100%, 500px);
-        margin: 0 auto;
-        margin-bottom: clamp(60px, 10dvh, 80px);
+        margin-left: auto; margin-right: auto;
+        margin-bottom: clamp(16px, 3dvh, 24px);
       }
+      /* Shorter option tiles so a single letter doesn't swim in empty space. */
+      body:not(.kid-active) #tab-quiz .quiz-option {
+        max-height: clamp(60px, 8dvh, 80px);
+        padding: 8px 10px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+      }
+      /* Keep the photo off the top edge so the quiz image isn't clipped. */
+      body:not(.kid-active) #tab-quiz { padding-top: 8px; }
+      body:not(.kid-active) #tab-quiz .quiz-image { margin-top: clamp(8px, 2dvh, 16px); }
       /* Let the quiz tab scroll if its content ever exceeds the available height. */
       #tab-quiz { overflow-y: auto; }
 
@@ -1385,13 +1397,11 @@ export function startLesson(config) {
         font-size: clamp(12px, 2.8dvh, 18px) !important;
         min-height: clamp(18px, 3.5dvh, 28px);
       }
-      /* ZONE 3: actions — 2×2 grid, ~45% share; tiles stay tappable but not oversized.
-         max-width:none / margin:0 neutralize the parent-view .quiz-options centering below,
-         which would otherwise shrink/offset this fixed-zone grid in Kid Mode. */
+      /* ZONE 3: actions — 2×2 grid, ~45% share; tiles stay tappable but not oversized. */
       #kidActivityWrap .quiz-options {
         flex: 1 1 0; min-height: 0; max-height: 42dvh;
         display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
-        gap: 8px; max-width: none; margin: 0;
+        gap: 8px;
       }
       #kidActivityWrap .quiz-option {
         min-height: clamp(60px, 9dvh, 84px);
