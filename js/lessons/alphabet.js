@@ -1,59 +1,61 @@
+// Alphabet lesson — Seedling + Sprout only. Photo-based, single card per letter.
+// FRONT: big letter glyph (A / "A a") with the real photo below.
+// BACK:  letter + word header, large photo, "A is for Apple!" sentence + fun fact, speaker.
+// Quizzes and the story illustration use the same real photos (no emoji/honeypots).
+// Same config interface the shared engine expects via startLesson(config).
+
+// ── Per-letter data: main word + photo, a second "also" word, and stage-specific facts ──
+const ALPHA_IMAGES = {
+  'A': { word: 'Apple', also: 'Ant', image: '/assets/images/fruits/apple.png', fact_s: 'Apples are yummy!', fact_sp: 'Apples can be red, green, or yellow!' },
+  'B': { word: 'Bear', also: 'Ball', image: '/assets/images/wild-animals/bear.png', fact_s: 'Bears are big and strong!', fact_sp: 'Bears love to eat honey!' },
+  'C': { word: 'Cat', also: 'Car', image: '/assets/images/farm-animals/cat.png', fact_s: 'Cats say meow!', fact_sp: 'Cats can see in the dark!' },
+  'D': { word: 'Dog', also: 'Duck', image: '/assets/images/farm-animals/dog.png', fact_s: 'Dogs are our best friends!', fact_sp: 'Dogs wag their tails when happy!' },
+  'E': { word: 'Elephant', also: 'Egg', image: '/assets/images/wild-animals/elephant.png', fact_s: 'Elephants are very big!', fact_sp: 'Elephants never forget!' },
+  'F': { word: 'Fox', also: 'Fish', image: '/assets/images/wild-animals/fox.png', fact_s: 'Foxes are clever!', fact_sp: 'Foxes have fluffy tails!' },
+  'G': { word: 'Giraffe', also: 'Grapes', image: '/assets/images/wild-animals/giraffe.png', fact_s: 'Giraffes are so tall!', fact_sp: 'Giraffes have long purple tongues!' },
+  'H': { word: 'Horse', also: 'Hat', image: '/assets/images/farm-animals/horse.png', fact_s: 'Horses run fast!', fact_sp: 'Horses can sleep standing up!' },
+  'I': { word: 'Ice Cream', also: 'Igloo', image: '/assets/images/common/ice-cream.png', fact_s: 'Ice cream is cold and sweet!', fact_sp: 'Vanilla is the most popular ice cream flavor!' },
+  'J': { word: 'Jellyfish', also: 'Juice', image: '/assets/images/common/jellyfish.png', fact_s: 'Jellyfish live in the sea!', fact_sp: 'Jellyfish have no brain or bones!' },
+  'K': { word: 'Kiwi', also: 'Kite', image: '/assets/images/fruits/kiwi.png', fact_s: 'Kiwis are green inside!', fact_sp: 'Kiwi is a fruit and also a bird!' },
+  'L': { word: 'Lion', also: 'Leaf', image: '/assets/images/wild-animals/lion.png', fact_s: 'Lions are the king of the jungle!', fact_sp: 'Only male lions have manes!' },
+  'M': { word: 'Monkey', also: 'Moon', image: '/assets/images/wild-animals/monkey.png', fact_s: 'Monkeys love bananas!', fact_sp: 'Monkeys use their tails to hang from trees!' },
+  'N': { word: 'Nest', also: 'Nose', image: '/assets/images/common/nest.png', fact_s: 'Birds live in nests!', fact_sp: 'Birds build nests with twigs and leaves!' },
+  'O': { word: 'Orange', also: 'Owl', image: '/assets/images/fruits/orange.png', fact_s: 'Oranges are juicy!', fact_sp: 'Oranges are full of Vitamin C!' },
+  'P': { word: 'Parrot', also: 'Pen', image: '/assets/images/birds/parrot.png', fact_s: 'Parrots are colorful!', fact_sp: 'Parrots can learn to talk!' },
+  'Q': { word: 'Queen Bee', also: 'Quilt', image: '/assets/images/common/queen-bee.png', fact_s: 'The queen bee is the boss!', fact_sp: 'Every beehive has one queen bee!' },
+  'R': { word: 'Rabbit', also: 'Rain', image: '/assets/images/farm-animals/rabbit.png', fact_s: 'Rabbits love carrots!', fact_sp: 'Rabbits can hop very fast!' },
+  'S': { word: 'Strawberry', also: 'Sun', image: '/assets/images/fruits/strawberry.png', fact_s: 'Strawberries are sweet!', fact_sp: 'Strawberries have tiny seeds on the outside!' },
+  'T': { word: 'Tiger', also: 'Tree', image: '/assets/images/wild-animals/tiger.png', fact_s: 'Tigers have stripes!', fact_sp: 'Every tiger has a unique stripe pattern!' },
+  'U': { word: 'Umbrella', also: 'Unicorn', image: '/assets/images/common/umbrella.png', fact_s: 'Umbrellas keep us dry!', fact_sp: 'Umbrellas were invented over 3,000 years ago!' },
+  'V': { word: 'Vulture', also: 'Van', image: '/assets/images/birds/vulture.png', fact_s: 'Vultures are big birds!', fact_sp: 'Vultures can fly very high in the sky!' },
+  'W': { word: 'Wolf', also: 'Water', image: '/assets/images/wild-animals/wolf.png', fact_s: 'Wolves howl at the moon!', fact_sp: 'Wolves live and hunt in packs!' },
+  'X': { word: 'Xylophone', also: 'X-ray', image: '/assets/images/common/xylophone.png', fact_s: 'Xylophones make music!', fact_sp: 'Each bar on a xylophone plays a different note!' },
+  'Y': { word: 'Yak', also: 'Yarn', image: '/assets/images/common/yak.png', fact_s: 'Yaks are big and hairy!', fact_sp: 'Yaks live in cold mountains!' },
+  'Z': { word: 'Zebra', also: 'Zoo', image: '/assets/images/wild-animals/zebra.png', fact_s: 'Zebras have black and white stripes!', fact_sp: 'No two zebras have the same stripes!' }
+};
+
+// ── Helpers ──
+const ALL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+// `count` random letters that are NOT `key`.
+const wrongLetters = (key, count) => shuffle(ALL_LETTERS.filter(l => l !== key)).slice(0, count);
+
+// Big-letter quiz prompt (uppercase or lowercase). Mirrors the numbers lesson's .num-quiz-big.
+const bigLetter = letter =>
+  `<span class="num-quiz-big" style="font-family:'Fredoka One',Fredoka,cursive; font-size:clamp(60px,12dvh,100px); color:#E8850A;">${letter}</span>`;
+
 export const LESSON_CONFIG = {
   subject:   'Alphabet',
   lessonKey: 'alphabet',
   icon:      '🔤',
 
-  // Per-stage generators: build story text + Buzz system prompt
+  // ── Only two stages ──
   stages: {
-    seedling: { label:'🌱 Seedling', age:'Age 2–3', avatar:'🌱',
-      story: (L,d) => `This is the letter <strong>${L}</strong>! ${d.emoji}<br><br>${L} says <em>"${d.sound}"</em>!<br><br>Like in <strong>${d.words[0].w}</strong> ${d.words[0].e}!<br><br>Can you say <strong>${L}</strong>? Buzz can! Bzzz! 🐝`,
-      prompt: (L,d) => `You are Buzz the Bee, a warm cheerful tutor for a 2-3 year old in the LearnHives app. The lesson is the letter ${L}, which sounds like "${d.sound}". Use VERY simple words, very short sentences, lots of emojis, say "bzzz" sometimes. Celebrate everything. Under 50 words. Never anything scary.`
-    },
-    sprout: { label:'🌿 Sprout', age:'Age 3–4', avatar:'🌿',
-      story: (L,d) => `The letter <strong>${L}</strong> makes the <em>"${d.sound}"</em> sound! 🔊<br><br>Words that start with ${L}:<br>${d.words.slice(0,3).map(x=>`${x.e} <strong>${x.w}</strong>`).join(' · ')}<br><br>${d.fact}<br><br>Can you find the ${L} sound around your house? 🐝`,
-      prompt: (L,d) => `You are Buzz the Bee, an enthusiastic tutor for a 3-4 year old in LearnHives. Lesson: letter ${L} ("${d.sound}" sound). Use simple language, fun ${L}-words, emojis. Under 70 words. Encouraging.`
-    },
-    blossom: { label:'🌸 Blossom', age:'Age 4–5', avatar:'🌸',
-      story: (L,d) => `Let's explore the letter <strong>${L}</strong>! ${d.isVowel?'It is a special <em>vowel</em>! 🌟':''}<br><br>It makes the <em>"${d.sound}"</em> sound.<br><br>${L}-words: ${d.words.map(x=>`${x.e} ${x.w}`).join(', ')}<br><br>${d.fact}<br><br>Can you think of one more word that starts with <strong>${L}</strong>? ✏️`,
-      prompt: (L,d) => `You are Buzz the Bee, a fun knowledgeable tutor for a 4-5 year old in LearnHives. Lesson: letter ${L} ("${d.sound}"${d.isVowel?', a vowel':''}). Use light phonics, clear ${L}-word examples, ask follow-ups. Under 90 words.`
-    },
-    bloom: { label:'🌻 Bloom', age:'Age 5–6', avatar:'🌻',
-      story: (L,d) => `The letter <strong>${L}</strong> ${d.isVowel?'is a <em>vowel</em> — one of the 5 most important letters! 🏆':'is a consonant.'}<br><br>Sound: <em>"${d.sound}"</em><br>Words: ${d.words.map(x=>`${x.e} <strong>${x.w}</strong>`).join(', ')}<br><br>${d.fact}<br><br>Challenge: write a short sentence using a word that starts with <strong>${L}</strong>! 📚`,
-      prompt: (L,d) => `You are Buzz the Bee, a smart encouraging tutor for a 5-6 year old in LearnHives. Lesson: letter ${L} ("${d.sound}"${d.isVowel?', a vowel':''}). Use age-appropriate phonics, vocabulary, encourage writing sentences, ask thoughtful questions. Under 110 words.`
-    }
+    seedling: { label:'🌱 Seedling', age:'Age 2–3', avatar:'🌱' },
+    sprout:   { label:'🌿 Sprout',   age:'Age 3–4', avatar:'🌿' }
   },
 
-  // ── THE 26 LETTERS ── (emoji = main illustration, words = flashcards, sound, fact)
-  letters: {
-    A:{emoji:'🍎',sound:'Ah',isVowel:true, words:[{e:'🍎',w:'Apple'},{e:'🐜',w:'Ant'},{e:'🥑',w:'Avocado'},{e:'🐊',w:'Alligator'}],fact:'A is the very first letter of the alphabet!'},
-    B:{emoji:'🐝',sound:'Buh',isVowel:false,words:[{e:'🐝',w:'Bee'},{e:'🍌',w:'Banana'},{e:'🐻',w:'Bear'},{e:'⚽',w:'Ball'}],fact:'Buzz the Bee starts with B!'},
-    C:{emoji:'🐱',sound:'Kuh',isVowel:false,words:[{e:'🐱',w:'Cat'},{e:'🚗',w:'Car'},{e:'🥕',w:'Carrot'},{e:'🎂',w:'Cake'}],fact:'C can sound like K (cat) or S (city)!'},
-    D:{emoji:'🐕',sound:'Duh',isVowel:false,words:[{e:'🐕',w:'Dog'},{e:'🦆',w:'Duck'},{e:'🍩',w:'Donut'},{e:'🥁',w:'Drum'}],fact:'D is for the drum that goes boom!'},
-    E:{emoji:'🥚',sound:'Eh',isVowel:true, words:[{e:'🥚',w:'Egg'},{e:'🐘',w:'Elephant'},{e:'🦅',w:'Eagle'},{e:'👂',w:'Ear'}],fact:'E is the most common letter in English!'},
-    F:{emoji:'🐸',sound:'Fff',isVowel:false,words:[{e:'🐸',w:'Frog'},{e:'🐟',w:'Fish'},{e:'🌸',w:'Flower'},{e:'🦊',w:'Fox'}],fact:'F makes a soft "fff" like a whisper!'},
-    G:{emoji:'🍇',sound:'Guh',isVowel:false,words:[{e:'🍇',w:'Grapes'},{e:'🦒',w:'Giraffe'},{e:'🎁',w:'Gift'},{e:'🐐',w:'Goat'}],fact:'G can be hard (goat) or soft (giraffe)!'},
-    H:{emoji:'🏠',sound:'Huh',isVowel:false,words:[{e:'🏠',w:'House'},{e:'🎩',w:'Hat'},{e:'🐴',w:'Horse'},{e:'🍯',w:'Honey'}],fact:'H is for Honey — Buzz loves it!'},
-    I:{emoji:'🍦',sound:'Ih',isVowel:true, words:[{e:'🍦',w:'Ice cream'},{e:'🧊',w:'Ice'},{e:'🦎',w:'Iguana'},{e:'🏝️',w:'Island'}],fact:'I is a vowel — and the shortest word too!'},
-    J:{emoji:'🧃',sound:'Juh',isVowel:false,words:[{e:'🧃',w:'Juice'},{e:'🐆',w:'Jaguar'},{e:'🫙',w:'Jar'},{e:'👖',w:'Jeans'}],fact:'J is for a jug of juice!'},
-    K:{emoji:'🪁',sound:'Kuh',isVowel:false,words:[{e:'🪁',w:'Kite'},{e:'🔑',w:'Key'},{e:'🦘',w:'Kangaroo'},{e:'👑',w:'King'}],fact:'K and C can sound the same!'},
-    L:{emoji:'🦁',sound:'Lll',isVowel:false,words:[{e:'🦁',w:'Lion'},{e:'🍋',w:'Lemon'},{e:'🍃',w:'Leaf'},{e:'💡',w:'Lamp'}],fact:'L is for the lion that roars!'},
-    M:{emoji:'🌙',sound:'Mmm',isVowel:false,words:[{e:'🌙',w:'Moon'},{e:'🐵',w:'Monkey'},{e:'🍄',w:'Mushroom'},{e:'🥛',w:'Milk'}],fact:'M is the sound you make for yummy — mmm!'},
-    N:{emoji:'👃',sound:'Nnn',isVowel:false,words:[{e:'👃',w:'Nose'},{e:'🥜',w:'Nut'},{e:'🪺',w:'Nest'},{e:'🔢',w:'Number'}],fact:'N is for your nose on your face!'},
-    O:{emoji:'🐙',sound:'Oh',isVowel:true, words:[{e:'🐙',w:'Octopus'},{e:'🍊',w:'Orange'},{e:'🦉',w:'Owl'},{e:'🧅',w:'Onion'}],fact:'O is a vowel shaped like a circle!'},
-    P:{emoji:'🐧',sound:'Puh',isVowel:false,words:[{e:'🐧',w:'Penguin'},{e:'🍕',w:'Pizza'},{e:'🐷',w:'Pig'},{e:'🍐',w:'Pear'}],fact:'P pops your lips — puh puh puh!'},
-    Q:{emoji:'👑',sound:'Kwuh',isVowel:false,words:[{e:'👑',w:'Queen'},{e:'🪶',w:'Quill'},{e:'🤫',w:'Quiet'},{e:'🛌',w:'Quilt'}],fact:'Q almost always brings its friend U!'},
-    R:{emoji:'🌈',sound:'Rrr',isVowel:false,words:[{e:'🌈',w:'Rainbow'},{e:'🐰',w:'Rabbit'},{e:'🚀',w:'Rocket'},{e:'🌹',w:'Rose'}],fact:'R is the sound a tiger makes — rrr!'},
-    S:{emoji:'☀️',sound:'Sss',isVowel:false,words:[{e:'☀️',w:'Sun'},{e:'🐍',w:'Snake'},{e:'⭐',w:'Star'},{e:'🍓',w:'Strawberry'}],fact:'S hisses like a snake — sssss!'},
-    T:{emoji:'🐯',sound:'Tuh',isVowel:false,words:[{e:'🐯',w:'Tiger'},{e:'🌳',w:'Tree'},{e:'🚂',w:'Train'},{e:'🐢',w:'Turtle'}],fact:'T is for the tall tree!'},
-    U:{emoji:'☂️',sound:'Uh',isVowel:true, words:[{e:'☂️',w:'Umbrella'},{e:'🦄',w:'Unicorn'},{e:'🛸',w:'UFO'},{e:'🆙',w:'Up'}],fact:'U is a vowel shaped like a cup!'},
-    V:{emoji:'🎻',sound:'Vvv',isVowel:false,words:[{e:'🎻',w:'Violin'},{e:'🌋',w:'Volcano'},{e:'🚐',w:'Van'},{e:'🌿',w:'Vine'}],fact:'V makes your lips buzz — vvv!'},
-    W:{emoji:'🐋',sound:'Wuh',isVowel:false,words:[{e:'🐋',w:'Whale'},{e:'🍉',w:'Watermelon'},{e:'⌚',w:'Watch'},{e:'🌊',w:'Wave'}],fact:'W is called "double-U"!'},
-    X:{emoji:'🎵',sound:'Ks',isVowel:false,words:[{e:'🎵',w:'Xylophone'},{e:'🩻',w:'X-ray'},{e:'❌',w:'X mark'},{e:'📦',w:'Box (ends in x)'}],fact:'X usually sounds like "ks" at the end!'},
-    Y:{emoji:'🪀',sound:'Yuh',isVowel:false,words:[{e:'🪀',w:'Yo-yo'},{e:'💛',w:'Yellow'},{e:'🧶',w:'Yarn'},{e:'🥱',w:'Yawn'}],fact:'Y can be a sound AND sometimes a vowel!'},
-    Z:{emoji:'🦓',sound:'Zzz',isVowel:false,words:[{e:'🦓',w:'Zebra'},{e:'0️⃣',w:'Zero'},{e:'⚡',w:'Zigzag'},{e:'🤐',w:'Zip'}],fact:'Z is the very LAST letter — and it buzzes like Buzz!'}
-  },
-
-  // ── Subject-specific UI string overrides (merged into engine t() lookup) ──
+  // ── Subject-specific UI string overrides ──
   uiStrings: {
     en: {
       pickItem:  '🔤 Pick a letter to learn',
@@ -64,122 +66,197 @@ export const LESSON_CONFIG = {
 
   // ── Engine interface ──
 
-  getCards(key){ return this.letters[key].words; },
+  // One combined card per letter (front: letter glyph + photo; back: details).
+  getCards(key) {
+    return [{ type:'letter' }];
+  },
 
-  renderCard(card, key, stageKey){
-    return {
-      emoji:   card.e,
-      label:   card.w.toUpperCase(),
-      backHtml:`<strong style="color:var(--amber)">${key}</strong> is for<br><em style="color:var(--moss)">${card.w}</em> ${card.e}<br>${key}–${key}–${card.w}!`
+  renderCard(card, key, stageKey) {
+    const d      = ALPHA_IMAGES[key];
+    const lc     = key.toLowerCase();
+    const sprout = stageKey === 'sprout';
+
+    // ── Card FRONT ── big letter glyph with the real photo embedded below it.
+    // Seedling shows just "A"; Sprout shows "A a" (upper + lower) to introduce both cases.
+    // We deliberately use the `emoji` field (rendered as innerHTML) and NOT `image`, so the
+    // letter AND the photo both appear on the front.
+    const frontLetter = sprout ? `${key} ${lc}` : key;
+    const frontFont   = sprout ? 'clamp(60px,12dvh,100px)' : 'clamp(80px,15dvh,120px)';
+    const emoji =
+      `<span style="font-family:'Fredoka One',Fredoka,cursive; font-size:${frontFont}; color:#E8850A; font-weight:bold; display:block; line-height:1;">${frontLetter}</span>` +
+      `<img src="${d.image}" alt="${d.word}" loading="lazy" style="max-width:55%; max-height:30dvh; object-fit:contain; background:transparent; border:none; margin-top:8px;">`;
+
+    // ── Card BACK ── white "children's book page": letter top-left, word top-right,
+    // big photo centered, sentence + fun fact below, speaker bottom-left.
+    const backLetter = sprout ? `${key} ${lc}` : key;
+    const sentence   = sprout ? `${key} is for ${d.word} and ${d.also}!` : `${key} is for ${d.word}!`;
+    const fact       = sprout ? d.fact_sp : d.fact_s;
+    const speakText  = `${sentence} ${fact}`.replace(/"/g, '&quot;');
+
+    const backHtml =
+      `<div class="alpha-back" style="position:relative; background:#FFFFFF; width:100%; height:100%; border-radius:inherit; padding:8px; display:flex; flex-direction:column; align-items:center;">` +
+        `<div style="position:absolute; top:8px; left:12px; font-family:'Fredoka One',Fredoka,cursive; font-size:clamp(28px,5dvh,42px); color:#E8850A; font-weight:bold;">${backLetter}</div>` +
+        `<div style="position:absolute; top:8px; right:12px; font-family:'Fredoka One',Fredoka,cursive; font-size:clamp(28px,5dvh,42px); color:#E8850A; font-weight:bold;">${d.word}</div>` +
+        `<div style="flex:1; display:flex; align-items:center; justify-content:center; margin-top:clamp(40px,6dvh,56px);">` +
+          `<img src="${d.image}" alt="${d.word}" loading="lazy" style="max-width:80%; max-height:60%; object-fit:contain; background:transparent; border:none;">` +
+        `</div>` +
+        `<div style="text-align:center; padding:4px 8px 40px;">` +
+          `<div style="font-family:Nunito,sans-serif; font-size:clamp(16px,2.5dvh,22px); font-weight:700; color:#3B2A00;">${sentence}</div>` +
+          `<div style="font-family:Nunito,sans-serif; font-size:clamp(14px,2dvh,18px); font-weight:600; color:#E8850A; margin-top:4px;">${fact}</div>` +
+        `</div>` +
+        `<button class="card-back-speak" type="button" data-speak="${speakText}" aria-label="Listen" style="position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.05); border:none; border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:1.2rem;">🔊</button>` +
+      `</div>`;
+
+    return { emoji, label: d.word, backHtml };
+  },
+
+  buildQuiz(key, stageKey) {
+    const d      = ALPHA_IMAGES[key];
+    const lc     = key.toLowerCase();
+    const sprout = stageKey === 'sprout';
+    const nOpts  = sprout ? 4 : 3; // total options per question
+
+    // Q1 — photo → which letter does it start with? (text-only letter options)
+    const q1 = {
+      question: 'What letter does this start with?',
+      image: `<img src="${d.image}" alt="${d.word}" style="max-width:60%; max-height:40dvh; object-fit:contain; background:transparent;">`,
+      options: shuffle([
+        { e: key, l: key, c: true },
+        ...wrongLetters(key, nOpts - 1).map(x => ({ e: x, l: x, c: false }))
+      ])
     };
+
+    // Q2 — Seedling: identify the uppercase letter. Sprout: match upper → lowercase.
+    let q2;
+    if (sprout) {
+      q2 = {
+        question: `Match the big and small letter! Find the small version of ${key}.`,
+        image: bigLetter(key),
+        options: shuffle([
+          { e: lc, l: lc, c: true },
+          ...wrongLetters(key, nOpts - 1).map(x => ({ e: x.toLowerCase(), l: x.toLowerCase(), c: false }))
+        ])
+      };
+    } else {
+      q2 = {
+        question: 'What is this letter?',
+        image: bigLetter(key),
+        options: shuffle([
+          { e: key, l: key, c: true },
+          ...wrongLetters(key, nOpts - 1).map(x => ({ e: x, l: x, c: false }))
+        ])
+      };
+    }
+
+    return [q1, q2];
   },
 
-  buildQuiz(key, stageKey){
-    const d      = this.letters[key];
-    const others = this.items.filter(x=>x!==key).flatMap(x=>this.letters[x].words.map(w=>({...w,from:x})));
-    const pick    = n => [...others].sort(()=>Math.random()-0.5).slice(0,n);
-    const shuffle = arr => arr.sort(()=>Math.random()-0.5);
-
-    const q1d = pick(3);
-    const q1  = { question:`Which picture starts with ${key}?`, image:'🤔',
-      options:shuffle([{e:d.words[0].e,l:d.words[0].w,c:true},...q1d.map(x=>({e:x.e,l:x.w,c:false}))]) };
-
-    const q2d = pick(3);
-    const q2  = { question:`Which word starts with the letter ${key}?`, image:d.emoji,
-      options:shuffle([{e:d.words[1]?d.words[1].e:d.words[0].e,l:d.words[1]?d.words[1].w:d.words[0].w,c:true},...q2d.map(x=>({e:x.e,l:x.w,c:false}))]) };
-
-    const wrongKeys = shuffle(this.items.filter(x=>x!==key)).slice(0,3);
-    const q3  = { question:`Find the letter ${key}!`, image:'🔤',
-      options:shuffle([{e:key,l:'Letter '+key,c:true},...wrongKeys.map(x=>({e:x,l:'Letter '+x,c:false}))]) };
-
-    return [q1,q2,q3];
-  },
-
-  getQuickPrompts(key){
+  getQuickPrompts(key) {
+    const d = ALPHA_IMAGES[key];
     return [
-      {t:`🔊 ${key} sound`, m:`Say the ${key} sound for me!`},
-      {t:`💬 ${key} word`,  m:`Give me a fun word that starts with ${key}!`},
-      {t:'🌟 Fun fact',     m:`Tell me a fun fact about the letter ${key}`},
-      {t:'🟢 Easier',       m:'Can you explain that in an easier way?'},
-      {t:'🔴 Harder',       m:'Can you make it a bit harder for me?'}
+      { t:`✏️ Write ${key}`,  m:`How do you write the letter ${key}?` },
+      { t:`💬 ${key} words`,  m:`What are some words that start with ${key}?` },
+      { t:`🌟 ${d.word}`,     m:`Tell me about ${d.word}!` },
+      { t:'🟢 Easier',        m:'Can you explain that in an easier way?' },
+      { t:'🔴 Harder',        m:'Can you make it a bit harder for me?' }
     ];
   },
 
-  renderWorksheet(key, stageKey, isLast){
-    return _buildLetterHTML(key, this.letters[key], this.stages[stageKey], stageKey, isLast);
+  renderWorksheet(key, stageKey, isLast) {
+    return _buildLetterHTML(key, ALPHA_IMAGES[key], this.stages[stageKey], stageKey, isLast);
   },
 
-  getItemTitle(key)          { return `The Letter ${key}`; },
-  getItemDisplayName(key)    { return `the letter ${key}`; },
-  getProgressLabel(key)      { return `Letter ${key} Progress`; },
-  getItemBadge(key)          { return `Letter ${this.items.indexOf(key)+1} of ${this.items.length}`; },
-  getWorksheetTitle(key)     { return `Letter ${key} Worksheet`; },
-  getItemEmoji(key)          { return this.letters[key].emoji; },
-  getStory(key, stageKey)    { return this.stages[stageKey].story(key, this.letters[key]); },
-  getBuzzPrompt(key, stageKey){ return this.stages[stageKey].prompt(key, this.letters[key]); },
+  getItemTitle(key)       { return `The Letter ${key}`; },
+  getItemDisplayName(key) { return `the letter ${key}`; },
+  getProgressLabel(key)   { return `Letter ${key}`; },
+  getItemBadge(key)       { return key; },
+  getWorksheetTitle(key)  { return `Letter ${key} Worksheet`; },
+  // Subject header icon (rendered as text). The word displays cleanly; the photo lives in
+  // getStoryIllustration / the cards.
+  getItemEmoji(key)       { return ALPHA_IMAGES[key].word; },
 
-  getGreeting(key, stageKey){
-    const d = this.letters[key];
-    if(stageKey==='seedling')
-      return `Bzzz! 🐝 Hi! Let's learn the letter <strong>${key}</strong>! ${d.emoji} It says "${d.sound}"! Tap a chip or talk to me!`;
-    return `Hi explorer! 🐝 Today we're learning the letter <strong>${key}</strong> — it makes the "${d.sound}" sound. Ask me anything about ${key}!`;
+  // Story illustration = the real photo (same asset the card uses).
+  getStoryIllustration(key) {
+    const d = ALPHA_IMAGES[key];
+    return `<img src="${d.image}" alt="${d.word}" loading="lazy" ` +
+      `style="max-width:50%; max-height:30dvh; object-fit:contain; background:transparent; border:none; display:block; margin:0 auto;">`;
+  },
+
+  getStory(key, stageKey) {
+    const d = ALPHA_IMAGES[key];
+    const title = `The Letter ${key} — ${d.word}!`;
+    if (stageKey === 'sprout') {
+      return `<strong>${title}</strong><br><br>This is the letter <strong>${key}</strong>! ` +
+        `${key} is for <strong>${d.word}</strong>. <strong>${d.also}</strong> also starts with ${key}!<br><br>` +
+        `Can you find something around you that starts with <strong>${key}</strong>? 🐝`;
+    }
+    return `<strong>${title}</strong><br><br>This is the letter <strong>${key}</strong>! ` +
+      `${key} is for <strong>${d.word}</strong>! 🐝`;
+  },
+
+  getBuzzPrompt(key, stageKey) {
+    const d   = ALPHA_IMAGES[key];
+    const age = stageKey === 'sprout' ? '3-4' : '2-3';
+    return `You are Buzz the Bee, teaching a young child about the letter ${key}. ` +
+      `${key} is for ${d.word} and ${d.also}. Keep your response to one short, enthusiastic sentence ` +
+      `appropriate for a ${age} year old. Use simple words, a warm encouraging tone, and you can say "bzzz" sometimes.`;
+  },
+
+  getGreeting(key, stageKey) {
+    const d = ALPHA_IMAGES[key];
+    if (stageKey === 'seedling')
+      return `Bzzz! 🐝 Hi! Let's learn the letter <strong>${key}</strong>! ${key} is for <strong>${d.word}</strong>! Tap a chip or talk to me!`;
+    return `Hi explorer! 🐝 Today we're learning the letter <strong>${key}</strong> — ${key} is for <strong>${d.word}</strong> and <strong>${d.also}</strong>. Ask me anything about ${key}!`;
   },
 };
 
-// Ordered item key list (computed once after object is fully defined)
-LESSON_CONFIG.items = Object.keys(LESSON_CONFIG.letters);
+// Ordered item key list (A–Z, computed once after the object is fully defined).
+LESSON_CONFIG.items = Object.keys(ALPHA_IMAGES);
 
 // ── Worksheet renderer (alphabet-specific; called via config.renderWorksheet) ──
-function _buildLetterHTML(L, d, s, stageKey, isLast){
+// Seedling + Sprout only. Uses the real photo wherever the old version used an emoji.
+function _buildLetterHTML(L, d, s, stageKey, isLast) {
   const pgBreak = isLast ? '' : ' style="page-break-after:always"';
-  const lc = L.toLowerCase();
-  const da = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').filter(c=>c!==L);
-  const [d0,d1,d2,d3,d4,d5,d6,d7] = da;
+  const da = ALL_LETTERS.filter(c => c !== L);
+  const [d0, d1, d2, d3, d4] = shuffle(da);
+  const photoImg = `<img src="${d.image}" alt="${d.word}" style="width:48px; height:48px; object-fit:contain;">`;
 
-  // Activity 1: Trace
+  // Activity 1: Trace the letter
   const guideBox = `<div class="ws-trace-box"><span class="ws-guide">${L}</span></div>`;
   const emptyBox = `<div class="ws-trace-box"></div>`;
-  let act1;
-  if(stageKey==='seedling')     act1=`<div class="ws-trace-row">${guideBox.repeat(5)}</div>`;
-  else if(stageKey==='sprout')  act1=`<div class="ws-trace-row">${guideBox}${guideBox}${emptyBox}${emptyBox}${emptyBox}</div>`;
-  else if(stageKey==='blossom') act1=`<div class="ws-trace-row">${guideBox}${emptyBox}${emptyBox}${emptyBox}${emptyBox}</div>`;
-  else act1=`<div class="ws-trace-row-bloom">${guideBox}<div class="ws-hw-area"><div class="ws-hw-baseline"></div><div class="ws-hw-baseline dashed"></div><div class="ws-hw-baseline"></div></div></div>`;
+  const act1 = stageKey === 'seedling'
+    ? `<div class="ws-trace-row">${guideBox.repeat(5)}</div>`
+    : `<div class="ws-trace-row">${guideBox}${guideBox}${emptyBox}${emptyBox}${emptyBox}</div>`;
 
-  // Activity 2: Circle
-  let circleItems, circleClass, ciExtra;
-  if(stageKey==='seedling'){      circleItems=[L,d0,L,d1,d2];                      circleClass='ws-circle-row';  ciExtra=' ws-ci-lg'; }
-  else if(stageKey==='sprout'){   circleItems=[d0,L,d1,d2,L,d3,L,d4];             circleClass='ws-circle-row';  ciExtra=''; }
-  else if(stageKey==='blossom'){  circleItems=[L,d0,d1,L,d2,d3,d4,L,d5,L,d6,d7]; circleClass='ws-circle-grid'; ciExtra=''; }
-  else{ circleItems=[L,d0,lc,d1.toLowerCase(),L,d2.toLowerCase(),lc,d3,d4.toLowerCase(),L,d5,lc]; circleClass='ws-circle-grid'; ciExtra=''; }
-  const act2=`<div class="${circleClass}">${circleItems.map(c=>`<span class="ws-ci${ciExtra}">${c}</span>`).join('')}</div>`;
+  // Activity 2: Circle every letter L
+  const circleItems = stageKey === 'seedling'
+    ? [L, d0, L, d1, d2]
+    : [d0, L, d1, d2, L, d3, L, d4];
+  const ciExtra = stageKey === 'seedling' ? ' ws-ci-lg' : '';
+  const act2 = `<div class="ws-circle-row">${circleItems.map(c => `<span class="ws-ci${ciExtra}">${c}</span>`).join('')}</div>`;
 
-  // Activity 3: Draw
-  const w0=d.words[0];
-  let drawContent;
-  if(stageKey==='seedling')     drawContent=`<div class="ws-draw-emoji">${w0.e}</div><div class="ws-draw-label">Color the ${w0.w}! 🎨</div>`;
-  else if(stageKey==='sprout')  drawContent=`<div class="ws-draw-label">Draw a ${w0.w}. 🖍️</div>`;
-  else if(stageKey==='blossom') drawContent=`<div class="ws-draw-label">Draw 2 things that start with ${L}. ✏️</div>`;
-  else drawContent=`<div class="ws-draw-label">Draw something starting with ${L} and write its name:</div><div class="ws-write-line"></div>`;
-  const act3=`<div class="ws-draw-box">${drawContent}</div>`;
+  // Activity 3: Color / draw the photo word
+  const drawContent = stageKey === 'seedling'
+    ? `<div class="ws-draw-emoji">${photoImg}</div><div class="ws-draw-label">Color the ${d.word}! 🎨</div>`
+    : `<div class="ws-draw-label">Draw a ${d.word}. 🖍️</div>`;
+  const act3 = `<div class="ws-draw-box">${drawContent}</div>`;
 
-  // Activity 4: Words
-  const wordList  = stageKey==='seedling' ? d.words.slice(0,3) : d.words;
-  const wordItems = wordList.map(w=>`<div class="ws-answer-item">${w.e}<div class="ws-answer-label">${w.w}</div></div>`).join('');
-  let act4extra='';
-  if(stageKey==='blossom') act4extra=`<div class="ws-words-note">⭐ Circle your favourite!</div>`;
-  if(stageKey==='bloom')   act4extra=`<div class="ws-write-prompt">Write a word that starts with <strong>${L}</strong>: <span class="ws-write-line-inline"></span></div>`;
-  const act4=`<div class="ws-circle-answer">${wordItems}</div>${act4extra}`;
+  // Activity 4: L words — the main photo word + the "also" word
+  const wordItems =
+    `<div class="ws-answer-item">${photoImg}<div class="ws-answer-label">${d.word}</div></div>` +
+    `<div class="ws-answer-item"><span class="ws-ci" style="border:none">${L}</span><div class="ws-answer-label">${d.also}</div></div>`;
+  const act4 = `<div class="ws-circle-answer">${wordItems}</div>`;
 
-  const t2 = stageKey==='bloom' ? `Find the letters ${L} and ${lc}` : `Circle every letter ${L}`;
-  const t3 = stageKey==='seedling' ? `Color the ${w0.w}` : stageKey==='sprout' ? `Draw a ${w0.w}` : `Draw`;
-  const t4 = stageKey==='seedling' ? `${L} words — say each one!` : stageKey==='bloom' ? `${L} words — say & write!` : `${L} words`;
+  const t2 = `Circle every letter ${L}`;
+  const t3 = stageKey === 'seedling' ? `Color the ${d.word}` : `Draw a ${d.word}`;
+  const t4 = stageKey === 'seedling' ? `${L} words — say each one!` : `${L} words`;
 
   return `<div class="ws-letter-section"${pgBreak}>
     <div class="ws-print-header">
       <div class="ws-print-logo">🐝</div>
       <div>
         <div class="ws-print-title">LearnHives · Letter ${L} · ${s.label}</div>
-        <div class="ws-print-sub">${s.age} · sound "${d.sound}"${d.isVowel?' · vowel ⭐':''}</div>
+        <div class="ws-print-sub">${s.age} · ${L} is for ${d.word}</div>
       </div>
     </div>
     <div class="ws-name-line">
