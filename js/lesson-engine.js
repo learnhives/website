@@ -246,9 +246,6 @@ export function startLesson(config) {
     document.getElementById('nextQBtn').disabled = true;
     answered = false; wrongAttempts = 0;
     const optEl = document.getElementById('quizOptions'); optEl.innerHTML = '';
-    // Opt-in vertical layout: a question may set `singleCol: true` (e.g. alphabet) to stack
-    // options in one column instead of the default 2×2 grid.
-    optEl.classList.toggle('quiz-single-col', !!q.singleCol);
     q.options.forEach(opt => {
       const b = document.createElement('button');
       b.className = 'quiz-option';
@@ -1293,18 +1290,6 @@ export function startLesson(config) {
         width: 100%; height: 100%; display: flex; padding: 0;
       }
 
-      /* ── Single-column quiz options (opt-in via question.singleCol) ── */
-      /* The base layout is a 2×2 grid (display:grid in Kid Mode); override to a vertical stack. */
-      .quiz-options.quiz-single-col,
-      #kidActivityWrap .quiz-options.quiz-single-col {
-        display: flex !important; flex-direction: column !important;
-        grid-template-columns: none; align-items: center; gap: 8px;
-      }
-      .quiz-options.quiz-single-col .quiz-option,
-      #kidActivityWrap .quiz-options.quiz-single-col .quiz-option {
-        width: 100% !important; max-width: 400px; margin: 0 auto;
-      }
-
       /* ── CARDS layout ── */
       /* Definitively hide all text nav chrome — real class is .flashcard-nav */
       #kidActivityWrap .flashcard-nav,
@@ -1362,6 +1347,17 @@ export function startLesson(config) {
         line-height: 1.45; overflow: hidden; text-align: center;
       }
 
+      /* ── Quiz options: keep the 2×2 grid but cap its width and center it so it doesn't
+         stretch across a wide desktop. margin-bottom guarantees clearance above the
+         "Next Question" button. (Neutralized inside #kidActivityWrap above.) ── */
+      .quiz-options {
+        max-width: min(100%, 500px);
+        margin: 0 auto;
+        margin-bottom: clamp(60px, 10dvh, 80px);
+      }
+      /* Let the quiz tab scroll if its content ever exceeds the available height. */
+      #tab-quiz { overflow-y: auto; }
+
       /* ── QUIZ layout — three balanced zones ── */
       #kidActivityWrap #tab-quiz {
         gap: clamp(4px, 1dvh, 10px); padding: clamp(4px, 1dvh, 8px) 0 0;
@@ -1389,11 +1385,13 @@ export function startLesson(config) {
         font-size: clamp(12px, 2.8dvh, 18px) !important;
         min-height: clamp(18px, 3.5dvh, 28px);
       }
-      /* ZONE 3: actions — 2×2 grid, ~45% share; tiles stay tappable but not oversized */
+      /* ZONE 3: actions — 2×2 grid, ~45% share; tiles stay tappable but not oversized.
+         max-width:none / margin:0 neutralize the parent-view .quiz-options centering below,
+         which would otherwise shrink/offset this fixed-zone grid in Kid Mode. */
       #kidActivityWrap .quiz-options {
         flex: 1 1 0; min-height: 0; max-height: 42dvh;
         display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
-        gap: 8px;
+        gap: 8px; max-width: none; margin: 0;
       }
       #kidActivityWrap .quiz-option {
         min-height: clamp(60px, 9dvh, 84px);

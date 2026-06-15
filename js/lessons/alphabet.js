@@ -167,10 +167,9 @@ export const LESSON_CONFIG = {
     // Q1 — photo (on a clean white rounded card so it never crops) → which letter starts it?
     const q1 = {
       question: 'What letter does this start with?',
-      singleCol: true,
       image:
-        `<div style="background:#FFFFFF; border-radius:16px; padding:12px; display:inline-block;">` +
-          `<img src="${d.image}" alt="${d.word}" style="max-width:50dvh; max-height:35dvh; object-fit:contain; background:transparent; border:none;">` +
+        `<div style="background:#FFFFFF; border-radius:16px; padding:16px; display:inline-block;">` +
+          `<img src="${d.image}" alt="${d.word}" style="max-width:60dvh; max-height:40dvh; object-fit:contain; background:transparent; border:none;">` +
         `</div>`,
       options: shuffle([
         { e: key, l: key, c: true },
@@ -183,7 +182,6 @@ export const LESSON_CONFIG = {
     if (sprout) {
       q2 = {
         question: `Match the big and small letter! Find the small version of ${key}.`,
-        singleCol: true,
         image: bigLetter(key),
         options: shuffle([
           { e: lc, l: lc, c: true },
@@ -193,7 +191,6 @@ export const LESSON_CONFIG = {
     } else {
       q2 = {
         question: 'What is this letter?',
-        singleCol: true,
         image: bigLetter(key),
         options: shuffle([
           { e: key, l: key, c: true },
