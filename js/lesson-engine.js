@@ -183,6 +183,9 @@ export function startLesson(config) {
     } else {
       document.getElementById('cardEmoji').innerHTML = rendered.emoji;
     }
+    // Front speaker text: prefer an explicit `frontSpeak` (e.g. alphabet, whose label is blank),
+    // else fall back to the visible label. Read by the Kid-Mode #kidCardSpeaker button.
+    document.getElementById('cardEmoji').dataset.speak = rendered.frontSpeak || rendered.label || '';
     document.getElementById('cardWord').textContent    = rendered.label;
     const backText = document.getElementById('cardBackText');
     backText.innerHTML = rendered.backHtml;
@@ -241,6 +244,9 @@ export function startLesson(config) {
     document.getElementById('nextQBtn').disabled = true;
     answered = false; wrongAttempts = 0;
     const optEl = document.getElementById('quizOptions'); optEl.innerHTML = '';
+    // Opt-in vertical layout: a question may set `singleCol: true` (e.g. alphabet) to stack
+    // options in one column instead of the default 2×2 grid.
+    optEl.classList.toggle('quiz-single-col', !!q.singleCol);
     q.options.forEach(opt => {
       const b = document.createElement('button');
       b.className = 'quiz-option';
@@ -806,7 +812,8 @@ export function startLesson(config) {
     btn.innerHTML = '🔊';
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      const word = document.getElementById('cardWord')?.textContent?.trim();
+      const speak = document.getElementById('cardEmoji')?.dataset.speak?.trim();
+      const word  = speak || document.getElementById('cardWord')?.textContent?.trim();
       if (word) speakQuiz(word);
     });
     front.appendChild(btn);
@@ -1050,8 +1057,8 @@ export function startLesson(config) {
       #kidCardSpeaker {
         display: none; /* hidden when flashcard is in parent view */
         position: absolute; bottom: 6px; left: 6px; z-index: 10; /* bottom-left, matches the card back */
-        font-size: 20px; background: rgba(255,255,255,.78); border: none;
-        border-radius: 50%; width: 38px; height: 38px;
+        font-size: 1.6rem; background: rgba(255,255,255,.78); border: none;
+        border-radius: 50%; width: 52px; height: 52px;
         align-items: center; justify-content: center;
         cursor: pointer; transition: background .15s;
         -webkit-user-select: none; user-select: none;
@@ -1257,14 +1264,41 @@ export function startLesson(config) {
       /* Single speaker — small, bottom-left corner, out of the way (not centered). */
       .card-back-speak {
         position: absolute; bottom: 6px; left: 6px; z-index: 2;
-        width: clamp(34px, 5dvh, 44px); height: clamp(34px, 5dvh, 44px);
-        font-size: clamp(16px, 3dvh, 24px); line-height: 1;
+        width: 52px; height: 52px;
+        font-size: 1.6rem; line-height: 1;
         background: rgba(245,166,35,.14); border: none; border-radius: 50%;
         display: inline-flex; align-items: center; justify-content: center;
         cursor: pointer; -webkit-user-select: none; user-select: none;
         transition: background .15s;
       }
       .card-back-speak:active { background: rgba(245,166,35,.32); }
+
+      /* ── Alphabet card back: white book page (mirrors the numbers-scoped back). ──
+         The shell back has a green gradient + a static decorative 🔊 div; scope a white,
+         full-bleed back for alphabet and hide that static speaker (the inline backHtml
+         supplies its own .card-back-speak). */
+      body[data-lesson="alphabet"] .flashcard-back,
+      body[data-lesson="alphabet"] #kidActivityWrap .flashcard-back {
+        background: #FFFFFF; border-color: #FFFFFF; overflow: hidden; padding: 0;
+      }
+      body[data-lesson="alphabet"] .flashcard-back > div:not(#cardBackText) {
+        display: none !important;
+      }
+      body[data-lesson="alphabet"] #cardBackText {
+        width: 100%; height: 100%; display: flex; padding: 0;
+      }
+
+      /* ── Single-column quiz options (opt-in via question.singleCol) ── */
+      /* The base layout is a 2×2 grid (display:grid in Kid Mode); override to a vertical stack. */
+      .quiz-options.quiz-single-col,
+      #kidActivityWrap .quiz-options.quiz-single-col {
+        display: flex !important; flex-direction: column !important;
+        grid-template-columns: none; align-items: center; gap: 8px;
+      }
+      .quiz-options.quiz-single-col .quiz-option,
+      #kidActivityWrap .quiz-options.quiz-single-col .quiz-option {
+        width: 100% !important; max-width: 400px; margin: 0 auto;
+      }
 
       /* ── CARDS layout ── */
       /* Definitively hide all text nav chrome — real class is .flashcard-nav */
