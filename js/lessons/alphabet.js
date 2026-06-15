@@ -99,7 +99,7 @@ const wrongLetters = (key, count) => shuffle(ALL_LETTERS.filter(l => l !== key))
 
 // Big-letter quiz prompt (uppercase or lowercase). Mirrors the numbers lesson's .num-quiz-big.
 const bigLetter = letter =>
-  `<span class="num-quiz-big" style="font-family:'Fredoka One',Fredoka,cursive; font-size:clamp(60px,12dvh,100px); color:#E8850A;">${letter}</span>`;
+  `<span class="num-quiz-big" style="font-family:'Baloo 2','Fredoka One',cursive; font-size:clamp(60px,12dvh,100px); color:#E8850A;">${letter}</span>`;
 
 export const LESSON_CONFIG = {
   subject:   'Alphabet',
@@ -137,9 +137,9 @@ export const LESSON_CONFIG = {
     // Seedling shows "A"; Sprout shows "A a" (upper + lower). Default amber/cream bg (not white).
     // The big glyph fills the card; the Kid-Mode front speaker says `frontSpeak`.
     const frontLetter = sprout ? `${key} ${lc}` : key;
-    const frontFont   = sprout ? 'clamp(120px,22dvh,200px)' : 'clamp(140px,25dvh,220px)';
+    const frontFont   = sprout ? 'clamp(150px,30dvh,260px)' : 'clamp(180px,35dvh,300px)';
     const emoji =
-      `<span style="font-family:'Fredoka One',Fredoka,cursive; font-size:${frontFont}; color:#E8850A; font-weight:bold; display:block; text-align:center; line-height:1;">${frontLetter}</span>`;
+      `<span style="font-family:'Baloo 2','Fredoka One',cursive; font-size:${frontFont}; color:#E8850A; font-weight:bold; display:block; text-align:center; line-height:1;">${frontLetter}</span>`;
 
     // ── Card BACK ── white book page: letter top-left, word top-right, BIG photo, speaker.
     // No fun-fact text — kept clean. Speaker says a simple "A for Apple".
@@ -147,7 +147,7 @@ export const LESSON_CONFIG = {
     const speakText  = `${key} for ${d.word}`.replace(/"/g, '&quot;');
     const backHtml =
       `<div style="position:relative; background:#FFFFFF; width:100%; height:100%; border-radius:inherit; padding:8px; display:flex; flex-direction:column; align-items:center;">` +
-        `<div style="position:absolute; top:10px; left:14px; font-family:'Fredoka One',Fredoka,cursive; font-size:clamp(28px,5dvh,42px); color:#E8850A; font-weight:bold;">${backLetter}</div>` +
+        `<div style="position:absolute; top:10px; left:14px; font-family:'Baloo 2','Fredoka One',cursive; font-size:clamp(28px,5dvh,42px); color:#E8850A; font-weight:bold;">${backLetter}</div>` +
         `<div style="position:absolute; top:10px; right:14px; font-family:'Fredoka One',Fredoka,cursive; font-size:clamp(28px,5dvh,42px); color:#E8850A; font-weight:bold;">${d.word}</div>` +
         `<div style="flex:1; display:flex; align-items:center; justify-content:center; margin-top:clamp(40px,6dvh,56px); width:100%;">` +
           `<img src="${d.image}" alt="${d.word}" loading="lazy" style="max-width:95%; max-height:90%; object-fit:contain; background:transparent; border:none;">` +
@@ -230,8 +230,9 @@ export const LESSON_CONFIG = {
   getItemEmoji(key)       { return ALPHA_IMAGES[key].word; },
 
   // The story photo lives inside getStory's mini "card-back" box, so the separate
-  // illustration slot is left empty (avoids showing the photo twice).
-  getStoryIllustration() { return ''; },
+  // illustration slot is left unused (return undefined, not '', so the engine hides the
+  // empty container instead of rendering an empty amber box above the story).
+  getStoryIllustration() { return undefined; },
 
   getStory(key, stageKey) {
     const d      = ALPHA_IMAGES[key];
@@ -242,13 +243,15 @@ export const LESSON_CONFIG = {
 
     // Mini "card back" for visual continuity: letter top-left, word top-right, photo center.
     const box =
-      `<div style="background:#FFFFFF; border-radius:16px; padding:12px; margin:0 auto 16px; max-width:80%; position:relative;">` +
-        `<div style="position:absolute; top:8px; left:12px; font-family:'Fredoka One',Fredoka,cursive; font-size:clamp(20px,3dvh,28px); color:#E8850A; font-weight:bold;">${boxLetter}</div>` +
+      `<div style="background:#FFFFFF; border-radius:16px; padding:12px; margin:0 auto 16px; max-width:min(80%, 500px); position:relative;">` +
+        `<div style="position:absolute; top:8px; left:12px; font-family:'Baloo 2','Fredoka One',cursive; font-size:clamp(20px,3dvh,28px); color:#E8850A; font-weight:bold;">${boxLetter}</div>` +
         `<div style="position:absolute; top:8px; right:12px; font-family:'Fredoka One',Fredoka,cursive; font-size:clamp(20px,3dvh,28px); color:#E8850A; font-weight:bold;">${d.word}</div>` +
         `<img src="${d.image}" alt="${d.word}" style="display:block; margin:clamp(32px,4dvh,40px) auto 8px; max-width:70%; max-height:25dvh; object-fit:contain; background:transparent;">` +
       `</div>`;
     const text =
-      `<div style="font-family:Nunito,sans-serif; font-size:clamp(15px,2.4dvh,20px); line-height:1.5; color:#3B2A00; max-width:90%; margin:0 auto;">${story}</div>`;
+      `<div style="max-width:500px; margin:0 auto; text-align:center;">` +
+        `<div style="font-family:Nunito,sans-serif; font-size:clamp(15px,2.4dvh,20px); line-height:1.5; color:#3B2A00;">${story}</div>` +
+      `</div>`;
 
     return box + text;
   },

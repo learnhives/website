@@ -146,7 +146,9 @@ export function startLesson(config) {
     // else fall back to the emoji glyph. Keeps emoji-only lessons working unchanged.
     const storyIll = document.getElementById('storyIllustration');
     if (config.getStoryIllustration) {
-      storyIll.innerHTML = config.getStoryIllustration(currentKey, stage);
+      // Coerce a falsy return (null/undefined/'') to '' so the container stays truly empty
+      // (and gets hidden by `.story-illustration:empty`) rather than rendering "undefined".
+      storyIll.innerHTML = config.getStoryIllustration(currentKey, stage) || '';
     } else {
       storyIll.textContent = config.getItemEmoji(currentKey);
     }
@@ -1085,6 +1087,9 @@ export function startLesson(config) {
       #kidActivityWrap .story-illustration {
         filter: drop-shadow(0 0 12px rgba(245,195,35,.38));
       }
+      /* Hide the illustration slot entirely when a lesson supplies no illustration
+         (e.g. alphabet, whose photo lives inside the story text) — no empty box. */
+      .story-illustration:empty { display: none !important; }
       #kidDoneScreen #kidDoneEmoji {
         filter: drop-shadow(0 0 20px rgba(250,204,21,.52));
       }
