@@ -1347,28 +1347,52 @@ export function startLesson(config) {
         line-height: 1.45; overflow: hidden; text-align: center;
       }
 
-      /* ── Parent/desktop quiz layout. Scoped to body:not(.kid-active) so none of it leaks
-         into the same #tab-quiz element after it's relocated into #kidActivityWrap in Kid
-         Mode. The body+id+class chain also out-specifies the shell's .quiz-* rules, so the
-         centering can't be lost to source order. ── */
-      /* Cap the 2×2 grid width and center it; small gap to the Next Question button. */
+      /* ── Parent/desktop quiz layout (consolidated). Scoped to body:not(.kid-active) so none
+         of it leaks into the same #tab-quiz element after it's relocated into #kidActivityWrap
+         in Kid Mode. The body+id+class chain also out-specifies the shell's .quiz-* rules. ── */
+      /* Push content to bottom, tight spacing */
+      body:not(.kid-active) #tab-quiz {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 8px 0 0 0;
+        overflow-y: auto;
+      }
+      /* Photo gets remaining top space */
+      body:not(.kid-active) #tab-quiz .quiz-image {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: clamp(8px, 2dvh, 16px);
+        min-height: 0;
+      }
+      /* Question text tight to options */
+      body:not(.kid-active) #tab-quiz .quiz-question {
+        margin-bottom: 4px;
+      }
+      /* Options grid — centered, compact, close to Next button */
       body:not(.kid-active) #tab-quiz .quiz-options {
         max-width: min(100%, 500px);
-        margin-left: auto; margin-right: auto;
-        margin-bottom: clamp(16px, 3dvh, 24px);
+        margin: 0 auto 4px auto;
+        gap: 6px;
       }
-      /* Shorter option tiles so a single letter doesn't swim in empty space. */
+      /* Option tiles — half the current height, tight padding */
       body:not(.kid-active) #tab-quiz .quiz-option {
-        max-height: clamp(60px, 8dvh, 80px);
-        padding: 8px 10px;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
+        height: clamp(36px, 5dvh, 48px);
+        max-height: clamp(36px, 5dvh, 48px);
+        min-height: 0;
+        padding: 4px 10px;
+        font-size: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
-      /* Keep the photo off the top edge so the quiz image isn't clipped. */
-      body:not(.kid-active) #tab-quiz { padding-top: 8px; }
-      body:not(.kid-active) #tab-quiz .quiz-image { margin-top: clamp(8px, 2dvh, 16px); }
-      /* Let the quiz tab scroll if its content ever exceeds the available height. */
-      #tab-quiz { overflow-y: auto; }
+      /* Hide emoji slot in parent quiz — alphabet options are just letters */
+      body:not(.kid-active) #tab-quiz .quiz-option .opt-emoji {
+        display: none;
+      }
 
       /* ── QUIZ layout — three balanced zones ── */
       #kidActivityWrap #tab-quiz {
