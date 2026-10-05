@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(git status*)", "Bash(git log*)", "Bash(git diff*)",
+      "Bash(git switch -c bus/*)", "Bash(git add *)", "Bash(git commit *)",
+      "Bash(git push -u origin bus/*)", "Bash(ls*)", "Bash(grep*)"
+    ],
+    "deny": [
+      "Edit(api/**)", "Edit(supabase-rls-setup.sql)", "Edit(assets/images/**)",
+      "Edit(app/login.html)", "Edit(app/signup.html)", "Edit(app/reset.html)",
+      "Edit(app/pricing.html)", "Edit(app/dashboard.html)",
+      "Read(.env*)", "Edit(.env*)",
+      "Bash(git push origin main*)", "Bash(git push --force*)", "Bash(git push -f*)",
+      "Bash(git merge*)", "Bash(git reset --hard*)", "Bash(rm *)", "Bash(vercel*)",
+      "Bash(git push*:main*)", "Bash(*--no-verify*)", "Bash(ALLOW_MAIN_PUSH*)", "Bash(git -C*)"
+    ]
+  }
+}
