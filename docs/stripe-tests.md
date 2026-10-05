@@ -40,13 +40,13 @@ Any future expiry, any CVC, any postcode.
 
 ## 2. Setup checklist (do once per run)
 
-1. Stripe (test mode): create a **Test clock** (Billing → Test clocks), time = now.
+1. Stripe: switch the dashboard to **Test mode**. (Optional: create a Test clock, see the note below.)
 2. Create a new user on the site via `/app/signup.html` with your throwaway email. (This is also test E1 below.)
 3. Verify the email in Supabase auth if confirmation is required, log in.
 4. Note the user's `id` from Supabase Auth → Users. You'll check `subscriptions` rows by this `user_id`.
 5. Open three tabs: Stripe test dashboard (Payments and Webhooks → Event deliveries), Supabase table editor `subscriptions`, Vercel function logs for `api/webhook`.
 
-Note: the checkout API creates the customer itself, so it will not be attached to a test clock automatically. To exercise time travel, either (a) after checkout, move the subscription's customer to a test clock is NOT possible, so instead create the customer/subscription for conversion tests in the Stripe dashboard with the clock attached (T2 step 2), or (b) use Stripe's "End trial now" action on the subscription (T2 alternative). **TO CONFIRM** which option works in your Stripe account.
+Note on time travel: `api/stripe-checkout.js` lets Stripe create the customer, so that customer is not on a test clock. The simple way to skip the 30-day trial is Stripe dashboard → the subscription → **End trial now** (used in T2 and T4). Test clocks only help if you create the customer and subscription by hand in the Stripe dashboard with a clock attached. **TO CONFIRM** which route works in your account.
 
 ## 3. Tests
 
@@ -65,7 +65,7 @@ Mark each: PASS / FAIL / NOTES. Always check, after each step: (1) Stripe event 
 
 ### T2 — Convert (trial → paid)
 1. Use the trialing subscription from T1.
-2. Either: Stripe dashboard → the subscription → **End trial now**; or advance the test clock past the trial end (if the customer is on a clock).
+2. Stripe dashboard → the subscription → **End trial now** (or advance a test clock past the trial end, if the customer is on one).
 3. Expect Stripe events: `customer.subscription.updated` (trialing → active), invoice created/paid.
 4. Expect row: `status = active`, `current_period_end` moved about one month forward, `plan` unchanged.
 5. Check the invoice in Stripe is paid with the test card ($9.99 Family / $14.99 Family Plus).
