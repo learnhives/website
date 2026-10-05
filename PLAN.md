@@ -14,7 +14,7 @@ Animals split into 3, added Fruits, Vegetables, Transport, Occupations, My World
 extended to ~35 days. The plan is a guide, not a contract — lessons can ship
 post-launch too.
 
-_Last updated: end of Day 17 (Jun 2026)._
+_Last updated: refreshed from code + git log on 2026-10-05 (last lesson commit: 2026-06-16). The code is the source of truth; items marked **TO CONFIRM** could not be verified from the repo alone._
 
 ---
 
@@ -30,6 +30,8 @@ _Last updated: end of Day 17 (Jun 2026)._
 | 16 | **Shared engine + Numbers lesson:** extracted `js/lesson-engine.js` (`startLesson(config)`). Built `lesson-numbers.html`: 1–20, four stages. Each lesson is now engine + config + 4-line HTML shell. |
 | 17 | **Kid Mode + planning:** full-screen child layer in engine (guided flow, hive world backdrop, real-AI Buzz, pinch-zoom lockout). Quiz layout partially fixed. **Subject list expanded to 14.** Colors/Shapes split, Animals split into 3, added Fruits/Vegetables/Transport/Occupations/My World. Image strategy decided (DALL-E photos for 6 visual subjects). Landing page updated to 14 subjects. |
 
+| 18 (partial, git log Jun 13–16) | **Engine image support landed** (`renderCard` can return an `image`; engine renders `<img class="card-img">`). **Numbers quiz bug** addressed (text-only numeral/word quizzes, honeypot photos on cards; TO CONFIRM it is fully fixed). **Image pipeline:** 96 photos (16 each) committed for 6 photo subjects (`farm-animals`, `wild-animals`, `birds`, `fruits`, `vegetables`, `transport`) plus 21 shared assets in `assets/images/common/`. **Alphabet lesson rewritten** around photos: Seedling + Sprout only, real stories, photo quizzes. Numbers lesson reworked: honeypot photos, tiered sizes, Seedling/Sprout 1–10, Blossom/Bloom 1–20. Quiz layout consolidated for parent view (last commit 4947adb). |
+
 ---
 
 ## ▶️ REMAINING — Days 18–35
@@ -37,7 +39,7 @@ _Last updated: end of Day 17 (Jun 2026)._
 ### Phase 4a — Engine prep + bug fixes
 | Day | Task | Goal |
 | --- | --- | --- |
-| **18** | **Fix numbers quiz bug** (one-bee-for-two). **Add image support to engine** (`renderCard` returns `<img>` for photo subjects). **Scrap old `colors-shapes.js`/`.html`**. | Engine ready for all 14 subjects |
+| **18** | ~~Fix numbers quiz bug~~ (done, TO CONFIRM). ~~Add image support to engine~~ (done). **Still open: scrap old `colors-shapes.js`/`.html`** — both files still exist in the repo. | Engine ready for all 14 subjects |
 
 ### Phase 4b — Lesson production (batches of 3–4)
 _Image generation happens in parallel (commute time). Emoji-based subjects first._
@@ -45,8 +47,8 @@ _Image generation happens in parallel (commute time). Emoji-based subjects first
 | Day | Task | Goal |
 | --- | --- | --- |
 | **19** | **Batch 1:** `colors.js` + `shapes.js` (emoji-based, no photos needed) | 4 subjects live |
-| **20** | **Batch 2:** `farm-animals.js` + `wild-animals.js` + `birds.js` (photos needed) | 7 subjects live |
-| **21** | **Batch 3:** `fruits.js` + `vegetables.js` + `transport.js` (photos needed) | 10 subjects live |
+| **20** | **Batch 2:** `farm-animals.js` + `wild-animals.js` + `birds.js` (photos now in repo; no lesson files exist yet) | 7 subjects live |
+| **21** | **Batch 3:** `fruits.js` + `vegetables.js` + `transport.js` (photos now in repo; no lesson files exist yet) | 10 subjects live |
 | **22** | **Batch 4:** `music.js` + `emotions.js` (emoji-based) | 12 subjects live |
 | **23** | **Batch 5:** `occupations.js` + `my-world.js` (Blossom/Bloom only, emoji-based) | 14 subjects live |
 
@@ -69,6 +71,14 @@ _Image generation happens in parallel (commute time). Emoji-based subjects first
 | **33–35** | **Buffer** — fix critical feedback, polish, additional content depth. | Stable |
 
 ---
+
+## Current repo state (verified 2026-10-05)
+- **Lessons present:** `lesson-alphabet.html` (Seedling/Sprout), `lesson-numbers.html` (all 4 stages), plus the old `lesson-colors-shapes.html` (to be scrapped).
+- **Not built yet:** every other lesson (colors, shapes, farm/wild animals, birds, fruits, vegetables, transport, music, emotions, occupations, my-world).
+- **Dashboard (`app/dashboard.html`):** no lesson catalog or links to lesson pages found. TO CONFIRM.
+- **`legal/` and `css/`:** empty folders — Day 26 legal pages not started.
+- **API functions present:** `claude-proxy`, `stripe-checkout`, `webhook`, `send-welcome-email`.
+- **Alphabet scope change:** now Seedling + Sprout only; Blossom/Bloom alphabet handling TO CONFIRM.
 
 ## Pre-launch checklist (revisit around Day 29)
 - [ ] All 14 subjects work end-to-end across relevant stages
