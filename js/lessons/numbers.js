@@ -331,7 +331,7 @@ function _buildNumberHTML(key, n, d, s, stageKey, isLast) {
 
   // Activity 3: Draw / create
   let drawContent;
-  if (stageKey === 'seedling')     drawContent = `<div class="ws-draw-emoji">${objEmoji.repeat(Math.min(n,5))}</div><div class="ws-draw-label">Color ${n} objects! 🎨</div>`;
+  if (stageKey === 'seedling')     drawContent = `<div class="ws-draw-emoji">${objEmoji.repeat(Math.min(n,5))}</div><div class="ws-draw-label">Colour ${n} objects! 🎨</div>`;
   else if (stageKey === 'sprout')  drawContent = `<div class="ws-draw-label">Draw ${n} ${objEmoji}. 🖍️</div>`;
   else if (stageKey === 'blossom') drawContent = `<div class="ws-draw-label">Draw ${n} of your favourite thing! ✏️</div>`;
   else drawContent = `<div class="ws-draw-label">Draw ${n} things, then write: ${n} + 1 = ____</div><div class="ws-write-line"></div>`;
@@ -350,7 +350,7 @@ function _buildNumberHTML(key, n, d, s, stageKey, isLast) {
   }
 
   const t2title = `Count the ${objEmoji} and circle the number`;
-  const t3title = stageKey === 'seedling' ? `Color ${n} objects`
+  const t3title = stageKey === 'seedling' ? `Colour ${n} objects`
     : stageKey === 'sprout'  ? `Draw ${n} objects`
     : `Draw`;
   const t4title = stageKey === 'seedling' ? `${d.word} — say it!`

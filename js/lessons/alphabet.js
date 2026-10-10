@@ -296,7 +296,7 @@ function _buildLetterHTML(L, d, s, stageKey, isLast) {
 
   // Activity 3: Color / draw the photo word
   const drawContent = stageKey === 'seedling'
-    ? `<div class="ws-draw-emoji">${photoImg}</div><div class="ws-draw-label">Color the ${d.word}! 🎨</div>`
+    ? `<div class="ws-draw-emoji">${photoImg}</div><div class="ws-draw-label">Colour the ${d.word}! 🎨</div>`
     : `<div class="ws-draw-label">Draw a ${d.word}. 🖍️</div>`;
   const act3 = `<div class="ws-draw-box">${drawContent}</div>`;
 
@@ -307,7 +307,7 @@ function _buildLetterHTML(L, d, s, stageKey, isLast) {
   const act4 = `<div class="ws-circle-answer">${wordItems}</div>`;
 
   const t2 = `Circle every letter ${L}`;
-  const t3 = stageKey === 'seedling' ? `Color the ${d.word}` : `Draw a ${d.word}`;
+  const t3 = stageKey === 'seedling' ? `Colour the ${d.word}` : `Draw a ${d.word}`;
   const t4 = stageKey === 'seedling' ? `${L} words — say each one!` : `${L} words`;
 
   return `<div class="ws-letter-section"${pgBreak}>
