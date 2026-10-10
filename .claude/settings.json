@@ -4,7 +4,9 @@
     "allow": [
       "Bash(git status*)", "Bash(git log*)", "Bash(git diff*)",
       "Bash(git switch -c bus/*)", "Bash(git add *)", "Bash(git commit *)",
-      "Bash(git push -u origin bus/*)", "Bash(ls*)", "Bash(grep*)"
+      "Bash(git push -u origin bus/*)", "Bash(ls*)", "Bash(grep*)",
+      "Bash(git fetch*)", "Bash(git pull --ff-only*)", "Bash(git switch main)",
+      "Bash(git switch bus/*)", "Bash(git push origin bus/*)"
     ],
     "deny": [
       "Edit(api/**)", "Edit(supabase-rls-setup.sql)", "Edit(assets/images/**)",
