@@ -1,36 +1,39 @@
 # Task queue (top to bottom)
 
-- [ ] 1. Rubric file. From main, branch bus/rubric. Create docs/pedagogy-rubric.md
-      with these rules, each marked ACCEPTED or PROPOSED as shown:
-      Stages (PROPOSED): Seedling 2–3, Sprout 3–4, Blossom 4–5, Bloom 5–6.
-      Max words per card (PROPOSED): 1 / 1–2 / phrase ≤5 / sentence ≤8.
-      Quiz choices (PROPOSED): 2 / 3 / 3 / 4.
-      Cards per lesson (PROPOSED): 5 / 8 / 10–12 / 12–16.
-      Max minutes per session (PROPOSED): 5 / 7 / 10 / 12.
-      Cultural (ACCEPTED): no pig as animal or food; no pork or beef as food;
-      British English.
-      Cultural (PROPOSED): no alcohol; modest clothing; mix of Arabic, Indian
-      and international names; festivals neutral, or Eid and Diwali together.
-      Never appear (PROPOSED): scary content, weapons or violence, brands or
-      junk food, gender stereotypes, shaming wrong answers, ranking children,
-      Buzz asking personal details, external links or ads.
-      Buzz tone (PROPOSED): warm, playful, brief; max 2 short sentences; words
-      the stage knows; end on encouragement; never harsh correction.
+- [ ] 1. Rubric v2. From main, branch bus/rubric-v2. Update
+      docs/pedagogy-rubric.md: mark ALL rules ACCEPTED, and add:
+      - Card backs at Seedling and Sprout: name and sound only. Facts go to
+        Buzz and the story.
+      - Story limits: Seedling ≤3 short sentences, Sprout ≤4, Blossom ≤6, Bloom ≤8.
+      - Baby animal names: just "baby" below Blossom.
+      - Dog is allowed at all stages.
+      - Predators that look fierce (crocodile, wolf): Blossom and Bloom only.
+        No hunting or eating-prey wording for any animal.
 
-- [ ] 2. Farm Animals review. No branch, no edits. git switch bus/farm-animals,
-      read the lesson and check every card, quiz, story, worksheet, sound and
-      fact against the rubric above. Report each issue in NIGHT-REPORT.md
-      with stage, animal, the problem and a suggested fix. Then git switch main.
+- [ ] 2. Farm Animals fixes. git switch bus/farm-animals. Apply the rubric:
+      - Quiz options: Seedling 2, Sprout 3, Blossom 3, Bloom 4.
+      - Card backs: Seedling and Sprout show name and sound only.
+        Blossom: a fact of 5 words or fewer (new field). Bloom: a fact of
+        8 words or fewer (trim fact_b).
+      - Stories within the story limits above.
+      - Baby names: "baby" for Seedling and Sprout.
+      - Buzz greetings: max 2 short sentences, ending on encouragement.
+        Replace "Tap a chip" with simpler words at Seedling.
+      - getBuzzPrompt: add "Never correct the child harshly" and
+        "Never ask for the child's name, school, location or any personal detail".
+      - British English: "Colour", "jumpers".
+      - Soften the Bull and Goose clues so nothing sounds scary.
+      - Keep the dog at all stages. Keep counts 5 / 8 / 12 / 16.
+      Re-run the config checks for all 4 stages. Commit, push origin bus/farm-animals.
+      In NIGHT-REPORT.md list each change by stage and animal.
 
-- [ ] 3. British spelling. From main, branch bus/british-spelling. Change only
-      user-facing text: index.html lines 345, 364, 384, 460;
-      js/lessons/numbers.js 334, 353; js/lessons/alphabet.js 299, 310.
-      Do not change CSS, code comments, identifiers or colors-shapes files.
+- [ ] 3. Trial email for no-card trials. From main, branch bus/trial-email.
+      Rewrite emails/drafts/trial-ending.html: the trial is free with no card,
+      so the email asks the parent to choose a plan before {{trialEndDate}} to
+      keep access, with a button to the pricing page. Warm, short, British
+      English. Commit, push origin bus/trial-email.
 
-- [ ] 4. Email drafts. From main, branch bus/email-drafts. Draft 3 Resend
-      email templates (trial ending, payment failed, cancelled) as HTML in
-      emails/drafts/, British English, warm and short. Not wired to code.
-
-- [ ] 5. Wild Animals prep. No branch, no edits. List the 16 images in
-      assets/images/wild-animals/ and flag any that break the rubric
-      (scary, pig or boar, etc.) in NIGHT-REPORT.md.
+- [ ] 4. No-card checkout plan. No branch, no edits. Read api/stripe-checkout.js
+      and api/webhook.js and write in NIGHT-REPORT.md exactly what must change so
+      the 30-day trial starts without a card and the parent adds a card later,
+      including what happens at trial end if no card is added. Report only.
