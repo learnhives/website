@@ -9,9 +9,9 @@ const ANIMALS = {
   'Cow':     { word:'Cow',     emoji:'🐄', image:'/assets/images/farm-animals/cow.png',     sound:'moo',        baby:'calf',     home:'barn',   food:'grass',
                fact_s:'Cows give us milk!',                  fact_b:'A cow has four parts to its stomach and can eat grass all day!',
                clue:'Which animal says "moo" and gives us milk?', avoid:['Bull'] },
-  'Pig':     { word:'Pig',     emoji:'🐖', image:'/assets/images/farm-animals/pig.png',     sound:'oink',       baby:'piglet',   home:'pigpen', food:'vegetables and grain',
-               fact_s:'Pigs love to roll in the mud!',      fact_b:'Pigs roll in mud to stay cool because they cannot sweat!',
-               clue:'Which animal says "oink"?', avoid:[] },
+  'Camel':   { word:'Camel',   emoji:'🐪', image:'/assets/images/farm-animals/camel.png',   sound:'grunt',      baby:'calf',     home:'date palms', food:'grass and leaves',
+               fact_s:'Camels have a big hump!',            fact_b:'A camel\'s hump stores fat, so it can walk a long way without food!',
+               clue:'Which animal has a big hump and walks in the desert?', avoid:[] },
   'Dog':     { word:'Dog',     emoji:'🐕', image:'/assets/images/farm-animals/dog.png',     sound:'woof',       baby:'puppy',    home:'farmhouse', food:'dog food',
                fact_s:'Dogs help the farmer!',              fact_b:'Farm dogs help herd the sheep and guard the farm!',
                clue:'Which animal says "woof"?', avoid:[] },
@@ -58,10 +58,10 @@ const ANIMALS = {
 
 // Introduced in this order; each stage includes everything from the one before.
 const STAGE_ITEMS = {
-  seedling: ['Cow','Pig','Dog','Cat','Duck'],
-  sprout:   ['Cow','Pig','Dog','Cat','Duck','Sheep','Horse','Hen'],
-  blossom:  ['Cow','Pig','Dog','Cat','Duck','Sheep','Horse','Hen','Goat','Rabbit','Donkey','Rooster'],
-  bloom:    ['Cow','Pig','Dog','Cat','Duck','Sheep','Horse','Hen','Goat','Rabbit','Donkey','Rooster','Goose','Turkey','Bull','Llama']
+  seedling: ['Cow','Camel','Dog','Cat','Duck'],
+  sprout:   ['Cow','Camel','Dog','Cat','Duck','Sheep','Horse','Hen'],
+  blossom:  ['Cow','Camel','Dog','Cat','Duck','Sheep','Horse','Hen','Goat','Rabbit','Donkey','Rooster'],
+  bloom:    ['Cow','Camel','Dog','Cat','Duck','Sheep','Horse','Hen','Goat','Rabbit','Donkey','Rooster','Goose','Turkey','Bull','Llama']
 };
 
 // ── Stories: Seedling 3–4 short sentences · Sprout adds baby + home · Blossom/Bloom ends with a question. ──
