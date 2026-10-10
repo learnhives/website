@@ -16,6 +16,16 @@
 - Never install packages. Never deploy to Vercel.
 - Do not touch the colors-shapes files.
 
+## Legal & privacy (non-negotiable)
+- docs/LEGAL-REQUIREMENTS.md is the compliance register. Read it before any
+  change to sign-up/login, child profiles, progress tracking, Buzz, payments,
+  emails, analytics, third-party scripts or fonts, or stored data.
+- Never add a data field, third-party service, tracking or analytics script
+  without listing it in Sections 4 and 5 of that file and asking me first.
+- If a task conflicts with that file, stop and ask. Do not work around it.
+- When a checklist item (Section 8) is built, update its status and add a
+  line to the change log (Section 11).
+
 ## Workflow
 - Work through TASKS.md top to bottom. Do not edit TASKS.md.
 - Keep one report: NIGHT-REPORT.md in the project root (never commit it).
