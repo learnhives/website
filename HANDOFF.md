@@ -5,7 +5,7 @@ oriented. Pair it with `BACKLOG.md` (current task list) and, if useful, the
 project plan docx + Gantt. Keep this file updated as the project's "stable facts"
 change; use `BACKLOG.md` for the moving task list.
 
-_Last updated: Day 17 (Jun 2026)_
+_Last updated: refreshed from code + git log on 2026-10-05 (code is source of truth; **TO CONFIRM** = not verifiable from repo)._
 
 ---
 
@@ -77,7 +77,7 @@ Shapes, Emotions, Music, Occupations, My World). AI-generated photographs
 (DALL-E) for visual-recognition subjects (Farm Animals, Wild Animals, Birds,
 Fruits, Vegetables, Transport).
 
-- **91 unique images** needed across 6 photo subjects.
+- **96 images** (16 per subject) are in the repo for the 6 photo subjects (the plan originally said 91).
 - DALL-E prompt: *"Realistic photograph of a [item], full body, centered on a
   pure white background, soft natural studio lighting, no shadows on background,
   high detail, clean and simple, children's educational book style"*
@@ -85,17 +85,17 @@ Fruits, Vegetables, Transport).
 - File naming: lowercase, hyphens. e.g. `cow.png`, `bell-pepper.png`.
 - **Hosted in repo:** `assets/images/{subject-folder}/{item}.png` — zero cost on
   Vercel's free tier (~18MB total). Migrate to CDN post-launch if needed.
-- Engine change needed: `renderCard` must support returning `<img>` tags
-  alongside emoji. One small engine update, then all photo configs benefit.
+- Engine support for `<img>` cards is done: `renderCard` can return `image`, and
+  the engine renders it as `<img class="card-img">`.
 
 Full image list with per-stage breakdown: see `LearnHives_Image_List.xlsx`.
 
-## Current state — Day 17 of ~35
+## Current state — after Day 17 / early Day 18 work (to Jun 16, 2026)
 
 Phases 1–3 done: dev setup, auth/Supabase, Stripe payments/webhooks/welcome
 email, security hardening (rate limiting, JWT verification, RLS).
 
-**Two subjects live. Architecture: shared engine + per-subject config.**
+**Two lessons live (Alphabet, Numbers) plus the old Colors & Shapes page still in the repo. Architecture: shared engine + per-subject config.**
 
 ### Lesson engine architecture (read this before building a new lesson)
 
@@ -136,10 +136,11 @@ shell. No engine changes needed.**
 | `getGreeting(key, stageKey)` | Buzz opening message HTML |
 
 **Lessons built:**
-- `js/lessons/alphabet.js` + `app/lesson-alphabet.html` — A–Z, all 4 stages
+- `js/lessons/alphabet.js` + `app/lesson-alphabet.html` — A–Z, **Seedling + Sprout only** (rewritten Jun 15 with real photos, photo quizzes, real stories; Blossom/Bloom handling TO CONFIRM)
 - `js/lessons/numbers.js` + `app/lesson-numbers.html` — 1–20, all 4 stages.
-  Seedling/Sprout: items 1–10 (🍯 objects, ten-frame for 6–10, no word for Seedling).
-  Blossom/Bloom: items 1–20 (per-number emoji, number word; Bloom adds a "+1 peek").
+  Seedling/Sprout: items 1–10. Card fronts use honeypot photos (sized by tier);
+  backs show a decorative photo (`IMAGE_MAP`). Quizzes are text-only. Ten-frame /
+  number-word / Bloom "+1 peek" details from the Day 17 build: TO CONFIRM still current.
 
 **To be scrapped:** `js/lessons/colors-shapes.js` and `app/lesson-colors-shapes.html`
 — will be replaced by separate `colors.js` and `shapes.js` configs.
@@ -180,9 +181,8 @@ No free-text input in Kid Mode (deferred to `#vision` — needs COPPA consent).
 - ✅ Rebalanced quiz image-to-options ratio (image area ~55%, options shrink to fill rest).
 - ✅ Drifting backdrop bees hidden during quiz phase (CSS rule via `data-step`).
 - ✅ Counting object emoji size increased.
-- ❌ BUG OPEN: "Find the number" quiz shows a single per-number emoji (one bee for
-  number 2) instead of the correct quantity of counting objects. Fix is in `numbers.js`
-  `buildQuiz` function.
+- ⚠️ Numbers "find the number" quiz bug: likely fixed by commit 648875d (text-only
+  quizzes). TO CONFIRM on device.
 
 **Settings seams** (applied inside the engine for every lesson):
 - `stage`, `lang` (default `en`), `theme` (default `honey`; `ocean` proof-of-concept built).
@@ -224,9 +224,10 @@ No free-text input in Kid Mode (deferred to `#vision` — needs COPPA consent).
 See **`BACKLOG.md`** (repo root) for the live task list, organized by hashtag.
 
 Most likely next moves:
-- **Fix numbers quiz bug** — "Find the number" shows wrong quantity of objects.
-- **Engine image support** — small `renderCard` change to support `<img>` tags.
-- **Build configs in batches of 3–4** — Colors, Shapes, Farm Animals first.
+- **Confirm numbers quiz fix** on device (likely done).
+- **Scrap old colors-shapes** files, then build Colors and Shapes configs.
+- **Build configs in batches of 3–4** — Farm Animals etc. (photos are already in the repo).
+- **Task queue:** `TASKS.md` + `CLAUDE.md` now drive overnight Claude Code runs (branches `bus/*`; never commit to `main`).
 - **Dashboard lesson catalog** — make the stage-tagged grid real.
 
 ## Note on assistant memory

@@ -8,26 +8,23 @@ items are easy to scan and group. Update freely as things get added or done.
 relevant section into the chat. Move finished items to the bottom under
 `## ✅ Done`.
 
-_Last updated: Day 17 (Jun 2026)_
+_Last updated: refreshed from code + git log on 2026-10-05. Items marked **TO CONFIRM** could not be verified from the repo._
 
 ---
 
 ## #bug-fix
 _Correctness issues — fix before building more lessons._
 
-- [ ] **Numbers quiz: wrong object count** — "Find the number 'Two'" quiz shows a
-      single per-number emoji (one bee) instead of 2 honeypots. Child sees one
-      object and picks "1." Fix is in `numbers.js` `buildQuiz`: replace single
-      emoji with correct quantity of 🍯 using same grouping logic as cards.
+- [x] **Numbers quiz: wrong object count** — likely fixed: commit 648875d (Jun 15)
+      moved numbers to text-only quizzes (numeral/word), so no object count is
+      shown. TO CONFIRM on device, then move to Done.
 
 ## #engine-next
 _Engine changes needed before mass lesson production._
 
-- [ ] **Image support in renderCard** — engine currently returns emoji from
-      `renderCard`. Needs to also support `<img src="...">` so photo-based
-      subjects (animals, fruits, vegetables, transport) can display AI-generated
-      photos. One small change; all photo configs benefit.
-- [ ] **Scrap old colors-shapes** — delete `js/lessons/colors-shapes.js` and
+- [x] **Image support in renderCard** — done: engine renders `<img class="card-img">`
+      when `renderCard` returns `image` (see `js/lesson-engine.js`).
+- [ ] **Scrap old colors-shapes** (still open — both files exist) — delete `js/lessons/colors-shapes.js` and
       `app/lesson-colors-shapes.html`. Replace with separate `colors.js` and
       `shapes.js` configs.
 
@@ -59,16 +56,16 @@ _Building the 12 remaining configs. Build in batches of 3–4, test each batch._
 ## #images
 _AI-generated photo assets for 6 visual-recognition subjects._
 
-- [ ] **Generate 91 images via DALL-E** — see `LearnHives_Image_List.xlsx` for
-      full checklist with filenames. 5 test images done (cow, lion, eagle, apple,
-      carrot). Style locked: square 1:1, white background, studio lighting.
-- [ ] **Add images to repo** — `assets/images/{subject-folder}/{item}.png`.
-      Commute-time work; can be done in parallel with config writing.
+- [x] **Generate images** — 96 images (16 per subject × 6 subjects) are committed
+      in `assets/images/{farm-animals,wild-animals,birds,fruits,vegetables,transport}/`
+      (commit 3bc60ae, Jun 13), plus 21 shared assets in `assets/images/common/`.
+      The earlier plan said 91; the repo has 96. `LearnHives_Image_List.xlsx` is not
+      in the repo. TO CONFIRM nothing is missing against the final list.
 
 ## #architecture-next
 _Real structural work — higher priority than polish._
 
-- [ ] **Dashboard lesson catalog** — make the stage-tagged grid real (from the
+- [ ] **Dashboard lesson catalog** (no catalog found in `app/dashboard.html` — TO CONFIRM) — make the stage-tagged grid real (from the
       `catalog.js` design artifact) so each child sees the right lessons for
       their stage. Must now handle 12 subjects for Seedling/Sprout and 14 for
       Blossom/Bloom.
@@ -82,8 +79,9 @@ _Real structural work — higher priority than polish._
 ## #content-depth
 _Richer lesson content._
 
-- [ ] Add more than 4 words per letter in `alphabet.js` so older stages
-      (Blossom / Bloom) have richer "more examples" activities.
+- [ ] Alphabet now has a main word + one "also" word per letter and is Seedling/Sprout
+      only (commit 203e79b). Decide how Blossom/Bloom alphabet works and whether to
+      add more words. TO CONFIRM.
 
 ## #worksheet-tuning
 _Minor worksheet layout/spacing tweaks (anytime)._
@@ -91,6 +89,7 @@ _Minor worksheet layout/spacing tweaks (anytime)._
 - [ ] Small fine-tuning tweaks flagged during the Day 15 worksheet redesign.
 - [ ] **Stage-aware lesson subtitle** — breadcrumb hardcoded "Numbers · 1 to 20";
       should read "1 to 10" for Seedling/Sprout and "1 to 20" for Blossom/Bloom.
+      TO CONFIRM whether still hardcoded.
 
 ## #polish-feel
 _One combined "make it feel alive" session — best done after most lessons exist._
@@ -128,6 +127,10 @@ _Long-horizon north-star items._
 ## ✅ Done
 _Move completed items here with the day they landed._
 
+- [x] **Jun 13–16** — Image pipeline: 96 subject photos + 21 common assets added;
+      engine `<img>` card support; Numbers reworked with honeypot photos, tiered
+      sizing and text-only quizzes; Alphabet rewritten with photos (Seedling +
+      Sprout only); parent-view quiz layout consolidated.
 - [x] **Day 17** — Quiz layout partially fixed: rebalanced image-to-options ratio,
       drifting bees hidden during quiz, counting emoji size increased.
 - [x] **Day 17** — Landing page updated from 6 subjects to 14 subjects.
