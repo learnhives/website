@@ -7,52 +7,52 @@
 // ── Per-animal data. `emoji` is only a safe fallback glyph; the photo is the real visual. ──
 const ANIMALS = {
   'Cow':     { word:'Cow',     emoji:'🐄', image:'/assets/images/farm-animals/cow.png',     sound:'moo',        baby:'calf',     home:'barn',   food:'grass',
-               fact_s:'Cows give us milk!',                  fact_b:'A cow has four parts to its stomach and can eat grass all day!',
+               fact_s:'Cows give us milk!',                  fact_m:'Cows eat grass all day',                  fact_b:"A cow's stomach has four parts",
                clue:'Which animal says "moo" and gives us milk?', avoid:['Bull'] },
   'Camel':   { word:'Camel',   emoji:'🐪', image:'/assets/images/farm-animals/camel.png',   sound:'grunt',      baby:'calf',     home:'date palms', food:'grass and leaves',
-               fact_s:'Camels have a big hump!',            fact_b:'A camel\'s hump stores fat, so it can walk a long way without food!',
+               fact_s:'Camels have a big hump!',            fact_m:'Camels store fat in humps',            fact_b:'Its hump stores fat for long walks',
                clue:'Which animal has a big hump and walks in the desert?', avoid:[] },
   'Dog':     { word:'Dog',     emoji:'🐕', image:'/assets/images/farm-animals/dog.png',     sound:'woof',       baby:'puppy',    home:'farmhouse', food:'dog food',
-               fact_s:'Dogs help the farmer!',              fact_b:'Farm dogs help herd the sheep and guard the farm!',
+               fact_s:'Dogs help the farmer!',              fact_m:'Dogs help the farmer',              fact_b:'Farm dogs help herd the sheep',
                clue:'Which animal says "woof"?', avoid:[] },
-  'Cat':     { word:'Cat',     emoji:'🐈', image:'/assets/images/farm-animals/cat.png',     sound:'meow',       baby:'kitten',   home:'barn',   food:'mice and cat food',
-               fact_s:'Cats chase mice!',                   fact_b:'Barn cats keep mice away from the farmer\'s grain!',
+  'Cat':     { word:'Cat',     emoji:'🐈', image:'/assets/images/farm-animals/cat.png',     sound:'meow',       baby:'kitten',   home:'barn',   food:'cat food',
+               fact_s:'Cats purr when happy!',                   fact_m:'Cats purr when happy',                   fact_b:'Barn cats keep the grain safe',
                clue:'Which animal says "meow"?', avoid:[] },
-  'Duck':    { word:'Duck',    emoji:'🦆', image:'/assets/images/farm-animals/duck.png',    sound:'quack',      baby:'duckling', home:'pond',   food:'bugs and plants',
-               fact_s:'Ducks love to swim!',                fact_b:'Duck feathers are waterproof, so water just rolls right off!',
+  'Duck':    { word:'Duck',    emoji:'🦆', image:'/assets/images/farm-animals/duck.png',    sound:'quack',      baby:'duckling', home:'pond',   food:'plants and seeds',
+               fact_s:'Ducks love to swim!',                fact_m:'Ducks love swimming in ponds',                fact_b:'Duck feathers are waterproof, so water rolls off',
                clue:'Which animal says "quack"?', avoid:[] },
   'Sheep':   { word:'Sheep',   emoji:'🐑', image:'/assets/images/farm-animals/sheep.png',   sound:'baa',        baby:'lamb',     home:'field',  food:'grass',
-               fact_s:'Sheep have soft, fluffy wool!',      fact_b:'The farmer shears a sheep\'s wool to make warm sweaters!',
+               fact_s:'Sheep have soft, fluffy wool!',      fact_m:'Sheep have fluffy wool',      fact_b:'Sheep wool makes warm jumpers',
                clue:'Which animal says "baa" and has fluffy wool?', avoid:['Goat','Llama'] },
   'Horse':   { word:'Horse',   emoji:'🐴', image:'/assets/images/farm-animals/horse.png',   sound:'neigh',      baby:'foal',     home:'stable', food:'hay and oats',
-               fact_s:'Horses run fast!',                   fact_b:'A horse can sleep standing up and can run soon after it is born!',
+               fact_s:'Horses run fast!',                   fact_m:'Horses can run fast',                   fact_b:'A horse can sleep standing up',
                clue:'Which animal says "neigh" and gallops?', avoid:['Donkey'] },
-  'Hen':     { word:'Hen',     emoji:'🐔', image:'/assets/images/farm-animals/hen.png',     sound:'cluck',      baby:'chick',    home:'henhouse', food:'seeds and bugs',
-               fact_s:'Hens lay eggs!',                     fact_b:'A hen can lay about one egg almost every day!',
+  'Hen':     { word:'Hen',     emoji:'🐔', image:'/assets/images/farm-animals/hen.png',     sound:'cluck',      baby:'chick',    home:'henhouse', food:'seeds and corn',
+               fact_s:'Hens lay eggs!',                     fact_m:'Hens lay eggs',                     fact_b:'A hen lays about one egg a day',
                clue:'Which animal says "cluck" and lays eggs?', avoid:['Rooster'] },
   'Goat':    { word:'Goat',    emoji:'🐐', image:'/assets/images/farm-animals/goat.png',    sound:'meh',        baby:'kid',      home:'barn',   food:'leaves and grass',
-               fact_s:'Goats love to climb!',               fact_b:'Goats are great climbers and can even climb steep rocks!',
+               fact_s:'Goats love to climb!',               fact_m:'Goats love to climb',               fact_b:'Goats are great climbers, even on rocks',
                clue:'Which animal says "meh" and loves to climb?', avoid:['Sheep'] },
   'Rabbit':  { word:'Rabbit',  emoji:'🐇', image:'/assets/images/farm-animals/rabbit.png',  sound:'thump',      baby:'kit',      home:'hutch',  food:'carrots and leaves',
-               fact_s:'Rabbits hop and love carrots!',      fact_b:'Rabbits thump their back feet to warn their friends!',
+               fact_s:'Rabbits hop and love carrots!',      fact_m:'Rabbits hop and love carrots',      fact_b:'Rabbits thump their feet to warn friends',
                clue:'Which animal hops and loves carrots?', avoid:[] },
   'Donkey':  { word:'Donkey',  emoji:'🐴', image:'/assets/images/farm-animals/donkey.png',  sound:'hee-haw',    baby:'foal',     home:'stable', food:'hay and grass',
-               fact_s:'Donkeys have long ears!',            fact_b:'Donkeys have big ears and carry heavy loads for farmers!',
+               fact_s:'Donkeys have long ears!',            fact_m:'Donkeys have long ears',            fact_b:'Donkeys have big ears and carry loads',
                clue:'Which animal says "hee-haw" and has long ears?', avoid:['Horse'] },
-  'Rooster': { word:'Rooster', emoji:'🐓', image:'/assets/images/farm-animals/rooster.png', sound:'cock-a-doodle-doo', baby:'chick', home:'henhouse', food:'seeds and bugs',
-               fact_s:'Roosters crow in the morning!',      fact_b:'A rooster crows at sunrise to wake up the whole farm!',
+  'Rooster': { word:'Rooster', emoji:'🐓', image:'/assets/images/farm-animals/rooster.png', sound:'cock-a-doodle-doo', baby:'chick', home:'henhouse', food:'seeds and corn',
+               fact_s:'Roosters crow in the morning!',      fact_m:'Roosters crow at sunrise',      fact_b:'Roosters crow at sunrise to wake everyone',
                clue:'Which animal crows "cock-a-doodle-doo" in the morning?', avoid:['Hen'] },
   'Goose':   { word:'Goose',   emoji:'🦆', image:'/assets/images/farm-animals/goose.png',   sound:'honk',       baby:'gosling',  home:'pond',   food:'grass and plants',
-               fact_s:'Geese go honk, honk!',               fact_b:'Geese are loud watch-animals and fly in a V shape!',
+               fact_s:'Geese go honk, honk!',               fact_m:'Geese honk and fly',               fact_b:'Geese fly together in a V shape',
                clue:'Which animal says "honk"?', avoid:['Duck'] },
-  'Turkey':  { word:'Turkey',  emoji:'🦃', image:'/assets/images/farm-animals/turkey.png',  sound:'gobble',     baby:'poult',    home:'farmyard', food:'seeds and bugs',
-               fact_s:'Turkeys go gobble, gobble!',         fact_b:'A turkey can spread its tail feathers like a big fan!',
+  'Turkey':  { word:'Turkey',  emoji:'🦃', image:'/assets/images/farm-animals/turkey.png',  sound:'gobble',     baby:'poult',    home:'farmyard', food:'seeds and corn',
+               fact_s:'Turkeys go gobble, gobble!',         fact_m:'Turkeys spread their tail feathers',         fact_b:'Turkeys spread their tails like a fan',
                clue:'Which animal says "gobble"?', avoid:[] },
   'Bull':    { word:'Bull',    emoji:'🐂', image:'/assets/images/farm-animals/bull.png',    sound:'snort',      baby:'calf',     home:'pasture', food:'grass',
-               fact_s:'Bulls are big and strong!',          fact_b:'A bull is a grown-up male cow, and it is very strong!',
-               clue:'Which big, strong animal has horns and snorts?', avoid:['Cow'] },
+               fact_s:'Bulls are big and strong!',          fact_m:'Bulls are big and strong',          fact_b:'A bull is a grown-up male cow',
+               clue:'Which big farm animal is a grown-up male cow?', avoid:['Cow'] },
   'Llama':   { word:'Llama',   emoji:'🦙', image:'/assets/images/farm-animals/llama.png',   sound:'hum',        baby:'cria',     home:'mountain farm', food:'grass and hay',
-               fact_s:'Llamas have long, fuzzy necks!',     fact_b:'Llamas hum to each other and can carry packs on their backs!',
+               fact_s:'Llamas have long, fuzzy necks!',     fact_m:'Llamas hum to each other',     fact_b:'Llamas hum and can carry packs',
                clue:'Which animal hums and has a long, fuzzy neck?', avoid:['Sheep'] }
 };
 
@@ -64,18 +64,17 @@ const STAGE_ITEMS = {
   bloom:    ['Cow','Camel','Dog','Cat','Duck','Sheep','Horse','Hen','Goat','Rabbit','Donkey','Rooster','Goose','Turkey','Bull','Llama']
 };
 
-// ── Stories: Seedling 3–4 short sentences · Sprout adds baby + home · Blossom/Bloom ends with a question. ──
+// ── Stories (rubric limits): Seedling ≤3 sentences · Sprout ≤4 (adds baby + home) · Blossom ≤6 · Bloom ≤8; Blossom/Bloom end with a question. ──
 const lower = s => s.toLowerCase();
 const article = w => (/^[aeiou]/i.test(w) ? 'an' : 'a');
 
 const STORY = {
   seedling: d =>
-    `This is ${article(d.word)} ${lower(d.word)}! ${d.emoji} ${d.fact_s} A ${lower(d.word)} says "${d.sound}!" Can you say "${d.sound}" too? 🐝`,
+    `This is ${article(d.word)} ${lower(d.word)}! ${d.emoji} ${d.fact_s} Can you say "${d.sound}" too? 🐝`,
   sprout: d =>
-    `This is ${article(d.word)} ${lower(d.word)}! ${d.emoji} ${d.fact_s} A ${lower(d.word)} says "${d.sound}!" ` +
-    `A baby ${lower(d.word)} is called a ${d.baby}. On the farm, it lives near the ${d.home}. Can you say "${d.sound}" like a ${lower(d.word)}? 🐝`,
+    `This is ${article(d.word)} ${lower(d.word)}! ${d.emoji} ${d.fact_s} A baby ${lower(d.word)} lives near the ${d.home}. Can you say "${d.sound}" like a ${lower(d.word)}? 🐝`,
   blossom: d =>
-    `Meet the ${lower(d.word)}! ${d.emoji} A ${lower(d.word)} says "${d.sound}!" ${d.fact_b} ` +
+    `Meet the ${lower(d.word)}! ${d.emoji} A ${lower(d.word)} says "${d.sound}!" ${d.fact_b}. ` +
     `A baby ${lower(d.word)} is called a ${d.baby}, and it likes to eat ${d.food}. ` +
     `On the farm you can find it near the ${d.home}. Why do you think the farmer needs a ${lower(d.word)}? 🐝`
 };
@@ -128,8 +127,9 @@ export const LESSON_CONFIG = {
   renderCard(card, key, stageKey) {
     const d = ANIMALS[key];
     const older = stageKey === 'blossom' || stageKey === 'bloom';
-    const fact  = older ? d.fact_b : d.fact_s;
-    const speakText = esc(`${d.word}! A ${d.word.toLowerCase()} says ${d.sound}. ${fact}`);
+    // Seedling/Sprout backs: name and sound only. Blossom: fact ≤5 words. Bloom: fact ≤8 words.
+    const fact  = stageKey === 'bloom' ? d.fact_b : stageKey === 'blossom' ? d.fact_m : '';
+    const speakText = esc(`${d.word}! A ${d.word.toLowerCase()} says ${d.sound}.${fact ? ' ' + fact : ''}`);
 
     const backHtml =
       `<div style="position:relative; background:#FFFFFF; width:100%; height:100%; border-radius:inherit; padding:8px; display:flex; flex-direction:column; align-items:center;">` +
@@ -138,7 +138,7 @@ export const LESSON_CONFIG = {
         `<div style="flex:1; display:flex; align-items:center; justify-content:center; margin-top:clamp(40px,6dvh,56px); width:100%; min-height:0;">` +
           `<img src="${d.image}" alt="${d.word}" loading="lazy" style="max-width:95%; max-height:90%; object-fit:contain; background:transparent; border:none;">` +
         `</div>` +
-        `<div style="font-family:Nunito,sans-serif; font-size:clamp(15px,2.4dvh,20px); font-weight:700; color:#3B2A00; text-align:center; padding:0 64px 10px;">${fact}</div>` +
+        (fact ? `<div style="font-family:Nunito,sans-serif; font-size:clamp(15px,2.4dvh,20px); font-weight:700; color:#3B2A00; text-align:center; padding:0 64px 10px;">${fact}</div>` : '') +
         `<button class="card-back-speak" type="button" data-speak="${speakText}" aria-label="Listen" style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.08); border:none; border-radius:50%; width:52px; height:52px; cursor:pointer; font-size:1.6rem;">🔊</button>` +
       `</div>`;
 
@@ -147,7 +147,7 @@ export const LESSON_CONFIG = {
 
   buildQuiz(key, stageKey) {
     const d     = ANIMALS[key];
-    const nOpts = (stageKey === 'blossom' || stageKey === 'bloom') ? 4 : 3;
+    const nOpts = { seedling:2, sprout:3, blossom:3, bloom:4 }[stageKey] || 3;
 
     // Q1 — photo → which animal is this? (text options, so the photo doesn't give it away twice)
     const q1 = {
@@ -222,14 +222,15 @@ export const LESSON_CONFIG = {
     const age = { seedling:'2-3', sprout:'3-4', blossom:'4-5', bloom:'5-6' }[stageKey] || '3-4';
     return `You are Buzz the Bee, teaching a young child about the farm animal "${d.word}". ` +
       `A ${d.word.toLowerCase()} says "${d.sound}" and lives near the ${d.home}. Keep your response to one short, enthusiastic sentence ` +
-      `appropriate for a ${age} year old. Use simple words, a warm encouraging tone, and you can say "bzzz" sometimes.`;
+      `appropriate for a ${age} year old. Use simple words, a warm encouraging tone, and you can say "bzzz" sometimes. ` +
+      `Never correct the child harshly. Never ask for the child's name, school, location or any personal detail.`;
   },
 
   getGreeting(key, stageKey) {
     const d = ANIMALS[key];
     if (stageKey === 'seedling')
-      return `Bzzz! 🐝 Hi! Let's meet the <strong>${d.word}</strong>! A ${d.word.toLowerCase()} says "${d.sound}"! Tap a chip or talk to me!`;
-    return `Hi explorer! 🐝 Today we're visiting the <strong>${d.word}</strong> on the farm. A ${d.word.toLowerCase()} says "${d.sound}"! Ask me anything about the ${d.word.toLowerCase()}!`;
+      return `Let's meet the <strong>${d.word}</strong> and say "${d.sound}"! 🐝 You can do it!`;
+    return `Let's visit the <strong>${d.word}</strong> on the farm! 🐝 Ask me anything, you're doing great!`;
   },
 };
 
@@ -243,8 +244,8 @@ function _buildAnimalHTML(key, d, s, stageKey, isLast) {
   const img = (k, px) => `<img src="${ANIMALS[k].image}" alt="${ANIMALS[k].word}" style="width:${px}px; height:${px}px; object-fit:contain;">`;
   const others = wrongAnimals(key, stageKey, 4);
 
-  // Activity 1: Color the animal
-  const act1 = `<div class="ws-draw-box"><div class="ws-draw-emoji">${img(key, 64)}</div><div class="ws-draw-label">Color the ${d.word.toLowerCase()}! 🎨</div></div>`;
+  // Activity 1: Colour the animal
+  const act1 = `<div class="ws-draw-box"><div class="ws-draw-emoji">${img(key, 64)}</div><div class="ws-draw-label">Colour the ${d.word.toLowerCase()}! 🎨</div></div>`;
 
   // Activity 2: Circle every <animal> in a row of photos
   const row = shuffle(older ? [key, others[0], key, others[1], others[2], key] : [key, others[0], key, others[1]]);
@@ -274,7 +275,7 @@ function _buildAnimalHTML(key, d, s, stageKey, isLast) {
       <div class="ws-name-field">Date: _______________</div>
       <div class="ws-name-field">🌟 Stars: _______________</div>
     </div>
-    <div class="ws-section"><div class="ws-section-title">1. Color the ${d.word.toLowerCase()}</div>${act1}</div>
+    <div class="ws-section"><div class="ws-section-title">1. Colour the ${d.word.toLowerCase()}</div>${act1}</div>
     <div class="ws-section"><div class="ws-section-title">2. Circle every ${d.word.toLowerCase()}</div>${act2}</div>
     <div class="ws-section"><div class="ws-section-title">3. Circle the sound a ${d.word.toLowerCase()} makes</div>${act3}</div>
     <div class="ws-section"><div class="ws-section-title">4. ${t4}</div>${act4}</div>
