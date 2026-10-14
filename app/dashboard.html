@@ -227,6 +227,19 @@
     document.getElementById('loadingState').style.display = 'none'
     document.getElementById('dashboardContent').style.display = 'block'
     loadChildren()
+    sendWelcomeEmailOnce(session)
+  }
+
+  // ── Welcome email ─────────────────────────────────
+  // Sent by the server once per account, to the signed-in user's own address only.
+  // The server decides (it records welcome_email_sent_at); this just asks, and skips the
+  // call when the session already shows it was sent.
+  function sendWelcomeEmailOnce(session) {
+    if (session.user.app_metadata?.welcome_email_sent_at) return
+    fetch('/api/send-welcome-email', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + session.access_token }
+    }).catch(() => {})
   }
 
   // ── Load children ─────────────────────────────────

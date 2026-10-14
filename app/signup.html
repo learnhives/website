@@ -130,14 +130,8 @@
 
       if (error) throw error
 
-      // 2 — Send welcome email (fire-and-forget; don't block the success state on it)
-      fetch('/api/send-welcome-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name: fullName }),
-      }).catch(() => {})
-
-      // 3 — Success!
+      // 2 — Success! The welcome email is sent from the dashboard on the parent's first visit
+      //     (there is no session here while email confirmation is on).
       successEl.textContent = '🎉 Account created! Check your email to verify then log in.'
       successEl.style.display = 'block'
       btn.textContent = '✅ Check your email!'

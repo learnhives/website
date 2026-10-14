@@ -104,6 +104,7 @@
 | Lesson progress: subject, stage, item, stars, date | Child | `lesson_progress` | Parent progress view | Until deleted by parent |
 | Sessions: date, active minutes | Child | `lesson_sessions` | Parent progress view | Raw 12 months; daily totals kept |
 | Hashed Kid Mode PIN | Parent | `parent_profiles` | Exit lock | Account life |
+| Welcome-email sent timestamp (`welcome_email_sent_at`) | Parent | Supabase `auth` user `app_metadata` (server-written) | Send the welcome email once per account | Account life |
 | Subscription status, Stripe customer ID | Parent | `subscriptions` | Billing | `[VERIFY tax/accounting retention]` |
 | Buzz chip prompts sent to AI | Child (indirect) | Not stored by us; sent to Anthropic API | Buzz replies | Not stored by us |
 

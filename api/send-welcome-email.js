@@ -1,16 +1,75 @@
 const { Resend } = require('resend');
+const { createClient } = require('@supabase/supabase-js');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Admin client: the service role key is the only way to write app_metadata, which the
+// browser cannot change. Used only to record that the welcome email was sent.
+const admin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
+
+// Accounts older than this never get a welcome email. This stops accounts that were created
+// before the once-only marker existed (and already received the email at sign-up) from
+// getting a second one.
+const WELCOME_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Verify the bearer token and return the authenticated user, or null.
+// Uses the anon key + user JWT so Supabase validates the token server-side —
+// we never trust userId or email values sent by the browser.
+async function getAuthenticatedUser(req) {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) return null;
+
+  const token = auth.slice(7);
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  );
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return user;
+}
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { email, name } = req.body;
+  // Reject the request if the JWT is missing or invalid
+  const user = await getAuthenticatedUser(req);
+  if (!user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({ error: 'valid email is required' });
+  // Use the server-verified identity only. Any email or name in the request body is ignored,
+  // so this endpoint can only ever email the signed-in user's own address.
+  const email = user.email;
+  if (!email) {
+    return res.status(400).json({ error: 'account has no email address' });
+  }
+  const name = user.user_metadata?.full_name;
+
+  // Once per account: skip if already sent, or if the account is too old to be a new sign-up.
+  if (user.app_metadata?.welcome_email_sent_at) {
+    return res.status(200).json({ skipped: 'already sent' });
+  }
+  if (Date.now() - new Date(user.created_at).getTime() > WELCOME_WINDOW_MS) {
+    return res.status(200).json({ skipped: 'not a new account' });
+  }
+
+  // Claim the marker BEFORE sending so two quick calls do not both send.
+  const claimedAt = new Date().toISOString();
+  const { error: claimError } = await admin.auth.admin.updateUserById(user.id, {
+    app_metadata: { ...user.app_metadata, welcome_email_sent_at: claimedAt },
+  });
+  if (claimError) {
+    console.error('Welcome email: could not record marker:', claimError.message);
+    return res.status(500).json({ error: 'could not send' });
   }
 
   const rawFirst = (name || 'there').split(' ')[0].slice(0, 50);
@@ -26,15 +85,27 @@ module.exports = async (req, res) => {
 
     if (error) {
       console.error('Resend error:', error);
-      return res.status(500).json({ error: error.message });
+      await releaseMarker(user);
+      return res.status(500).json({ error: 'could not send' });
     }
 
     res.status(200).json({ id: data.id });
   } catch (err) {
     console.error('Send welcome email error:', err);
-    res.status(500).json({ error: err.message });
+    await releaseMarker(user);
+    res.status(500).json({ error: 'could not send' });
   }
 };
+
+// If sending failed, clear the marker so a later dashboard visit can try again.
+async function releaseMarker(user) {
+  try {
+    // app_metadata keys are merged, so a null value removes the key
+    await admin.auth.admin.updateUserById(user.id, { app_metadata: { ...user.app_metadata, welcome_email_sent_at: null } });
+  } catch (e) {
+    console.error('Welcome email: could not clear marker:', e.message);
+  }
+}
 
 function escapeHtml(str) {
   return str
