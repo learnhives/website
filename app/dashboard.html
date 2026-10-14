@@ -176,7 +176,9 @@
     <div class="modal-title">Add a Little Bee 🐝</div>
     <div class="form-group">
       <label>Child's Name</label>
-      <input type="text" id="childName" placeholder="e.g. Emma" />
+      <input type="text" id="childName" placeholder="e.g. Emma" maxlength="20" autocomplete="off" />
+      <div style="font-size:0.8rem;color:#888;margin-top:0.3rem;">First name or nickname only</div>
+      <div id="nameError" style="display:none;font-size:0.85rem;color:#c0392b;margin-top:0.3rem;"></div>
     </div>
     <div class="form-group">
       <label>Age</label>
@@ -242,6 +244,14 @@
     }).catch(() => {})
   }
 
+  // Create an element whose content is plain text.
+  function makeEl(tag, className, text) {
+    const el = document.createElement(tag)
+    el.className = className
+    el.textContent = text
+    return el
+  }
+
   // ── Load children ─────────────────────────────────
   async function loadChildren() {
     const { data: children } = await db
@@ -253,14 +263,14 @@
     grid.innerHTML = ''
 
     children?.forEach(child => {
+      // Built with textContent only: a name (or any other value) from the database can never
+      // be read as HTML.
       const card = document.createElement('div')
       card.className = 'child-card'
-      card.innerHTML = `
-        <span class="child-emoji">${CHAR_EMOJIS[child.character] || '🐝'}</span>
-        <div class="child-name">${child.name}</div>
-        <div class="child-age">${child.age} years old</div>
-        <button class="start-btn">Start Learning 🍯</button>
-      `
+      card.appendChild(makeEl('span', 'child-emoji', CHAR_EMOJIS[child.character] || '🐝'))
+      card.appendChild(makeEl('div', 'child-name', child.name))
+      card.appendChild(makeEl('div', 'child-age', Number(child.age) + ' years old'))
+      card.appendChild(makeEl('button', 'start-btn', 'Start Learning 🍯'))
       grid.appendChild(card)
     })
 
@@ -268,7 +278,8 @@
     const addCard = document.createElement('div')
     addCard.className = 'add-child-card'
     addCard.onclick = showAddChild
-    addCard.innerHTML = `<span class="add-icon">➕</span><div class="add-text">Add a child</div>`
+    addCard.appendChild(makeEl('span', 'add-icon', '➕'))
+    addCard.appendChild(makeEl('div', 'add-text', 'Add a child'))
     grid.appendChild(addCard)
   }
 
@@ -282,10 +293,25 @@
     selectedChar = el.dataset.char
   }
 
+  // First name or nickname: up to 20 characters; letters (any language), spaces, hyphen and
+  // apostrophe only. Returns a gentle message, or '' if the name is fine.
+  const MAX_NAME_LENGTH = 20
+  function checkChildName(name) {
+    if (!name) return 'Please add a first name or nickname.'
+    if (name.length > MAX_NAME_LENGTH) return 'Please keep it to ' + MAX_NAME_LENGTH + ' letters or fewer.'
+    if (!/^[\p{L}\p{M}' \-\u2019]+$/u.test(name) || !/\p{L}/u.test(name)) {
+      return 'Please use letters only: a first name or nickname, with no numbers or symbols.'
+    }
+    return ''
+  }
+
   async function saveChild() {
-    const name = document.getElementById('childName').value.trim()
+    const name = document.getElementById('childName').value.trim().replace(/\s+/g, ' ')
     const age  = parseInt(document.getElementById('childAge').value)
-    if (!name) { alert('Please enter the child\'s name!'); return }
+    const nameError = checkChildName(name)
+    const errEl = document.getElementById('nameError')
+    if (nameError) { errEl.textContent = nameError; errEl.style.display = 'block'; return }
+    errEl.style.display = 'none'
 
     const { error } = await db.from('children').insert({
       parent_id: currentUser.id,
@@ -296,6 +322,7 @@
     if (error) { alert('Error: ' + error.message); return }
     hideAddChild()
     document.getElementById('childName').value = ''
+    document.getElementById('nameError').style.display = 'none'
     loadChildren()
   }
 
