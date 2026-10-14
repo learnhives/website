@@ -174,7 +174,7 @@ function buildEmail(firstName) {
                         <td style="font-size:28px;padding-right:14px;vertical-align:middle;">🐝</td>
                         <td style="vertical-align:middle;">
                           <div style="font-size:15px;font-weight:800;color:#1a1a2e;margin-bottom:2px;">Meet Buzz & Friends</div>
-                          <div style="font-size:13px;color:#666666;line-height:1.4;">Four bee characters cover Letters, Numbers, Colors, and Nature — each topic taught with warmth and wonder.</div>
+                          <div style="font-size:13px;color:#666666;line-height:1.4;">Buzz guides your little one through letters, numbers, colours, animals and more — each lesson taught with warmth and wonder.</div>
                         </td>
                       </tr>
                     </table>

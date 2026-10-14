@@ -65,10 +65,10 @@ function buildRequest(body) {
 }
 
 // ── Rate limiting ────────────────────────────────────────────────────────────
-// In-memory sliding window: 5 requests per IP per 60 seconds.
+// In-memory sliding window: 15 requests per IP per 60 seconds.
 // Resets on cold start; sufficient to prevent casual abuse without extra infra.
 const RATE_WINDOW_MS = 60_000;
-const RATE_MAX = 5;
+const RATE_MAX = 15;
 const rateLimitStore = new Map();
 
 function checkRateLimit(ip) {
