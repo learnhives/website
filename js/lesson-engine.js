@@ -31,7 +31,6 @@ export function startLesson(config) {
       wsPageTrace:'📝 Trace', wsPageDraw:'🎨 Draw', wsPageCircle:'🔵 Circle', wsPageMatch:'🔗 Match',
       printWorksheet:'🖨️ Print Worksheet',
       buzzName:'Buzz the Bee', buzzReady:'Ready to help!',
-      chatPlaceholder:'Ask Buzz anything…',
       modalTitle:'Amazing Work!', modalXP:'+50 Honey Points! 🍯',
       stayHere:'Stay Here', nextItem:'Next →',
       quizComplete:'🎉 Quiz complete! Great job!',
@@ -39,7 +38,6 @@ export function startLesson(config) {
       feedbackTryAgain:'Try again!',
       feedbackReveal:label=>`The answer is ${label}!`,
       buzzTired:'Bzzz! 🐝 My wings are a little tired — try again in a moment!',
-      noVoice:"🐝 Your browser doesn't support voice yet — try Chrome or Safari!",
     }
   };
   function t(key,...args){
@@ -58,8 +56,7 @@ export function startLesson(config) {
   // ── STATE ──
   let currentKey   = getStageItems(currentStage)[0];
   let currentCard  = 0, currentQuestion = 0, answered = false, wrongAttempts = 0;
-  let isTyping = false, isListening = false, recognition = null, quizSet = [];
-  let chatHistory  = [];
+  let isTyping = false, quizSet = [];
   let seenCards = new Set(), answeredQuestions = new Set(), storyDone = false, completionShown = false;
 
   // ── KID MODE STATE ──
@@ -70,7 +67,6 @@ export function startLesson(config) {
     document.body.dataset.theme = currentTheme;
     document.body.dataset.lesson = config.lessonKey; // lets CSS target per-lesson chrome (e.g. numbers card back)
     document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
-    document.getElementById('chatInput').placeholder = t('chatPlaceholder');
     if (_params.get('preview') === '1') {
       document.body.classList.add('preview-mode');
       document.querySelectorAll('.stage-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.stage === currentStage));
@@ -157,7 +153,6 @@ export function startLesson(config) {
     document.getElementById('wsStage').textContent          = s.label.replace(/^[^\s]+\s/, '');
     document.getElementById('progressLabel').textContent    = config.getProgressLabel(currentKey);
     buildQuickPrompts();
-    chatHistory = [];
     const chat = document.getElementById('chatMessages'); chat.innerHTML = '';
     addMessage('buzz', config.getGreeting(currentKey, stage));
   }
@@ -336,84 +331,79 @@ export function startLesson(config) {
     if (KID.active) setTimeout(() => kidShowStep('done'), 400);
   }
 
-  // ── BUZZ CHAT ──
-  function addMessage(role, html) {
+  // ── BUZZ (tap chips only) ──
+  // Children cannot type or speak to Buzz (legal register C20, decision D8). The browser never
+  // sends its own text: it asks the server for one of three fixed kinds of reply about the
+  // current item, and the server builds the prompt. Buzz's replies are read aloud (Kid Mode)
+  // or shown as plain text (parent view).
+  async function askBuzz(chip) {
+    const res = await fetch('/api/claude-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: 'chip', chip, item: String(currentKey), stage: currentStage })
+    });
+    if (!res.ok) throw new Error('proxy ' + res.status);
+    const data = await res.json();
+    return data?.content?.[0]?.text?.trim() || '';
+  }
+
+  // text:true shows the message as plain text (use for anything that came from the AI).
+  function addMessage(role, content, text = false) {
     const chat = document.getElementById('chatMessages');
     const div = document.createElement('div');
     div.className = 'msg ' + role;
-    div.innerHTML = `<div class="msg-avatar">${role === 'buzz' ? '🐝' : '👤'}</div><div class="msg-bubble">${html}</div>`;
+    div.innerHTML = `<div class="msg-avatar">${role === 'buzz' ? '🐝' : '👤'}</div><div class="msg-bubble"></div>`;
+    const bubble = div.querySelector('.msg-bubble');
+    if (text) bubble.textContent = content; else bubble.innerHTML = content;
     chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
-    if (role === 'user') chatHistory.push({ role: 'user', content: html.replace(/<[^>]+>/g, '') });
   }
 
   function showTyping() {
     const chat = document.getElementById('chatMessages');
-    const div = document.createElement('div'); div.className = 'msg buzz'; div.id = 'typingIndicator';
+    const div = document.createElement('div');
+    div.className = 'msg buzz'; div.id = 'typingIndicator';
     div.innerHTML = `<div class="msg-avatar">🐝</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
     chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
   }
-
   function removeTyping() { document.getElementById('typingIndicator')?.remove(); }
 
-  async function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (!text || isTyping) return;
-    input.value = ''; input.style.height = 'auto';
-    addMessage('user', text);
-    isTyping = true; document.getElementById('sendBtn').disabled = true;
+  async function sendChip(chip) {
+    if (isTyping) return;
+    isTyping = true;
     showTyping();
-    const messages = [...chatHistory.slice(-8), { role: 'user', content: text }];
     try {
-      const res = await fetch('/api/claude-proxy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system: config.getBuzzPrompt(currentKey, currentStage) + ` Respond in language: ${currentLang}.`,
-          messages,
-          max_tokens: 200
-        })
-      });
-      const data = await res.json();
-      const reply = data?.content?.[0]?.text || data?.reply || "Bzzz! 🐝 Let me think about that...";
-      removeTyping(); addMessage('buzz', reply);
-      chatHistory.push({ role: 'assistant', content: reply });
+      const reply = await askBuzz(chip);
+      removeTyping();
+      addMessage('buzz', reply || t('buzzTired'), true);
     } catch (err) {
       removeTyping();
-      addMessage('buzz', t('buzzTired'));
+      addMessage('buzz', t('buzzTired'), true);
       console.error(err);
     }
-    isTyping = false; document.getElementById('sendBtn').disabled = false;
-  }
-
-  function sendQuick(m) { document.getElementById('chatInput').value = m; sendMessage(); }
-  function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
-  function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
-
-  // ── VOICE ──
-  function toggleVoice() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      addMessage('buzz', t('noVoice')); return;
-    }
-    const btn = document.getElementById('voiceBtn');
-    if (isListening) { recognition?.stop(); isListening = false; btn.classList.remove('listening'); btn.textContent = '🎤'; return; }
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SR(); recognition.lang = 'en-US'; recognition.interimResults = false; recognition.maxAlternatives = 1;
-    recognition.onstart  = () => { isListening = true; btn.classList.add('listening'); btn.textContent = '🔴'; };
-    recognition.onresult = e => { document.getElementById('chatInput').value = e.results[0][0].transcript; isListening = false; btn.classList.remove('listening'); btn.textContent = '🎤'; sendMessage(); };
-    recognition.onerror  = () => { isListening = false; btn.classList.remove('listening'); btn.textContent = '🎤'; };
-    recognition.onend    = () => { isListening = false; btn.classList.remove('listening'); btn.textContent = '🎤'; };
-    recognition.start();
+    isTyping = false;
   }
 
   // ── QUICK PROMPTS ──
+  // The lesson config still lists its own quick buttons (written as chat messages). Each one is
+  // mapped to one of the three fixed chips; buttons that do not fit (e.g. "Easier", "Harder",
+  // "Write A") are dropped, because they need free-form chat.
+  function chipForPrompt(m) {
+    if (/\bcount\b/i.test(m)) return 'count';
+    if (/fun fact/i.test(m)) return 'fact';
+    if (/words that start|about the number/i.test(m)) return 'sound';
+    if (/tell me about/i.test(m)) return 'fact';
+    return null;
+  }
+
   function buildQuickPrompts() {
     const el = document.getElementById('quickPrompts');
     el.innerHTML = '';
     config.getQuickPrompts(currentKey).forEach(c => {
+      const chip = chipForPrompt(c.m);
+      if (!chip) return;
       const b = document.createElement('button');
       b.className = 'quick-chip'; b.textContent = c.t;
-      b.onclick = () => sendQuick(c.m);
+      b.onclick = () => sendChip(chip);
       el.appendChild(b);
     });
   }
@@ -702,32 +692,13 @@ export function startLesson(config) {
     kidDismissChips();
     const buzz = document.getElementById('kidBuzz');
     buzz?.classList.add('buzz-thinking');
-    const PROMPTS = {
-      count: `In 1 short sentence, help this child understand the quantity or meaning of "${currentKey}". Be playful and encouraging.`,
-      sound: `In 1 short sentence, say the sound or name of "${currentKey}" and give one example for a young child.`,
-      fact:  `Share one amazing fun fact about "${currentKey}" in 1 short sentence. Be excited and playful.`
-    };
     const FALLBACKS = {
       count: "Let's count together — you're amazing! 🍯",
       sound: "Great listening! You're a superstar! 🌟",
       fact:  "Bzzz! Learning is so fun! 🐝"
     };
     try {
-      const sys = (config.getBuzzPrompt?.(currentKey, currentStage) ??
-        'You are Buzz, a friendly bee teaching young children. Be warm and playful.') +
-        ' Reply in exactly 1 sentence. No markdown. Speak directly to the child.';
-      const res = await fetch('/api/claude-proxy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system: sys,
-          messages: [{ role: 'user', content: PROMPTS[type] }],
-          max_tokens: 80
-        })
-      });
-      if (!res.ok) throw new Error('proxy ' + res.status);
-      const data = await res.json();
-      const reply = data?.content?.[0]?.text?.trim() || FALLBACKS[type];
+      const reply = (await askBuzz(type)) || FALLBACKS[type];
       kidBuzzSpeak(reply);
     } catch (_) {
       kidBuzzSpeak(FALLBACKS[type]);
@@ -1755,10 +1726,6 @@ export function startLesson(config) {
   window.finishStory   = finishStory;
   window.printWorksheet= printWorksheet;
   window.printPack     = printPack;
-  window.handleKey     = handleKey;
-  window.autoResize    = autoResize;
-  window.toggleVoice   = toggleVoice;
-  window.sendMessage   = sendMessage;
   window.closeModal    = closeModal;
   window.nextItem      = nextItem;
   // Kid mode (also wired via addEventListener in injectKidModeDom, exposed here for completeness)

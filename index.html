@@ -455,11 +455,11 @@
   </div>
   <div class="demo-container">
     <div class="demo-controls">
-      <button class="topic-btn active" data-topic="What is the letter B? Explain it like I am a 4 year old bee lover.">🔤 Letter B</button>
-      <button class="topic-btn" data-topic="What is the number 5? Explain it like I am a 4 year old bee lover.">🔢 Number 5</button>
-      <button class="topic-btn" data-topic="What is the colour yellow? Explain it like I am a 4 year old bee lover.">🟡 Yellow</button>
-      <button class="topic-btn" data-topic="Tell me about bees and how they make honey, for a 4 year old.">🐝 Bees &amp; Honey</button>
-      <button class="topic-btn" data-topic="What is a flower? Explain it for a 4 year old who loves bees.">🌸 Flowers</button>
+      <button class="topic-btn active" data-topic="letter-b">🔤 Letter B</button>
+      <button class="topic-btn" data-topic="number-5">🔢 Number 5</button>
+      <button class="topic-btn" data-topic="yellow">🟡 Yellow</button>
+      <button class="topic-btn" data-topic="bees">🐝 Bees &amp; Honey</button>
+      <button class="topic-btn" data-topic="flowers">🌸 Flowers</button>
     </div>
     <div class="demo-output" id="demoOutput">
       <span class="ai-label">🐝 Buzz says...</span>
@@ -546,7 +546,7 @@
 
 <script>
   const topics = document.querySelectorAll('.topic-btn');
-  let selected = "What is the letter B? Explain it like I am a 4 year old bee lover.";
+  let selected = "letter-b";   // topic key; the server holds the actual prompts
 
   topics.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -570,9 +570,7 @@
       const res = await fetch("/api/claude-proxy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: selected }]
-        })
+        body: JSON.stringify({ kind: "demo", topic: selected })
       });
       const data = await res.json();
       const reply = data.content?.map(c => c.text || '').join('') || "Oops! Buzz needs a honey break. Try again! 🍯";
