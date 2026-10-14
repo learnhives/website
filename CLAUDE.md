@@ -1,8 +1,8 @@
 # Rules for Claude Code on LearnHives
 
 ## Context
-- PLAN.md, BACKLOG.md and HANDOFF.md may be out of date. The code and
-  git log are the source of truth.
+- STATUS.md is the one status page. docs/archive/ is history only. The code
+  and git log are the source of truth.
 - Lessons follow the pattern of app/lesson-alphabet.html and
   app/lesson-numbers.html over js/lesson-engine.js.
 - Take work ONLY from TASKS.md. Never invent new tasks.
